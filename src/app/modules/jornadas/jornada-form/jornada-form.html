@@ -1,1 +1,101 @@
-<p>jornada-form works!</p>
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Nueva Jornada</h1>
+            <p class="page-sub">Crea una nueva jornada de inventario vial</p>
+        </div>
+        <button class="btn-secondary" (click)="cancelar()">← Volver</button>
+    </div>
+
+    <div class="form-card">
+
+        <div class="error-msg" *ngIf="error">⚠️ {{ error }}</div>
+
+        <!-- Municipio con búsqueda DIVIPOL -->
+        <div class="form-section">
+            <h3 class="section-title">📍 Ubicación</h3>
+
+            <div class="form-group">
+                <label>Municipio *</label>
+                <div class="search-wrapper">
+                    <input
+                        type="text"
+                        [(ngModel)]="busquedaDivipol"
+                        (input)="buscarDivipol()"
+                        placeholder="Buscar municipio..."
+                        class="form-input"
+                    >
+                    <span class="search-icon" *ngIf="buscando">⏳</span>
+                </div>
+
+                <!-- Resultados DIVIPOL -->
+                <div class="divipol-results" *ngIf="mostrarDivipol && resultadosDivipol.length">
+                    <div
+                        class="divipol-item"
+                        *ngFor="let item of resultadosDivipol"
+                        (click)="seleccionarMunicipio(item)">
+                        <strong>{{ item.divipolMunicipio }}</strong>
+                        <span>{{ item.divipolDepto }} — Cód: {{ item.divipolMunCod }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Departamento</label>
+                    <input type="text" [(ngModel)]="form.dpto" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Código Municipio</label>
+                    <input type="text" [(ngModel)]="form.codMunicipio" class="form-input" readonly>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Localidad</label>
+                    <input type="text" [(ngModel)]="form.localidad" class="form-input" placeholder="Nombre de la localidad">
+                </div>
+                <div class="form-group">
+                    <label>Tipo Localidad</label>
+                    <select [(ngModel)]="form.tipoLocalidad" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let t of tiposLocalidad" [value]="t">{{ t }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos generales -->
+        <div class="form-section">
+            <h3 class="section-title">📋 Datos Generales</h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contratante</label>
+                    <input type="text" [(ngModel)]="form.contratante" class="form-input" placeholder="Entidad contratante">
+                </div>
+                <div class="form-group">
+                    <label>Entidad Responsable Vía</label>
+                    <input type="text" [(ngModel)]="form.entidadResVia" class="form-input" placeholder="Entidad responsable">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Supervisor *</label>
+                <input type="text" [(ngModel)]="form.supervisor" class="form-input" placeholder="Nombre del supervisor">
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="form-actions">
+            <button class="btn-secondary" (click)="cancelar()">Cancelar</button>
+            <button class="btn-primary" (click)="guardar()" [disabled]="loading">
+                <span *ngIf="!loading">💾 Guardar Jornada</span>
+                <span *ngIf="loading">Guardando...</span>
+            </button>
+        </div>
+
+    </div>
+</div>

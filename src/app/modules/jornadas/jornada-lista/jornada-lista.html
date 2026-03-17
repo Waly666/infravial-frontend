@@ -1,1 +1,164 @@
-<p>jornada-lista works!</p>
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Jornadas</h1>
+            <p class="page-sub">Gestión de jornadas de inventario vial</p>
+        </div>
+        <div style="display:flex; gap:0.75rem;">
+            <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">
+                ← Dashboard
+            </button>
+            <button class="btn-primary" *ngIf="isAdmin()" (click)="nueva()">
+                ➕ Nueva Jornada
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <p>Cargando jornadas...</p>
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" *ngIf="error">⚠️ {{ error }}</div>
+
+    <!-- Tabla -->
+    <div class="table-card" *ngIf="!loading && !error">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Municipio</th>
+                    <th>Departamento</th>
+                    <th>Fecha</th>
+                    <th>Supervisor</th>
+                    <th>Localidad</th>
+                    <th>Estado</th>
+                    <th *ngIf="isAdmin()">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let j of jornadas">
+                    <td><strong>{{ j.municipio }}</strong></td>
+                    <td>{{ j.dpto }}</td>
+                    <td>{{ j.fechaJornada | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ j.supervisor }}</td>
+                    <td>{{ j.localidad }}</td>
+                    <td>
+                        <span class="badge" [ngClass]="getEstadoClass(j.estado)">
+                            {{ j.estado }}
+                        </span>
+                    </td>
+                    <td *ngIf="isAdmin()">
+                         <div class="actions-cell">
+                            <button
+                                class="btn-edit-sm"
+                                *ngIf="j.estado === 'EN PROCESO'"
+                                (click)="editar(j)">
+                                ✏️ Editar
+                            </button>
+                            <button
+                                class="btn-danger-sm"
+                                *ngIf="j.estado === 'EN PROCESO'"
+                                (click)="finalizar(j._id)">
+                                🔒 Finalizar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="jornadas.length === 0">
+                    <td colspan="7" class="empty-state">
+                        No hay jornadas registradas
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- MODAL EDITAR -->
+<div class="modal-overlay" *ngIf="editando" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>✏️ Editar Jornada</h3>
+            <button class="modal-close" (click)="cerrarModal()">✕</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Ubicación -->
+            <h4 class="section-title">📍 Ubicación</h4>
+            <div class="form-group">
+                <label>Municipio</label>
+                <input type="text" [(ngModel)]="jornadaEdit.municipio" class="form-input">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Departamento</label>
+                    <input type="text" [(ngModel)]="jornadaEdit.dpto" class="form-input">
+                </div>
+                <!-- Municipio con búsqueda DIVIPOL -->
+                <div class="form-group">
+                    <label>Municipio</label>
+                    <div class="search-wrapper" style="position:relative">
+                        <input
+                            type="text"
+                            [(ngModel)]="busquedaDivipolEdit"
+                            (input)="buscarDivipolEdit()"
+                            placeholder="Buscar municipio..."
+                            class="form-input"
+                        >
+                        <span *ngIf="buscandoEdit">⏳</span>
+
+                        <div class="divipol-results" *ngIf="mostrarDivipolEdit && resultadosDivipolEdit.length">
+                            <div
+                                class="divipol-item"
+                                *ngFor="let item of resultadosDivipolEdit"
+                                (click)="seleccionarMunicipioEdit(item)">
+                                <strong>{{ item.divipolMunicipio }}</strong>
+                                <span>{{ item.divipolDepto }} — Cód: {{ item.divipolMunCod }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Localidad</label>
+                    <input type="text" [(ngModel)]="jornadaEdit.localidad" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Tipo Localidad</label>
+                    <select [(ngModel)]="jornadaEdit.tipoLocalidad" class="form-input">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let t of tiposLocalidad" [value]="t">{{ t }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Datos generales -->
+            <h4 class="section-title">📋 Datos Generales</h4>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contratante</label>
+                    <input type="text" [(ngModel)]="jornadaEdit.contratante" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Entidad Responsable Vía</label>
+                    <input type="text" [(ngModel)]="jornadaEdit.entidadResVia" class="form-input">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Supervisor *</label>
+                <input type="text" [(ngModel)]="jornadaEdit.supervisor" class="form-input">
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+            <button class="btn-primary" (click)="guardarEdicion()">💾 Guardar</button>
+        </div>
+    </div>
+</div>
+</div>
