@@ -1,0 +1,318 @@
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #070c1a;
+    color: #e8f0ff;
+    font-family: sans-serif;
+}
+
+// ── SIDEBAR ──────────────────────────────────────
+.sidebar {
+    width: 260px;
+    min-height: 100vh;
+    background: rgba(5, 10, 25, 0.97);
+    border-right: 1px solid rgba(74, 158, 255, 0.12);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+}
+
+.sidebar-logo {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(74, 158, 255, 0.1);
+    text-align: center;
+
+    .logo { width: 140px; }
+}
+
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(74, 158, 255, 0.08);
+}
+
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a5fcc, #4a9eff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.user-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e8f0ff;
+}
+
+.user-role {
+    font-size: 0.7rem;
+    color: #4a9eff;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.jornada-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    background: rgba(76, 175, 130, 0.08);
+    border-bottom: 1px solid rgba(74, 158, 255, 0.08);
+
+    &.inactive {
+        background: rgba(224, 92, 92, 0.08);
+    }
+}
+
+.jornada-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4caf82;
+    animation: blink 1.5s infinite;
+    flex-shrink: 0;
+
+    &.inactive { background: #e05c5c; animation: none; }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+.jornada-txt {
+    font-size: 0.72rem;
+    color: rgba(180, 200, 255, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgba(180, 200, 255, 0.55);
+    font-size: 0.83rem;
+
+    &:hover {
+        background: rgba(74, 158, 255, 0.08);
+        color: #e8f0ff;
+    }
+
+    &.active {
+        background: rgba(74, 158, 255, 0.12);
+        color: #4a9eff;
+        border-right: 3px solid #4a9eff;
+    }
+}
+
+.nav-icon { font-size: 1rem; }
+
+.sidebar-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(74, 158, 255, 0.08);
+}
+
+.btn-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: rgba(224, 92, 92, 0.1);
+    border: 1px solid rgba(224, 92, 92, 0.2);
+    border-radius: 4px;
+    color: #e05c5c;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover { background: rgba(224, 92, 92, 0.2); }
+}
+
+// ── MAIN ─────────────────────────────────────────
+.main-content {
+    margin-left: 260px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(7, 12, 26, 0.95);
+    border-bottom: 1px solid rgba(74, 158, 255, 0.1);
+    padding: 0.9rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+}
+
+.page-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e8f0ff;
+}
+
+.jornada-status {
+    font-size: 0.75rem;
+    color: #4caf82;
+
+    &.inactive { color: #e05c5c; }
+}
+
+.content {
+    padding: 1.5rem;
+    flex: 1;
+}
+
+// ── STATS ─────────────────────────────────────────
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: rgba(10, 18, 40, 0.85);
+    border: 1px solid rgba(74, 158, 255, 0.12);
+    border-radius: 8px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: rgba(74, 158, 255, 0.3);
+        transform: translateY(-2px);
+    }
+}
+
+.stat-icon { font-size: 1.8rem; }
+
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #4a9eff;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.72rem;
+    color: rgba(180, 200, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 0.2rem;
+}
+
+// ── WELCOME ───────────────────────────────────────
+.welcome-card {
+    background: rgba(10, 18, 40, 0.85);
+    border: 1px solid rgba(74, 158, 255, 0.12);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.welcome-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #e8f0ff;
+    margin-bottom: 0.25rem;
+}
+
+.welcome-sub {
+    font-size: 0.8rem;
+    color: rgba(180, 200, 255, 0.5);
+    margin-bottom: 1rem;
+}
+
+.welcome-jornada {
+    font-size: 0.82rem;
+    color: #4caf82;
+    padding: 0.6rem 1rem;
+    background: rgba(76, 175, 130, 0.08);
+    border: 1px solid rgba(76, 175, 130, 0.2);
+    border-radius: 4px;
+
+    &.warn {
+        color: #f0a500;
+        background: rgba(240, 165, 0, 0.08);
+        border-color: rgba(240, 165, 0, 0.2);
+    }
+}
+
+.link {
+    cursor: pointer;
+    color: #4a9eff;
+    text-decoration: underline;
+    margin-left: 0.5rem;
+}
+
+// ── RECENT ────────────────────────────────────────
+.recent-card {
+    background: rgba(10, 18, 40, 0.85);
+    border: 1px solid rgba(74, 158, 255, 0.12);
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.recent-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(180, 200, 255, 0.5);
+    margin-bottom: 1rem;
+}
+
+.recent-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(74, 158, 255, 0.06);
+
+    &:last-child { border-bottom: none; }
+}
+
+.recent-icon { font-size: 1.2rem; }
+
+.recent-name {
+    font-size: 0.85rem;
+    color: #e8f0ff;
+    font-weight: 500;
+}
+
+.recent-meta {
+    font-size: 0.72rem;
+    color: rgba(180, 200, 255, 0.4);
+}

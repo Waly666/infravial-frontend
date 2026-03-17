@@ -1,0 +1,132 @@
+<div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="logos/logo_fondo_dark.png" alt="INFRAVIAL" class="logo">
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">{{ getInitials() }}</div>
+            <div class="user-info">
+                <div class="user-name">{{ usuario?.nombres }} {{ usuario?.apellidos }}</div>
+                <div class="user-role">{{ usuario?.rol }}</div>
+            </div>
+        </div>
+
+        <!-- JORNADA ACTIVA -->
+        <div class="jornada-badge" *ngIf="jornada">
+            <span class="jornada-dot"></span>
+            <span class="jornada-txt">{{ jornada.municipio }}</span>
+        </div>
+        <div class="jornada-badge inactive" *ngIf="!jornada">
+            <span class="jornada-dot inactive"></span>
+            <span class="jornada-txt">Sin jornada activa</span>
+        </div>
+
+        <!-- NAVEGACIÓN -->
+        <nav class="sidebar-nav">
+            <div
+                *ngFor="let item of getMenuItems()"
+                class="nav-item"
+                [class.active]="seccionActiva === item.id"
+                (click)="navegarA(item.id)">
+                <span class="nav-icon">{{ item.icon }}</span>
+                <span class="nav-label">{{ item.label }}</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn-logout" (click)="logout()">
+                <span>🚪</span> Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+        <div class="topbar">
+            <div class="page-title">{{ seccionActiva | titlecase }}</div>
+            <div class="topbar-actions">
+                <span class="jornada-status" *ngIf="jornada">
+                    🟢 Jornada activa: {{ jornada.municipio }}
+                </span>
+                <span class="jornada-status inactive" *ngIf="!jornada">
+                    🔴 Sin jornada activa
+                </span>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- STATS CARDS (admin/supervisor) -->
+            <div class="stats-grid" *ngIf="(isAdmin() || isSupervisor()) && stats">
+                <div class="stat-card">
+                    <div class="stat-icon">🛣️</div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ stats.totalTramos }}</div>
+                        <div class="stat-label">Vía Tramos</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚧</div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ stats.totalSenVert }}</div>
+                        <div class="stat-label">Señales Verticales</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚦</div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ stats.totalSenHor }}</div>
+                        <div class="stat-label">Señales Horizontales</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚥</div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ stats.totalSemaforos }}</div>
+                        <div class="stat-label">Semáforos</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BIENVENIDA -->
+            <div class="welcome-card">
+                <div class="welcome-title">
+                    Bienvenido, {{ usuario?.nombres }} 👋
+                </div>
+                <div class="welcome-sub">
+                    Sistema de Inventario Vial — INFRAVIAL
+                </div>
+                <div class="welcome-jornada" *ngIf="jornada">
+                    <strong>Jornada activa:</strong>
+                    {{ jornada.municipio }}, {{ jornada.dpto }} —
+                    Supervisor: {{ jornada.supervisor }}
+                </div>
+                <div class="welcome-jornada warn" *ngIf="!jornada && !isAdmin()">
+                    ⚠️ No hay jornada activa. Contacta al administrador para iniciar una jornada.
+                </div>
+                <div class="welcome-jornada warn" *ngIf="!jornada && isAdmin()">
+                    ⚠️ No hay jornada activa.
+                    <span class="link" (click)="navegarA('jornadas')">Crear jornada →</span>
+                </div>
+            </div>
+
+            <!-- ÚLTIMOS REGISTROS -->
+            <div class="recent-card" *ngIf="stats?.ultimosTramos?.length">
+                <div class="recent-title">Últimos tramos registrados</div>
+                <div class="recent-list">
+                    <div class="recent-item" *ngFor="let t of stats.ultimosTramos">
+                        <span class="recent-icon">🛣️</span>
+                        <div class="recent-info">
+                            <div class="recent-name">{{ t.via || 'Sin nombre' }}</div>
+                            <div class="recent-meta">{{ t.municipio }} — {{ t.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>

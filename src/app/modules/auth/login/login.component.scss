@@ -1,0 +1,201 @@
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #050d1a;
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(26, 95, 204, 0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 50%, rgba(74, 158, 255, 0.08) 0%, transparent 60%);
+}
+
+.road-lines {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    display: flex;
+    gap: 40px;
+    padding: 0 10%;
+    opacity: 0.15;
+
+    .line {
+        flex: 1;
+        background: linear-gradient(to top, #4a9eff, transparent);
+        border-radius: 2px;
+        animation: pulse 3s ease-in-out infinite;
+
+        @for $i from 1 through 5 {
+            &:nth-child(#{$i}) { animation-delay: #{$i * 0.4}s; }
+        }
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50%       { opacity: 1; }
+}
+
+.login-card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 420px;
+    background: rgba(10, 20, 45, 0.9);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.logo-section {
+    background: linear-gradient(135deg, #0a1428, #0d1e3d);
+    border-bottom: 1px solid rgba(74, 158, 255, 0.15);
+    padding: 2rem;
+    text-align: center;
+
+    .logo {
+        width: 180px;
+        object-fit: contain;
+    }
+
+    .logo-sub {
+        margin-top: 0.5rem;
+        font-size: 0.65rem;
+        letter-spacing: 0.2em;
+        color: rgba(74, 158, 255, 0.6);
+        font-family: 'Raleway', sans-serif;
+    }
+}
+
+.form-section {
+    padding: 2rem;
+}
+
+.form-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #e8f0ff;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+
+    label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: rgba(180, 200, 255, 0.7);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: rgba(74, 158, 255, 0.05);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 6px;
+    padding: 0 1rem;
+    transition: border-color 0.2s;
+
+    &:focus-within {
+        border-color: rgba(74, 158, 255, 0.6);
+        background: rgba(74, 158, 255, 0.08);
+    }
+
+    svg { color: rgba(74, 158, 255, 0.5); flex-shrink: 0; }
+
+    input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        padding: 0.75rem 0.75rem;
+        color: #e8f0ff;
+        font-size: 0.9rem;
+
+        &::placeholder { color: rgba(180, 200, 255, 0.3); }
+    }
+
+    .toggle-pass {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: rgba(74, 158, 255, 0.5);
+        padding: 0;
+        display: flex;
+        align-items: center;
+
+        &:hover { color: #4a9eff; }
+    }
+}
+
+.error-msg {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #e05c5c;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+    padding: 0.6rem 0.75rem;
+    background: rgba(224, 92, 92, 0.1);
+    border: 1px solid rgba(224, 92, 92, 0.2);
+    border-radius: 4px;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 0.85rem;
+    background: linear-gradient(135deg, #1a5fcc, #4a9eff);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+
+    &:hover:not(:disabled) {
+        box-shadow: 0 4px 20px rgba(74, 158, 255, 0.4);
+        transform: translateY(-1px);
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
