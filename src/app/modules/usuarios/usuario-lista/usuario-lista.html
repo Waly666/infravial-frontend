@@ -1,1 +1,182 @@
-<p>usuario-lista works!</p>
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Usuarios</h1>
+            <p class="page-sub">Gestión de usuarios del sistema</p>
+        </div>
+        <div style="display:flex; gap:0.75rem;">
+            <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">
+                ← Dashboard
+            </button>
+            <button class="btn-primary" (click)="abrirCrear()">
+                ➕ Nuevo Usuario
+            </button>
+        </div>
+    </div>
+
+    <!-- Buscador -->
+    <div class="search-bar">
+        <input
+            type="text"
+            [(ngModel)]="busqueda"
+            placeholder="🔍 Buscar por nombre, cédula o rol..."
+            class="search-input"
+        >
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <p>Cargando usuarios...</p>
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" *ngIf="error">⚠️ {{ error }}</div>
+
+    <!-- Tabla -->
+    <div class="table-card" *ngIf="!loading && !error">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Cédula</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let u of usuariosFiltrados">
+                    <td><strong>{{ u.user }}</strong></td>
+                    <td>{{ u.nombres }} {{ u.apellidos }}</td>
+                    <td class="td-muted">{{ u.mail || '—' }}</td>
+                    <td>
+                        <span class="badge" [ngClass]="getRolClass(u.rol)">
+                            {{ u.rol }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge" [ngClass]="u.activo ? 'badge-activo' : 'badge-inactivo'">
+                            {{ u.activo ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn-edit-sm" (click)="editar(u)">✏️</button>
+                            <button class="btn-danger-sm" (click)="eliminar(u._id, u.nombres)">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="usuariosFiltrados.length === 0">
+                    <td colspan="6" class="empty-state">No hay usuarios</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MODAL CREAR -->
+    <div class="modal-overlay" *ngIf="creando" (click)="cerrarModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>➕ Nuevo Usuario</h3>
+                <button class="modal-close" (click)="cerrarModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cédula *</label>
+                        <input type="text" [(ngModel)]="nuevoUsuario.user" class="form-input" placeholder="Número de cédula">
+                    </div>
+                    <div class="form-group">
+                        <label>Rol *</label>
+                        <select [(ngModel)]="nuevoUsuario.rol" class="form-input">
+                            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombres *</label>
+                        <input type="text" [(ngModel)]="nuevoUsuario.nombres" class="form-input" placeholder="Nombres">
+                    </div>
+                    <div class="form-group">
+                        <label>Apellidos</label>
+                        <input type="text" [(ngModel)]="nuevoUsuario.apellidos" class="form-input" placeholder="Apellidos">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Correo</label>
+                        <input type="email" [(ngModel)]="nuevoUsuario.mail" class="form-input" placeholder="correo@ejemplo.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña *</label>
+                        <input type="password" [(ngModel)]="nuevoUsuario.password" class="form-input" placeholder="Contraseña">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+                <button class="btn-primary" (click)="guardarNuevo()">💾 Crear Usuario</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR -->
+    <div class="modal-overlay" *ngIf="editando" (click)="cerrarModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>✏️ Editar Usuario</h3>
+                <button class="modal-close" (click)="cerrarModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cédula</label>
+                        <input type="text" [(ngModel)]="usuarioEdit.user" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Rol</label>
+                        <select [(ngModel)]="usuarioEdit.rol" class="form-input">
+                            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombres</label>
+                        <input type="text" [(ngModel)]="usuarioEdit.nombres" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Apellidos</label>
+                        <input type="text" [(ngModel)]="usuarioEdit.apellidos" class="form-input">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Correo</label>
+                        <input type="email" [(ngModel)]="usuarioEdit.mail" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Nueva Contraseña</label>
+                        <input type="password" [(ngModel)]="usuarioEdit.password" class="form-input" placeholder="Dejar vacío para no cambiar">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select [(ngModel)]="usuarioEdit.activo" class="form-input">
+                        <option [ngValue]="true">Activo</option>
+                        <option [ngValue]="false">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+                <button class="btn-primary" (click)="guardarEdicion()">💾 Guardar</button>
+            </div>
+        </div>
+    </div>
+
+</div>
