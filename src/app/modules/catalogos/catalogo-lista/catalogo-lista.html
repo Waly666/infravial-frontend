@@ -1,1 +1,206 @@
-<p>catalogo-lista works!</p>
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Catálogos</h1>
+            <p class="page-sub">Gestión de tablas de referencia del sistema</p>
+        </div>
+        <div style="display:flex; gap:0.75rem;">
+            <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+            <button class="btn-primary" (click)="abrirCrear()">➕ Nuevo</button>
+        </div>
+    </div>
+
+    <div class="catalogo-layout">
+
+        <!-- Panel izquierdo: lista de catálogos -->
+        <div class="catalogo-nav">
+            <div class="nav-title">CATÁLOGOS</div>
+            <div
+                *ngFor="let c of catalogos"
+                class="nav-item"
+                [class.active]="catalogoActivo === c.id"
+                (click)="seleccionarCatalogo(c.id)">
+                {{ c.label }}
+                <span class="img-badge" *ngIf="c.tieneImagen">🖼️</span>
+            </div>
+        </div>
+
+        <!-- Panel derecho: datos -->
+        <div class="catalogo-content">
+
+            <div class="content-header">
+                <span class="content-title">{{ catalogoInfo?.label }}</span>
+                <input
+                    type="text"
+                    [(ngModel)]="busqueda"
+                    placeholder="🔍 Buscar..."
+                    class="search-input"
+                >
+            </div>
+
+            <!-- Loading -->
+            <div class="loading-state" *ngIf="loading">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Tabla -->
+            <div class="table-wrapper" *ngIf="!loading">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th *ngIf="catalogoInfo?.tieneImagen">Imagen</th>
+                            <th *ngFor="let k of getKeys(datosFiltrados[0] || {})">{{ getLabelCampo(k) }}</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of datosFiltrados">
+                            <td *ngIf="catalogoInfo?.tieneImagen">
+                            <img
+                                    *ngIf="getImagenUrl(item)"
+                                    [src]="getImagenUrl(item)"
+                                    [class]="catalogoActivo === 'esquema-perfil' ? 'thumb-esquema' : 'thumb'"
+                                    [alt]="item.codEsquema"
+                                >
+                                <span *ngIf="!getImagenUrl(item)" class="no-img">Sin imagen</span>
+                            </td>
+                            <td *ngFor="let k of getKeys(item)">
+                                <span class="cell-value">{{ item[k] }}</span>
+                            </td>
+                            <td>
+                                <div class="actions-cell">
+                                    <button class="btn-edit-sm" (click)="editar(item)">✏️</button>
+                                    <button class="btn-danger-sm" (click)="eliminar(item._id)">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="datosFiltrados.length === 0">
+                            <td [attr.colspan]="10" class="empty-state">No hay registros</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CREAR -->
+    <div class="modal-overlay" *ngIf="creando" (click)="cerrarModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>➕ Nuevo — {{ catalogoInfo?.label }}</h3>
+                <button class="modal-close" (click)="cerrarModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Búsqueda DIVIPOL para ZATs, Comunas y Barrios -->
+                <div *ngIf="usaDivipol">
+                    <div class="form-group" style="position:relative">
+                        <label>Buscar Municipio</label>
+                        <input
+                            type="text"
+                            [(ngModel)]="busquedaDivipolCat"
+                            (input)="buscarDivipolCat()"
+                            placeholder="Buscar municipio..."
+                            class="form-input"
+                        >
+                        <span *ngIf="buscandoCat">⏳</span>
+                        <div class="divipol-results" *ngIf="mostrarDivipolCat && resultadosDivipolCat.length">
+                            <div
+                                class="divipol-item"
+                                *ngFor="let item of resultadosDivipolCat"
+                                (click)="seleccionarDivipolCat(item, nuevoItem)">
+                                <strong>{{ item.divipolMunicipio }}</strong>
+                                <span>{{ item.divipolDepto }} — {{ item.divipolMunCod }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Municipio</label>
+                            <input type="text" [(ngModel)]="nuevoItem.munNombre" class="form-input" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Cód. Municipio</label>
+                            <input type="text" [(ngModel)]="nuevoItem.munDivipol" class="form-input" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Departamento</label>
+                            <input type="text" [(ngModel)]="nuevoItem.deptoNombre" class="form-input" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Cód. Departamento</label>
+                            <input type="text" [(ngModel)]="nuevoItem.deptoDivipol" class="form-input" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" *ngIf="catalogoActivo === 'zats'">
+                            <label>Número ZAT</label>
+                            <input type="number" [(ngModel)]="nuevoItem.zatNumero" class="form-input">
+                        </div>
+                        <div class="form-group" *ngIf="catalogoActivo === 'zats'">
+                            <label>Letra ZAT</label>
+                            <input type="text" [(ngModel)]="nuevoItem.zatLetra" class="form-input">
+                        </div>
+                        <div class="form-group" *ngIf="catalogoActivo === 'comunas'">
+                            <label>Número Comuna</label>
+                            <input type="number" [(ngModel)]="nuevoItem.comunaNumero" class="form-input">
+                        </div>
+                        <div class="form-group" *ngIf="catalogoActivo === 'comunas'">
+                            <label>Letra Comuna</label>
+                            <input type="text" [(ngModel)]="nuevoItem.comunaLetra" class="form-input">
+                        </div>
+                        <div class="form-group" *ngIf="catalogoActivo === 'barrios'">
+                            <label>Nombre Barrio</label>
+                            <input type="text" [(ngModel)]="itemEdit.nombre" class="form-input">
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Campos genéricos para otros catálogos -->
+                                <div *ngIf="!usaDivipol">
+                                    <div class="form-group" *ngFor="let k of getKeys(datosFiltrados[0] || {})">
+                                        <label>{{ getLabelCampo(k) }}</label>
+                                        <input type="text" [(ngModel)]="nuevoItem[k]" class="form-input" [placeholder]="k">
+                                    </div>
+                                    <div class="form-group" *ngIf="catalogoInfo?.tieneImagen">
+                                        <label>Imagen</label>
+                                        <input type="file" (change)="onImagenSeleccionada($event)" accept="image/*" class="form-input">
+                                    </div>
+                                </div>
+                </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+                <button class="btn-primary" (click)="guardarNuevo()">💾 Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR -->
+    <div class="modal-overlay" *ngIf="editando" (click)="cerrarModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>✏️ Editar — {{ catalogoInfo?.label }}</h3>
+                <button class="modal-close" (click)="cerrarModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" *ngFor="let k of getKeys(itemEdit)">
+                    <label>{{ getLabelCampo(k) }}</label>
+                    <input type="text" [(ngModel)]="itemEdit[k]" class="form-input">
+                </div>
+                <div class="form-group" *ngIf="catalogoInfo?.tieneImagen">
+                    <label>Nueva Imagen</label>
+                    <img *ngIf="getImagenUrl(itemEdit)" [src]="getImagenUrl(itemEdit)" class="thumb-preview">
+                    <input type="file" (change)="onImagenSeleccionada($event)" accept="image/*" class="form-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+                <button class="btn-primary" (click)="guardarEdicion()">💾 Guardar</button>
+            </div>
+        </div>
+    </div>
+
+</div>
