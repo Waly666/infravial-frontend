@@ -1,1 +1,411 @@
-<p>sen-vert-form works!</p>
+<div class="wizard-container">
+
+    <!-- Header -->
+    <div class="wizard-header">
+        <div class="wizard-title">
+            <button class="btn-back" (click)="router.navigate(['/sen-verticales'])">←</button>
+            <span>{{ modoEdicion ? 'Editar Señal Vertical' : 'Nueva Señal Vertical' }}</span>
+        </div>
+        <div class="jornada-info" *ngIf="jornada">
+            🟢 {{ jornada.municipio }} — {{ jornada.supervisor }}
+        </div>
+    </div>
+
+    <!-- Progreso -->
+    <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progreso"></div>
+    </div>
+
+    <!-- Pasos -->
+    <div class="steps-nav">
+        <div *ngFor="let paso of [1,2,3,4,5]"
+            class="step-dot"
+            [class.active]="pasoActual === paso"
+            [class.done]="pasoActual > paso"
+            (click)="irAPaso(paso)">
+            {{ paso }}
+        </div>
+    </div>
+
+    <div class="error-msg" *ngIf="error">⚠️ {{ error }}</div>
+
+    <!-- ══ PASO 1 — DATOS GENERALES ══ -->
+    <div class="step-content" *ngIf="pasoActual === 1">
+        <h2 class="step-title">📋 Datos Generales</h2>
+        <p class="step-desc">Selecciona el tramo de vía donde se encuentra la señal</p>
+
+        <div class="form-group form-full">
+            <label class="label-required">Tramo de Vía *</label>
+            
+            <!-- Tramo seleccionado -->
+            <div class="tramo-seleccionado" *ngIf="tramoSeleccionado">
+                <div class="tramo-info">
+                    <strong>{{ tramoSeleccionado.via || tramoSeleccionado.nomenclatura?.completa }}</strong>
+                    <span>{{ tramoSeleccionado.nomenclatura?.completa }} — {{ tramoSeleccionado.municipio }}</span>
+                </div>
+                <button class="btn-cambiar" (click)="tramoSeleccionado = null; form.idViaTramo = ''; busquedaTramo = ''">
+                    Cambiar
+                </button>
+            </div>
+
+            <!-- Buscador -->
+            <div *ngIf="!tramoSeleccionado" style="position:relative">
+                <input
+                    type="text"
+                    [(ngModel)]="busquedaTramo"
+                    (focus)="mostrarTramos = true"
+                    (input)="mostrarTramos = true"
+                    placeholder="🔍 Buscar tramo por nombre o dirección..."
+                    class="form-input">
+
+                <div class="tramos-dropdown" *ngIf="mostrarTramos && tramosFiltrados.length > 0">
+                    <div
+                        class="tramo-item"
+                        *ngFor="let t of tramosFiltrados"
+                        (click)="seleccionarTramo(t)">
+                        <strong>{{ t.via || '—' }}</strong>
+                        <span>{{ t.nomenclatura?.completa }} — {{ t.municipio }}</span>
+                    </div>
+                </div>
+
+
+                <div class="tramos-dropdown" *ngIf="mostrarTramos && tramosFiltrados.length === 0">
+                    <div class="tramo-empty">No se encontraron tramos</div>
+                </div>
+            </div>
+            <!-- Nomenclatura del tramo seleccionado -->
+            <div class="tramo-nomenclatura" *ngIf="tramoSeleccionado">
+                <span class="nom-label">📍 Dirección</span>
+                <span class="nom-valor">{{ tramoSeleccionado.nomenclatura?.completa || tramoSeleccionado.via || '—' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PASO 2 — GEORREFERENCIACIÓN ══ -->
+    <div class="step-content" *ngIf="pasoActual === 2">
+        <h2 class="step-title">📍 Georreferenciación</h2>
+        <p class="step-desc">Fija el punto exacto donde está ubicada la señal</p>
+
+        <div class="coords-display">
+            <div class="coord-item" [class.set]="form.lat">
+                <span class="coord-label">📍 Coordenadas</span>
+                <span class="coord-val" *ngIf="form.lat">
+                    {{ form.lat | number:'1.6-6' }}, {{ form.lng | number:'1.6-6' }}
+                </span>
+                <span class="coord-val empty" *ngIf="!form.lat">Sin definir</span>
+            </div>
+        </div>
+
+        <button class="btn-mapa" (click)="abrirMapa()">
+            🗺️ {{ form.lat ? 'Ver / Editar en Mapa' : 'Fijar en Mapa' }}
+        </button>
+
+        <p class="map-hint">👆 Click en el mapa para fijar la ubicación de la señal</p>
+
+        <!-- Modal mapa -->
+        <div class="mapa-overlay" *ngIf="mapaAbierto">
+            <div class="mapa-modal">
+                <div class="mapa-header">
+                    <span>🗺️ {{ jornada?.municipio }} — Click para fijar la señal</span>
+                    <button class="mapa-close" (click)="cerrarMapa()">✕ Cerrar</button>
+                </div>
+                <div id="leaflet-map-sv" class="leaflet-map"></div>
+                <div class="mapa-footer">
+                    <div class="mapa-instruccion">
+                        <span *ngIf="!form.lat">👆 Click para fijar la ubicación</span>
+                        <span *ngIf="form.lat">✅ {{ form.lat | number:'1.6-6' }}, {{ form.lng | number:'1.6-6' }}</span>
+                    </div>
+                    <button class="btn-primary" (click)="cerrarMapa()" *ngIf="form.lat">
+                        ✅ Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PASO 3 — SEÑAL ══ -->
+    <div class="step-content" *ngIf="pasoActual === 3">
+        <h2 class="step-title">🚧 Identificación de la Señal</h2>
+
+        <!-- Señal seleccionada -->
+        <div class="sen-seleccionada" *ngIf="senVertSeleccionada">
+            <img [src]="getImgUrl(senVertSeleccionada)" [alt]="senVertSeleccionada.codSenVert" class="sen-img">
+            <div class="sen-info">
+                <strong>{{ senVertSeleccionada.codSenVert }}</strong>
+                <span>{{ senVertSeleccionada.descSenVert }}</span>
+                <span class="sen-class">{{ senVertSeleccionada.clasificacion }}</span>
+            </div>
+            <button class="btn-cambiar" (click)="mostrarGaleria = true">Cambiar</button>
+        </div>
+
+        <button class="btn-galeria" *ngIf="!senVertSeleccionada" (click)="mostrarGaleria = true">
+            🔍 Seleccionar Señal por Imagen
+        </button>
+
+        <!-- Modal galería -->
+        <div class="galeria-overlay" *ngIf="mostrarGaleria" (click)="mostrarGaleria = false">
+            <div class="galeria-modal" (click)="$event.stopPropagation()">
+                <div class="galeria-header">
+                    <span>🚧 Selecciona la Señal Vertical</span>
+                    <button class="modal-close" (click)="mostrarGaleria = false">✕</button>
+                </div>
+                <div class="galeria-search">
+                    <input type="text" [(ngModel)]="filtroCatalogo"
+                        placeholder="🔍 Buscar por código o descripción..."
+                        class="search-input">
+                </div>
+                <div class="galeria-grid">
+                    <div class="galeria-item"
+                        *ngFor="let s of catalogoFiltrado"
+                        (click)="seleccionarSenVert(s)"
+                        [class.selected]="senVertSeleccionada?._id === s._id">
+                        <img [src]="getImgUrl(s)" [alt]="s.codSenVert" class="galeria-img">
+                        <div class="galeria-info">
+                            <strong>{{ s.codSenVert }}</strong>
+                            <span>{{ s.descSenVert }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"><span>Características</span></div>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Estado Señal</label>
+                <select [(ngModel)]="form.estado" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estados" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Material Placa</label>
+                <select [(ngModel)]="form.matPlaca" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let m of matPlacas" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ubicación Espacial</label>
+                <select [(ngModel)]="form.ubicEspacial" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let u of ubicEspaciales" [value]="u">{{ u }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Obstrucción</label>
+                <select [(ngModel)]="form.obstruccion" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let o of obstrucciones" [value]="o">{{ o }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Forma</label>
+                <select [(ngModel)]="form.forma" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let f of formas" [value]="f">{{ f }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Orientación</label>
+                <select [(ngModel)]="form.orientacion" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let o of orientaciones" [value]="o">{{ o }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Reflectividad Óptima</label>
+                <select [(ngModel)]="form.reflecOptima" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let r of reflecOpts" [value]="r">{{ r }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Dimensiones Tablero</label>
+                <input type="text" [(ngModel)]="form.dimTablero" class="form-input" placeholder="Ej: 60x60 cm">
+            </div>
+            <div class="form-group">
+                <label>Ubicación en Perfil Vial</label>
+                <select [(ngModel)]="form.ubicPerVial" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let u of ubicPerViales" [value]="u">{{ u }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Banderas</label>
+                <select [(ngModel)]="form.banderas" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let b of banderasOpts" [value]="b">{{ b }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha Instalación</label>
+                <input type="date" [(ngModel)]="form.fechaInst" class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Leyendas</label>
+                <input type="text" [(ngModel)]="form.leyendas" class="form-input" placeholder="Texto de la leyenda">
+            </div>
+        </div>
+
+        <div class="section-divider"><span>Ubicación Lateral y Altura</span></div>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Ubicación Lateral (m)</label>
+                <input type="number" [(ngModel)]="form.ubicLateral" class="form-input" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Diagnóstico Ubic. Lateral</label>
+                <select [(ngModel)]="form.diagUbicLat" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let d of diagOpts" [value]="d">{{ d }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Altura (m)</label>
+                <input type="number" [(ngModel)]="form.altura" class="form-input" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Diagnóstico Altura</label>
+                <select [(ngModel)]="form.diagAltura" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let d of diagOpts" [value]="d">{{ d }}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-divider"><span>Fase y Acción</span></div>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Fase</label>
+                <select [(ngModel)]="form.fase" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let f of fases" [value]="f">{{ f }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Acción</label>
+                <select [(ngModel)]="form.accion" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let a of acciones" [value]="a">{{ a }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PASO 4 — DIAGNÓSTICO ══ -->
+    <div class="step-content" *ngIf="pasoActual === 4">
+        <h2 class="step-title">🔧 Diagnóstico de Fallas y Soporte</h2>
+
+        <div class="section-divider"><span>Fallas</span></div>
+        <div class="form-grid-2">
+            <div class="form-group" *ngFor="let i of [1,2,3,4,5]">
+                <label>Falla {{ i }}</label>
+                <select [(ngModel)]="form['falla' + i]" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let f of fallasOpts" [value]="f">{{ f }}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-divider"><span>Soporte</span></div>
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Tipo Soporte</label>
+                <select [(ngModel)]="form.tipoSoporte" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let t of tiposSoporte" [value]="t">{{ t }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sistema Soporte</label>
+                <select [(ngModel)]="form.sistemaSoporte" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let s of sistemasSop" [value]="s">{{ s }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Estado Soporte</label>
+                <select [(ngModel)]="form.estadoSoporte" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadosSop" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Estado Anclaje</label>
+                <select [(ngModel)]="form.estadoAnclaje" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadosSop" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PASO 5 — OBSERVACIONES Y FOTO ══ -->
+    <div class="step-content" *ngIf="pasoActual === 5">
+        <h2 class="step-title">📝 Observaciones y Foto</h2>
+
+        <div class="section-divider"><span>Observaciones</span></div>
+        <div class="form-group" *ngFor="let i of [1,2,3,4,5]">
+            <label>Observación {{ i }}</label>
+            <select [(ngModel)]="form['obs' + i]" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let o of obsSV" [value]="o._id">{{ o.observacion }}</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Notas</label>
+            <textarea [(ngModel)]="form.notas" class="form-textarea" rows="3" placeholder="Notas adicionales..."></textarea>
+        </div>
+
+        <div class="section-divider"><span>Foto de la Señal</span></div>
+
+        <!-- Preview foto existente -->
+        <div class="foto-unica" *ngIf="form.urlFotoSenVert && !fotoPreview">
+            <img [src]="apiUrl + form.urlFotoSenVert" alt="Foto señal" class="foto-preview-img">
+            <button class="btn-cambiar-foto" (click)="fotoInput.click()">🔄 Reemplazar foto</button>
+        </div>
+
+        <!-- Preview foto nueva -->
+        <div class="foto-unica" *ngIf="fotoPreview">
+            <img [src]="fotoPreview" alt="Nueva foto" class="foto-preview-img">
+            <div class="foto-actions">
+                <button class="btn-cambiar-foto" (click)="fotoInput.click()">🔄 Cambiar</button>
+                <button class="btn-remove-foto" (click)="removeFoto()">✕ Quitar</button>
+            </div>
+        </div>
+
+        <!-- Sin foto -->
+        <div class="foto-drop" *ngIf="!form.urlFotoSenVert && !fotoPreview" (click)="fotoInput.click()">
+            📷 Click para agregar foto de la señal
+            <span>JPG, PNG — Máx 5MB</span>
+        </div>
+
+        <input #fotoInput type="file" accept="image/*" style="display:none" (change)="onFotoSeleccionada($event)">
+    </div>
+
+    <!-- Botones navegación -->
+    <div class="wizard-actions">
+        <button class="btn-secondary" (click)="anterior()" [disabled]="pasoActual === 1">
+            ← Anterior
+        </button>
+        <span class="paso-indicator">Paso {{ pasoActual }} de {{ totalPasos }}</span>
+        <div style="display:flex; gap:0.75rem;">
+            <button *ngIf="pasoActual < totalPasos" class="btn-primary" (click)="siguiente()">
+                Siguiente →
+            </button>
+            <button *ngIf="pasoActual === totalPasos" class="btn-success" (click)="guardar(true)" [disabled]="loading">
+                ➕ Guardar y agregar otra
+            </button>
+            <button *ngIf="pasoActual === totalPasos" class="btn-primary" (click)="guardar(false)" [disabled]="loading">
+                <span *ngIf="!loading">💾 Guardar</span>
+                <span *ngIf="loading">Guardando...</span>
+            </button>
+        </div>
+    </div>
+
+</div>
