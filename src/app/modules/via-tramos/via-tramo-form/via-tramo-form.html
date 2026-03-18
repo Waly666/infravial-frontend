@@ -1,1 +1,837 @@
-<p>via-tramo-form works!</p>
+<div class="wizard-container">
+
+    <!-- Header -->
+    <div class="wizard-header">
+        <div class="wizard-title">
+            <button class="btn-back" (click)="router.navigate(['/via-tramos'])">←</button>
+            <span>{{ modoEdicion ? 'Editar Tramo' : 'Nuevo Tramo Vial' }}</span>
+        </div>
+        <div class="jornada-info" *ngIf="jornada">
+            🟢 {{ jornada.municipio }} — {{ jornada.supervisor }}
+        </div>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progreso"></div>
+    </div>
+
+    <!-- Pasos navegación -->
+    <div class="steps-nav">
+        <div
+            *ngFor="let paso of [1,2,3,4,5,6,7,8,9,10]"
+            class="step-dot"
+            [class.active]="pasoActual === paso"
+            [class.done]="pasoActual > paso"
+            (click)="irAPaso(paso)">
+            {{ paso }}
+        </div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-msg" *ngIf="error">⚠️ {{ error }}</div>
+
+    <!-- ══════════════════════════════════════════════
+         PASO 1 — DATOS JORNADA
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 1">
+        <h2 class="step-title">📋 Datos de la Jornada</h2>
+        <p class="step-desc">Datos heredados automáticamente de la jornada activa</p>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Municipio</label>
+                <input type="text" [(ngModel)]="form.municipio" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+                <label>Departamento</label>
+                <input type="text" [(ngModel)]="form.departamento" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+                <label>Supervisor</label>
+                <input type="text" [(ngModel)]="form.supervisor" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+                <label>Localidad</label>
+                <input type="text" [(ngModel)]="form.localidad" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+                <label>Tipo Localidad</label>
+                <select [(ngModel)]="form.tipoLocalidad" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let t of tiposLocalidad" [value]="t">{{ t }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha Inventario</label>
+                <input type="text" [(ngModel)]="form.fechaInv" class="form-input" readonly>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PASO 2 — GEORREFERENCIACIÓN
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 2">
+    <h2 class="step-title">📍 Georreferenciación</h2>
+    <p class="step-desc">Haz click en el mapa para marcar el inicio (🟢) y fin (🔴) del tramo</p>
+
+        <!-- Coordenadas actuales -->
+        <div class="coords-display">
+            <div class="coord-item" [class.set]="form.lat_inicio">
+                <span class="coord-label">🟢 Inicio</span>
+                <span class="coord-val" *ngIf="form.lat_inicio">
+                    {{ form.lat_inicio | number:'1.6-6' }}, {{ form.lng_inicio | number:'1.6-6' }}
+                </span>
+                <span class="coord-val empty" *ngIf="!form.lat_inicio">Sin definir</span>
+            </div>
+            <div class="coord-item" [class.set]="form.lat_fin">
+                <span class="coord-label">🔴 Fin</span>
+                <span class="coord-val" *ngIf="form.lat_fin">
+                    {{ form.lat_fin | number:'1.6-6' }}, {{ form.lng_fin | number:'1.6-6' }}
+                </span>
+                <span class="coord-val empty" *ngIf="!form.lat_fin">Sin definir</span>
+            </div>
+            <div class="coord-item" [class.set]="form.longitud_m">
+                <span class="coord-label">📏 Longitud</span>
+                <span class="coord-val" *ngIf="form.longitud_m">{{ form.longitud_m }} m</span>
+                <span class="coord-val empty" *ngIf="!form.longitud_m">Sin calcular</span>
+            </div>
+            <div class="coord-item">
+                <span class="coord-label">🏔️ Altitud</span>
+                <input type="number" [(ngModel)]="form.altitud" class="coord-input" placeholder="msnm">
+            </div>
+        </div>
+
+        <!-- Botón abrir mapa -->
+        <button class="btn-mapa" (click)="abrirMapa()">
+            🗺️ {{ form.lat_inicio && form.lat_fin ? 'Ver / Editar en Mapa' : 'Abrir Mapa' }}
+        </button>
+
+        <p class="map-hint">
+            • Primer click → marca el inicio del tramo<br>
+            • Segundo click → marca el fin y calcula la distancia<br>
+            • Tercer click → reinicia la selección
+        </p>
+
+        <!-- MODAL MAPA -->
+        <div class="mapa-overlay" *ngIf="mapaAbierto">
+            <div class="mapa-modal">
+                <div class="mapa-header">
+                    <span>🗺️ {{ jornada?.municipio }} — Selecciona el tramo</span>
+                    <button class="mapa-close" (click)="cerrarMapa()">✕ Cerrar</button>
+                </div>
+                <div id="leaflet-map" class="leaflet-map"></div>
+                <div class="mapa-footer">
+                    <div class="mapa-instruccion">
+                        <span *ngIf="!form.lat_inicio">👆 Click para marcar el <strong>inicio</strong> del tramo</span>
+                        <span *ngIf="form.lat_inicio && !form.lat_fin">👆 Click para marcar el <strong>fin</strong> del tramo</span>
+                        <span *ngIf="form.lat_inicio && form.lat_fin">✅ Tramo marcado — {{ form.longitud_m }}m — Click para reiniciar</span>
+                    </div>
+                    <button class="btn-primary" (click)="cerrarMapa()" *ngIf="form.lat_inicio && form.lat_fin">
+                        ✅ Confirmar Coordenadas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PASO 3 — IDENTIFICACIÓN
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 3">
+    <h2 class="step-title">🛣️ Identificación de la Vía</h2>
+
+    <!-- Nomenclatura PRIMERO -->
+    <div class="section-divider"><span>Nomenclatura</span></div>
+
+    <div class="nomenclatura-builder">
+        <select [(ngModel)]="form.nomenclatura.tipoVia1" class="nom-select" (change)="onTipoVia1Change()">
+            <option value="">Tipo</option>
+            <option *ngFor="let t of tiposNomenclatura" [value]="t">{{ t }}</option>
+        </select>
+        <input type="text" [(ngModel)]="form.nomenclatura.numero1" class="nom-input" placeholder="Núm" (input)="actualizarNomenclatura()">
+
+        <select [(ngModel)]="form.nomenclatura.conector" class="nom-select-sm" (change)="actualizarNomenclatura()">
+            <option value="">—</option>
+            <option *ngFor="let c of conectores" [value]="c">{{ c }}</option>
+        </select>
+
+        <select [(ngModel)]="form.nomenclatura.tipoVia2" class="nom-select" (change)="actualizarNomenclatura()">
+            <option value="">Tipo</option>
+            <option *ngFor="let t of tiposNomenclatura" [value]="t">{{ t }}</option>
+        </select>
+        <input type="text" [(ngModel)]="form.nomenclatura.numero2" class="nom-input" placeholder="Núm" (input)="actualizarNomenclatura()">
+
+        <select [(ngModel)]="form.nomenclatura.conector2" class="nom-select-sm" (change)="actualizarNomenclatura()">
+            <option value="">—</option>
+            <option value="y">y</option>
+        </select>
+
+        <select [(ngModel)]="form.nomenclatura.tipoVia3" class="nom-select" (change)="actualizarNomenclatura()">
+            <option value="">Tipo</option>
+            <option *ngFor="let t of tiposNomenclatura" [value]="t">{{ t }}</option>
+        </select>
+        <input type="text" [(ngModel)]="form.nomenclatura.numero3" class="nom-input" placeholder="Núm" (input)="actualizarNomenclatura()">
+    </div>
+
+    <div class="nomenclatura-result" *ngIf="form.nomenclatura.completa">
+        📍 <strong>{{ form.nomenclatura.completa }}</strong>
+    </div>
+
+    <div class="section-divider"><span>Datos de la Vía</span></div>
+
+    <div class="form-grid-2">
+        <div class="form-group">
+            <label class="label-required">Nombre de la Vía *</label>
+            <input type="text" [(ngModel)]="form.via" class="form-input input-required" placeholder="Ej: Calle 10">
+        </div>
+        <div class="form-group">
+            <label>Tipo Ubicación</label>
+            <select [(ngModel)]="form.tipoUbic" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let t of tiposUbic" [value]="t">{{ t }}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Calzada *</label>
+            <select [(ngModel)]="form.calzada" class="form-select" (change)="onCalzadaChange()">
+                <option value="">Seleccionar...</option>
+                <option value="Una">Una</option>
+                <option value="Dos">Dos</option>
+                <option value="Tres">Tres</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Tipo Vía *</label>
+            <select [(ngModel)]="form.tipoVia" class="form-select" (change)="calcularClasificacion()">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let t of tiposVia" [value]="t">{{ t }}</option>
+            </select>
+        </div>
+        <div class="form-group form-full">
+            <label>Clase Vía</label>
+            <select [(ngModel)]="form.claseVia" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let c of clasesVia" [value]="c">{{ c }}</option>
+            </select>
+        </div>
+    </div>
+</div>
+    <!-- ══════════════════════════════════════════════
+         PASO 4 — DATOS GENERALES
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 4">
+        <h2 class="step-title">📊 Datos Generales</h2>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Entidad Vía</label>
+                <input type="text" [(ngModel)]="form.entidadVia" class="form-input" placeholder="Entidad propietaria">
+            </div>
+            <div class="form-group">
+                <label>Responsable Vía</label>
+                <input type="text" [(ngModel)]="form.respVia" class="form-input" placeholder="Responsable">
+            </div>
+            <div class="form-group">
+                <label>ZAT</label>
+                <select [(ngModel)]="form.zat" class="form-select">
+                    <option value="">Seleccionar ZAT...</option>
+                    <option *ngFor="let z of zats" [value]="z._id">{{ z.zatNumero }} - {{ z.zatLetra }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Comuna</label>
+                <select [(ngModel)]="form.comuna" class="form-select">
+                    <option value="">Seleccionar Comuna...</option>
+                    <option *ngFor="let c of comunas" [value]="c._id">{{ c.comunaNumero }} - {{ c.comunaLetra }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Barrio</label>
+                <select [(ngModel)]="form.barrio" class="form-select">
+                    <option value="">Seleccionar Barrio...</option>
+                    <option *ngFor="let b of barrios" [value]="b._id">{{ b.nombre }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ubicación Ciclo Ruta</label>
+                <select [(ngModel)]="form.ubiCicloRuta" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let u of ubiCicloRutas" [value]="u">{{ u }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sentido Cardinal</label>
+                <input type="text" [(ngModel)]="form.sentidoCardinal" class="form-input" placeholder="Ej: Oriente - Occidente">
+            </div>
+            <div class="form-group">
+                <label>Número de Carriles</label>
+                <input type="number" [(ngModel)]="form.carriles" class="form-input" placeholder="Ej: 2" min="1">
+            </div>
+            <div class="form-group form-full">
+                <label>Esquema Perfil</label>
+                <select [(ngModel)]="form.perfilEsquema" class="form-select" (change)="onEsquemaChange()">
+                    <option value="">Seleccionar esquema...</option>
+                    <option *ngFor="let e of esquemasFiltrados" [value]="e._id">
+                        {{ e.codEsquema }} — {{ e.calzada }}
+                    </option>
+                </select>
+
+                <!-- Preview imagen esquema -->
+                <div class="esquema-preview" *ngIf="esquemaSeleccionado">
+                    <img [src]="getEsquemaImgUrl()" [alt]="esquemaSeleccionado.codEsquema" class="esquema-img">
+                    <div class="esquema-info">
+                        <strong>{{ esquemaSeleccionado.codEsquema }}</strong>
+                        <span>{{ esquemaSeleccionado.calzada }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PASO 5 — MEDIDAS PERFIL
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 5">
+    <h2 class="step-title">📐 Medidas del Perfil Vial</h2>
+    <p class="step-desc">Todas las medidas en metros (ej: 1.79)</p>
+
+    <div class="calzada-indicator" *ngIf="form.calzada">
+        Calzada: <strong>{{ form.calzada }}</strong>
+    </div>
+    <div class="alert-warning" *ngIf="!form.calzada">
+        ⚠️ Selecciona el tipo de calzada en el paso 3 primero
+    </div>
+
+  <!-- ══ CALZADA UNA ══ -->
+<div *ngIf="form.calzada === 'Una'">
+
+    <div class="medidas-grid-2">
+
+        <!-- Columna Izquierda -->
+        <div class="medidas-col">
+            <div class="col-header izq">↖️ Lado Izquierdo</div>
+            <div class="medida-row">
+                <label>Andén Izquierdo</label>
+                <input type="number" [(ngModel)]="form.andenIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Zona Verde Izquierdo</label>
+                <input type="number" [(ngModel)]="form.zonaVerdeIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Antejardín Izquierdo</label>
+                <input type="number" [(ngModel)]="form.anteJardinIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Sardinel Izquierdo</label>
+                <input type="number" [(ngModel)]="form.sardIzqCalzA" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Ciclo-Ruta Izquierda</label>
+                <input type="number" [(ngModel)]="form.cicloRutaIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Área de Servicio Izquierda</label>
+                <input type="number" [(ngModel)]="form.areaServIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Bahía de Estacionamiento Izq</label>
+                <input type="number" [(ngModel)]="form.bahiaEstIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Cuneta Izquierda</label>
+                <input type="number" [(ngModel)]="form.cunetaIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Berma Izquierda</label>
+                <input type="number" [(ngModel)]="form.bermaIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row calzada-highlight">
+                <label>Ancho Calzada</label>
+                <input type="number" [(ngModel)]="form.calzadaIzq" class="medida-input highlight" step="0.01" (input)="calcularAncho()">
+            </div>
+        </div>
+
+        <!-- Columna Derecha -->
+        <div class="medidas-col">
+            <div class="col-header der">↗️ Lado Derecho</div>
+            <div class="medida-row">
+                <label>Andén Derecho</label>
+                <input type="number" [(ngModel)]="form.andenDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Zona Verde Derecha</label>
+                <input type="number" [(ngModel)]="form.zonaVerdeDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Antejardín Derecho</label>
+                <input type="number" [(ngModel)]="form.anteJardinDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Sardinel Derecho</label>
+                <input type="number" [(ngModel)]="form.sardDerCalzA" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Ciclo-Ruta Derecha</label>
+                <input type="number" [(ngModel)]="form.cicloRutaDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Área de Servicio Derecha</label>
+                <input type="number" [(ngModel)]="form.areaServDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Bahía de Estacionamiento Der</label>
+                <input type="number" [(ngModel)]="form.bahiaEstDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Cuneta Derecha</label>
+                <input type="number" [(ngModel)]="form.cunetaDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+            <div class="medida-row">
+                <label>Berma Derecha</label>
+                <input type="number" [(ngModel)]="form.bermaDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+            </div>
+        </div>
+    </div>
+
+    <!-- Ancho Total del Perfil -->
+    <div class="ancho-total">
+        <span>Ancho Total del Perfil:</span>
+        <strong>{{ form.anchoTotalPerfil }} m</strong>
+    </div>
+
+</div>
+
+    <!-- ══ CALZADA DOS ══ -->
+    <div *ngIf="form.calzada === 'Dos' || form.calzada === 'Tres'">
+
+            <div class="medidas-grid-3">
+
+                <!-- Columna Izquierda -->
+                <div class="medidas-col">
+                    <div class="col-header izq">↖️ Calzada Izquierda</div>
+                    <div class="medida-row">
+                        <label>Antejardín Izq</label>
+                        <input type="number" [(ngModel)]="form.anteJardinIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Andén Izq</label>
+                        <input type="number" [(ngModel)]="form.andenIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Zona Verde Izq</label>
+                        <input type="number" [(ngModel)]="form.zonaVerdeIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Área de Servicio Izq</label>
+                        <input type="number" [(ngModel)]="form.areaServIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Sardinel Izq 1° Calzada</label>
+                        <input type="number" [(ngModel)]="form.sardIzqCalzA" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Ciclo-Ruta Izq</label>
+                        <input type="number" [(ngModel)]="form.cicloRutaIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Bahía de Estac. Izq</label>
+                        <input type="number" [(ngModel)]="form.bahiaEstIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Sardinel Der 1° Calzada</label>
+                        <input type="number" [(ngModel)]="form.sardDerCalzA" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Cuneta Izquierda</label>
+                        <input type="number" [(ngModel)]="form.cunetaIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Berma Izquierda</label>
+                        <input type="number" [(ngModel)]="form.bermaIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row calzada-highlight">
+                        <label>Ancho Calzada Izq</label>
+                        <input type="number" [(ngModel)]="form.calzadaIzq" class="medida-input highlight" step="0.01" (input)="calcularAncho()">
+                    </div>
+                </div>
+
+                <!-- Separador -->
+                <div class="medidas-col separador-col">
+                    <div class="col-header sep">↕️ Separador</div>
+                    <div class="medida-row">
+                        <label>Ancho Separador</label>
+                        <input type="number" [(ngModel)]="form.separadorPeatonal" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Zona Verde Izq Sep</label>
+                        <input type="number" [(ngModel)]="form.separadorZonaVerdeIzq" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Ciclo Ruta Sep</label>
+                        <input type="number" [(ngModel)]="form.separadorCicloRuta" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Zona Verde Der Sep</label>
+                        <input type="number" [(ngModel)]="form.separadorZonaVerdeDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+
+                    <!-- Pendiente -->
+                    <div class="col-header sep" style="margin-top:1rem">📐 Pendiente</div>
+                    <div class="medida-row">
+                        <label>Base (m)</label>
+                        <input type="number" [(ngModel)]="pendienteBase" class="medida-input" step="0.01" (input)="calcularPendiente()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Altura (m)</label>
+                        <input type="number" [(ngModel)]="pendienteAltura" class="medida-input" step="0.01" (input)="calcularPendiente()">
+                    </div>
+                    <div class="pendiente-result">
+                        <span>Pendiente:</span>
+                        <strong>{{ form.pendiente || 0 }} %</strong>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha -->
+                <div class="medidas-col">
+                    <div class="col-header der">↗️ Calzada Derecha</div>
+                    <div class="medida-row">
+                        <label>Antejardín Der</label>
+                        <input type="number" [(ngModel)]="form.anteJardinDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Andén Der</label>
+                        <input type="number" [(ngModel)]="form.andenDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Zona Verde Der</label>
+                        <input type="number" [(ngModel)]="form.zonaVerdeDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Área de Servicio Der</label>
+                        <input type="number" [(ngModel)]="form.areaServDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Sardinel Izq 2° Calzada</label>
+                        <input type="number" [(ngModel)]="form.sardIzqCalzB" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Ciclo-Ruta Der</label>
+                        <input type="number" [(ngModel)]="form.cicloRutaDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Bahía de Estac. Der</label>
+                        <input type="number" [(ngModel)]="form.bahiaEstDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Sardinel Der 2° Calzada</label>
+                        <input type="number" [(ngModel)]="form.sardDerCalzB" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Cuneta Derecha</label>
+                        <input type="number" [(ngModel)]="form.cunetaDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row">
+                        <label>Berma Derecha</label>
+                        <input type="number" [(ngModel)]="form.bermaDer" class="medida-input" step="0.01" (input)="calcularAncho()">
+                    </div>
+                    <div class="medida-row calzada-highlight">
+                        <label>Ancho Calzada Der</label>
+                        <input type="number" [(ngModel)]="form.calzadaDer" class="medida-input highlight" step="0.01" (input)="calcularAncho()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ancho Total -->
+            <div class="ancho-total">
+                <span>Ancho Total del Perfil:</span>
+                <strong>{{ form.anchoTotalPerfil }} m</strong>
+            </div>
+        </div>
+
+        <!-- Longitud Tramo -->
+        <div class="longitud-tramo">
+            <span>Longitud Tramo Vía:</span>
+            <strong>{{ form.longitud_m || 0 }} m</strong>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PASO 6 — CLASIFICACIÓN
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 6">
+        <h2 class="step-title">🏷️ Clasificación Vial</h2>
+
+        <div class="clasificacion-auto">
+            <div class="clas-item">
+                <span class="clas-label">Clasificación Nacional</span>
+                <span class="clas-value">{{ form.clasNacional || '—' }}</span>
+            </div>
+            <div class="clas-item">
+                <span class="clas-label">Clasificación por Prelación</span>
+                <span class="clas-value">{{ form.clasPrelacion || '—' }}</span>
+            </div>
+            <p class="clas-hint">* Calculados automáticamente según ancho total ({{ form.anchoTotalPerfil }}m) y tipo de vía ({{ form.tipoVia || 'no definido' }})</p>
+        </div>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Clasificación por Competencia</label>
+                <select [(ngModel)]="form.clasPorCompetencia" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let c of clasPorCompetencias" [value]="c">{{ c }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Clasificación por Funcionalidad</label>
+                <select [(ngModel)]="form.clasPorFuncionalidad" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let c of clasPorFuncionalidades" [value]="c">{{ c }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Clasificación PBOT Municipal</label>
+                <input type="text" [(ngModel)]="form.clasMunPbot" class="form-input" placeholder="Según PBOT">
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PASO 7 — CARACTERÍSTICAS
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 7">
+        <h2 class="step-title">🔍 Características de la Vía</h2>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Diseño Geométrico</label>
+                <select [(ngModel)]="form.disenioGeometrico" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option value="Curva">Curva</option>
+                    <option value="Recta">Recta</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Inclinación</label>
+                <select [(ngModel)]="form.inclinacionVia" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option value="Plano">Plano</option>
+                    <option value="Pendiente">Pendiente</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sentido Vial</label>
+                <select [(ngModel)]="form.sentidoVial" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option value="Unidireccional">Unidireccional</option>
+                    <option value="Bidireccional">Bidireccional</option>
+                    <option value="Sin_Definir">Sin Definir</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Capa de Rodadura</label>
+                <select [(ngModel)]="form.capaRodadura" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let c of capaRodaduras" [value]="c">{{ c }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Estado Vía</label>
+                <select [(ngModel)]="form.estadoVia" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadosVia" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Condiciones Vía</label>
+                <select [(ngModel)]="form.condicionesVia" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let c of condicionesVia" [value]="c">{{ c }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Visibilidad</label>
+                <select [(ngModel)]="form.visibilidad" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Disminuida">Disminuida</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="form.visibilidad === 'Disminuida'">
+                <label>Causa Visibilidad Disminuida</label>
+                <select [(ngModel)]="form.visDisminuida" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let v of visDisminuidas" [value]="v">{{ v }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Iluminación Artificial</label>
+                <select [(ngModel)]="form.iluminacArtificial" class="form-select">
+                    <option [ngValue]="false">No</option>
+                    <option [ngValue]="true">Sí</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="form.iluminacArtificial">
+                <label>Estado Iluminación</label>
+                <select [(ngModel)]="form.estadoIluminacion" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option value="Bueno">Bueno</option>
+                    <option value="Malo">Malo</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Estado Vía 2 - selección múltiple -->
+        <div class="section-divider"><span>Estado Vía (detalle)</span></div>
+        <div class="checkbox-grid">
+            <div
+                *ngFor="let e of estadosVia2"
+                class="checkbox-item"
+                [class.selected]="isEstadoVia2Selected(e)"
+                (click)="toggleEstadoVia2(e)">
+                {{ e }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PASO 8 — DAÑOS
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 8">
+        <h2 class="step-title">🔧 Daños en Capa de Rodadura</h2>
+        <p class="step-desc">Registra hasta 5 daños identificados</p>
+
+        <div class="dano-card" *ngFor="let dano of form.danos; let i = index">
+            <div class="dano-header">Daño {{ i + 1 }}</div>
+            <div class="form-grid-3">
+                <div class="form-group">
+                    <label>Daño</label>
+                    <select [(ngModel)]="dano.dano" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let d of danosOpciones" [value]="d">{{ d }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Clase Daño</label>
+                    <select [(ngModel)]="dano.clase" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let c of clasesDano" [value]="c">{{ c }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo Daño</label>
+                    <select [(ngModel)]="dano.tipo" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let t of tiposDano" [value]="t">{{ t }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PASO 9 — ENCUESTA VIAL
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 9">
+        <h2 class="step-title">📝 Encuesta de Seguridad Vial</h2>
+        <p class="step-desc">Responde las 26 preguntas de la encuesta</p>
+
+        <div class="encuesta-list">
+            <div class="encuesta-item" *ngFor="let p of preguntas; let i = index">
+            <div class="encuesta-num">{{ p.consecutivo }}</div>
+            <div class="encuesta-pregunta">{{ p.enunciado }}</div>
+            <div class="encuesta-opciones">
+                <label class="radio-opt" *ngFor="let op of ['Si','No','N/A']">
+                    <input
+                        type="radio"
+                        [name]="'preg_' + i"
+                        [value]="op"
+                        [(ngModel)]="form.respuestas[i].valorRta">
+                    {{ op }}
+                </label>
+            </div>
+        </div>
+        </div>
+    </div>
+
+   <!-- ══════════════════════════════════════════════
+        PASO 10 — FOTOS Y OBSERVACIONES
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 10">
+        <h2 class="step-title">📷 Fotos y Observaciones</h2>
+
+        <!-- Observaciones apiladas -->
+        <div class="section-divider"><span>Observaciones</span></div>
+
+        <div class="form-group" *ngFor="let i of [1,2,3,4,5,6]">
+            <label>Observación {{ i }}</label>
+            <select [(ngModel)]="form['obs' + i]" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let o of obsVias" [value]="o._id">{{ o.txtObs }}</option>
+            </select>
+        </div>
+
+        <!-- Notas -->
+        <div class="section-divider"><span>Notas Adicionales</span></div>
+        <div class="form-group">
+            <label>Notas</label>
+            <textarea [(ngModel)]="form.notas" class="form-textarea" rows="4" placeholder="Notas adicionales..."></textarea>
+        </div>
+
+        <!-- Fotos -->
+        <div class="section-divider"><span>Fotos</span></div>
+<div class="fotos-uploader">
+    <div class="foto-drop" (click)="fotoInput.click()">
+        📷 Click para agregar fotos
+        <span>Formatos: JPG, PNG — Máx 5MB por foto</span>
+    </div>
+    <input #fotoInput type="file" accept="image/*" multiple style="display:none" (change)="onFotosSeleccionadas($event)">
+
+    <!-- Fotos ya guardadas -->
+    <div class="fotos-preview" *ngIf="form.fotos?.length > 0">
+            <div class="foto-item" *ngFor="let url of form.fotos">
+                <img [src]="apiUrl + url" alt="Foto">
+                <div class="foto-info">
+                    <span>Foto guardada</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fotos nuevas pendientes de guardar -->
+        <div class="fotos-preview" *ngIf="fotosPreview.length > 0">
+            <div class="foto-item" *ngFor="let f of fotosPreview; let i = index">
+                <img [src]="f.url" [alt]="f.nombre">
+                <div class="foto-info">
+                    <span>{{ f.nombre }}</span>
+                    <button class="foto-remove" (click)="removeFoto(i)">✕</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- ══ BOTONES NAVEGACIÓN ══ -->
+    <div class="wizard-actions">
+        <button class="btn-secondary" (click)="anterior()" [disabled]="pasoActual === 1">
+            ← Anterior
+        </button>
+        <span class="paso-indicator">Paso {{ pasoActual }} de {{ totalPasos }}</span>
+        <button
+            *ngIf="pasoActual < totalPasos"
+            class="btn-primary"
+            (click)="siguiente()">
+            Siguiente →
+        </button>
+        <button
+            *ngIf="pasoActual === totalPasos"
+            class="btn-success"
+            (click)="guardar()"
+            [disabled]="loading">
+            <span *ngIf="!loading">💾 Guardar Tramo</span>
+            <span *ngIf="loading">Guardando...</span>
+        </button>
+    </div>
+
+</div>

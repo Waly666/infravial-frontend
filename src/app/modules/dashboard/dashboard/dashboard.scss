@@ -191,6 +191,7 @@
 .content {
     padding: 1.5rem;
     flex: 1;
+    overflow-y: auto;      // ← agregar
 }
 
 // ── STATS ─────────────────────────────────────────

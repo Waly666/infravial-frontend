@@ -1,1 +1,96 @@
-<p>via-tramo-lista works!</p>
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Vía Tramos</h1>
+            <p class="page-sub">Inventario de tramos viales</p>
+        </div>
+        <div style="display:flex; gap:0.75rem; align-items:center;">
+            <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+            <button class="btn-primary" (click)="nuevo()" [disabled]="!jornada">
+                ➕ Nuevo Tramo
+            </button>
+        </div>
+    </div>
+
+    <!-- Alerta jornada -->
+    <div class="alert-warning" *ngIf="!jornada">
+        ⚠️ No hay jornada activa. Debe existir una jornada en proceso para registrar tramos.
+    </div>
+    <div class="alert-success" *ngIf="jornada">
+        🟢 Jornada activa: <strong>{{ jornada.municipio }}</strong> —
+        Supervisor: {{ jornada.supervisor }}
+    </div>
+
+    <!-- Buscador -->
+    <div class="search-bar">
+        <input
+            type="text"
+            [(ngModel)]="busqueda"
+            placeholder="🔍 Buscar por vía, municipio o nomenclatura..."
+            class="search-input"
+        >
+        <span class="total-badge">{{ tramosFiltrados.length }} registros</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <p>Cargando tramos...</p>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-card" *ngIf="!loading">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Vía</th>
+                    <th>Nomenclatura</th>
+                    <th>Municipio</th>
+                    <th>Calzada</th>
+                    <th>Tipo Vía</th>
+                    <th>Estado</th>
+                    <th>Longitud</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let t of tramosFiltrados">
+                    <td><strong>{{ t.via || '—' }}</strong></td>
+                    <td class="td-muted">{{ t.nomenclatura?.completa || '—' }}</td>
+                    <td>{{ t.municipio || '—' }}</td>
+                    <td>
+                        <span class="badge badge-calzada">{{ t.calzada || '—' }}</span>
+                    </td>
+                    <td>{{ t.tipoVia || '—' }}</td>
+                    <td>
+                        <span class="badge"
+                            [ngClass]="{
+                                'badge-bueno':   t.estadoVia === 'Bueno',
+                                'badge-regular': t.estadoVia === 'Regular',
+                                'badge-malo':    t.estadoVia === 'Malo'
+                            }">
+                            {{ t.estadoVia || '—' }}
+                        </span>
+                    </td>
+                    <td class="td-muted">{{ t.longitud_m ? (t.longitud_m + ' m') : '—' }}</td>
+                    <td class="td-muted">{{ t.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn-edit-sm" (click)="editar(t._id)" title="Editar">✏️</button>
+                            <button
+                                class="btn-danger-sm"
+                                *ngIf="isAdmin() || isSupervisor()"
+                                (click)="eliminar(t._id, t.via)"
+                                title="Eliminar">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="tramosFiltrados.length === 0">
+                    <td colspan="9" class="empty-state">No hay tramos registrados</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
