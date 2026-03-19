@@ -94,6 +94,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./modules/cajas-inspeccion/caja-insp-form/caja-insp-form').then(m => m.CajaInspFormComponent)
             },
             {
+                path: 'cajas-inspeccion/editar/:id',
+                loadComponent: () => import('./modules/cajas-inspeccion/caja-insp-form/caja-insp-form').then(m => m.CajaInspFormComponent)
+            },
+            {
                 path: 'encuesta-vial/:idTramo',
                 loadComponent: () => import('./modules/encuesta-vial/encuesta-form/encuesta-form').then(m => m.EncuestaFormComponent)
             },
