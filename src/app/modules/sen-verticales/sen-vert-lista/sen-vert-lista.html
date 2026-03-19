@@ -1,4 +1,4 @@
-<div class="page-container">
+﻿<div class="page-container">
 
     <div class="page-header">
         <div>
@@ -38,16 +38,15 @@
                     <th>Vía Tramo</th>
                     <th>Estado</th>
                     <th>Soporte</th>
+                    <th>Fase</th>
                     <th>Acción</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let r of registrosFiltrados">
-                    <td>
-                        <span class="badge-codigo">{{ r.codSe || '—' }}</span>
-                    </td>
-                    <td class="td-muted">{{ r.idViaTramo?.via || r.idViaTramo?.nomenclatura?.completa || '—' }}</td>
+                    <td><span class="badge-codigo">{{ r.codSe || "—" }}</span></td>
+                    <td>{{ r.idViaTramo?.nomenclatura?.completa || r.idViaTramo?.via || "—" }}</td>
                     <td>
                         <span class="badge"
                             [ngClass]="{
@@ -55,11 +54,12 @@
                                 'badge-regular': r.estado === 'Regular',
                                 'badge-malo':    r.estado === 'Malo'
                             }">
-                            {{ r.estado || '—' }}
+                            {{ r.estado || "—" }}
                         </span>
                     </td>
-                    <td class="td-muted">{{ r.tipoSoporte || '—' }}</td>
-                    <td class="td-muted">{{ r.accion || '—' }}</td>
+                    <td class="td-muted">{{ r.tipoSoporte || "—" }}</td>
+                    <td class="td-muted">{{ r.fase || "—" }}</td>
+                    <td class="td-muted">{{ r.accion || "—" }}</td>
                     <td>
                         <div class="actions-cell">
                             <button class="btn-edit-sm" (click)="editar(r._id)">✏️</button>
@@ -70,7 +70,7 @@
                     </td>
                 </tr>
                 <tr *ngIf="registrosFiltrados.length === 0">
-                    <td colspan="6" class="empty-state">No hay señales verticales registradas</td>
+                    <td colspan="7" class="empty-state">No hay señales verticales registradas</td>
                 </tr>
             </tbody>
         </table>
