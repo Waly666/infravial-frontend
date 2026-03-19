@@ -1,1 +1,572 @@
-<p>semaforo-form works!</p>
+﻿<div class="wizard-container">
+
+    <div class="wizard-header">
+        <div class="wizard-title">
+            <button class="btn-back" (click)="router.navigate(['/semaforos'])">←</button>
+            <span>{{ modoEdicion ? "Editar Semáforo" : "Nuevo Semáforo" }}</span>
+        </div>
+        <div class="jornada-info" *ngIf="jornada">
+            🟢 {{ jornada.municipio }} — {{ jornada.supervisor }}
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progreso"></div>
+    </div>
+
+    <div class="steps-nav">
+        <div *ngFor="let paso of [1,2,3,4,5,6]"
+            class="step-dot"
+            [class.active]="pasoActual === paso"
+            [class.done]="pasoActual > paso"
+            (click)="irAPaso(paso)">
+            {{ paso }}
+        </div>
+    </div>
+
+    <div class="error-msg" *ngIf="error">⚠️ {{ error }}</div>
+
+    <!-- PASO 1 - DATOS GENERALES -->
+    <div class="step-content" *ngIf="pasoActual === 1">
+        <h2 class="step-title">📋 Datos Generales</h2>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Municipio</label>
+                <input type="text" [(ngModel)]="form.municipio" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+                <label>Supervisor</label>
+                <input type="text" [(ngModel)]="form.supervisor" class="form-input" readonly>
+            </div>
+
+            <!-- Tramo -->
+            <div class="form-group form-full">
+                <label class="label-required">Tramo de Vía *</label>
+                <div class="tramo-seleccionado" *ngIf="tramoSeleccionado">
+                    <div class="tramo-info">
+                        <strong>{{ tramoSeleccionado.via || tramoSeleccionado.nomenclatura?.completa }}</strong>
+                        <span>{{ tramoSeleccionado.nomenclatura?.completa }}</span>
+                    </div>
+                    <button class="btn-cambiar" (click)="tramoSeleccionado = null; form.idViaTramo = null; busquedaTramo = ''">Cambiar</button>
+                </div>
+                <div *ngIf="!tramoSeleccionado" style="position:relative">
+                    <input type="text" [(ngModel)]="busquedaTramo"
+                        (focus)="mostrarTramos = true"
+                        (input)="mostrarTramos = true"
+                        placeholder="🔍 Buscar tramo..."
+                        class="form-input">
+                    <div class="tramos-dropdown" *ngIf="mostrarTramos && tramosFiltrados.length > 0">
+                        <div class="tramo-item" *ngFor="let t of tramosFiltrados" (click)="seleccionarTramo(t)">
+                            <strong>{{ t.via || "—" }}</strong>
+                            <span>{{ t.nomenclatura?.completa }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tramo-nomenclatura form-full" *ngIf="tramoSeleccionado">
+                <span class="nom-label">📍 Dirección</span>
+                <span class="nom-valor">{{ tramoSeleccionado.nomenclatura?.completa || tramoSeleccionado.via }}</span>
+            </div>
+
+            <!-- Control Semafórico -->
+            <div class="form-group form-full">
+                <label>Control Semafórico</label>
+                <div class="tramo-seleccionado" *ngIf="controlSeleccionado">
+                    <div class="tramo-info">
+                        <strong>Control #{{ controlSeleccionado.numExterno || "—" }}</strong>
+                        <span>{{ controlSeleccionado.idViaTramo?.via || controlSeleccionado.idViaTramo?.nomenclatura?.completa || "—" }} — {{ controlSeleccionado.tipoControlador }}</span>
+                    </div>
+                    <button class="btn-cambiar" (click)="controlSeleccionado = null; form.idControSem = null; busquedaControl = ''">Cambiar</button>
+                </div>
+                <div *ngIf="!controlSeleccionado" style="position:relative">
+                    <input type="text" [(ngModel)]="busquedaControl"
+                        (focus)="mostrarControles = true"
+                        (input)="mostrarControles = true"
+                        placeholder="🔍 Buscar control semafórico..."
+                        class="form-input">
+                    <div class="tramos-dropdown" *ngIf="mostrarControles && controlesFiltrados.length > 0">
+                        <div class="tramo-item" *ngFor="let c of controlesFiltrados" (click)="seleccionarControl(c)">
+                            <strong>Control #{{ c.numExterno || "—" }} — {{ c.tipoControlador || "—" }}</strong>
+                            <span>{{ c.idViaTramo?.via || c.idViaTramo?.nomenclatura?.completa || "—" }}</span>
+                        </div>
+                    </div>
+                    <div class="tramos-dropdown" *ngIf="mostrarControles && controlesFiltrados.length === 0">
+                        <div class="tramo-empty">No hay controles registrados</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Número Externo</label>
+                <input type="number" [(ngModel)]="form.numExterno" class="form-input" placeholder="Identificador">
+            </div>
+            <div class="form-group">
+                <label>Control Ref.</label>
+                <input type="text" [(ngModel)]="form.controlRef" class="form-input" placeholder="Referencia">
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 2 - GEORREFERENCIACIÓN -->
+    <div class="step-content" *ngIf="pasoActual === 2">
+        <h2 class="step-title">📍 Georreferenciación</h2>
+        <p class="step-desc">Fija la ubicación del semáforo</p>
+
+        <div class="coords-display">
+            <div class="coord-item" [class.set]="form.lat">
+                <span class="coord-label">📍 Coordenadas</span>
+                <span class="coord-val" *ngIf="form.lat">{{ form.lat | number:"1.6-6" }}, {{ form.lng | number:"1.6-6" }}</span>
+                <span class="coord-val empty" *ngIf="!form.lat">Sin definir</span>
+            </div>
+        </div>
+        <button class="btn-mapa" (click)="abrirMapa()">
+            🗺️ {{ form.lat ? "Ver / Editar en Mapa" : "Fijar en Mapa" }}
+        </button>
+
+        <div class="mapa-overlay" *ngIf="mapaAbierto">
+            <div class="mapa-modal">
+                <div class="mapa-header">
+                    <span>🗺️ Click para fijar el semáforo</span>
+                    <button class="mapa-close" (click)="cerrarMapa()">✕ Cerrar</button>
+                </div>
+                <div id="leaflet-map-sem" class="leaflet-map"></div>
+                <div class="mapa-footer">
+                    <div class="mapa-instruccion">
+                        <span *ngIf="!form.lat">👆 Click para fijar</span>
+                        <span *ngIf="form.lat">✅ {{ form.lat | number:"1.6-6" }}, {{ form.lng | number:"1.6-6" }}</span>
+                    </div>
+                    <button class="btn-primary" (click)="cerrarMapa()" *ngIf="form.lat">✅ Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 3 - DATOS SEMÁFORO -->
+    <div class="step-content" *ngIf="pasoActual === 3">
+        <h2 class="step-title">🚦 Datos del Semáforo</h2>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>IP/Radio</label>
+                <input type="text" [(ngModel)]="form.ipRadio" class="form-input" placeholder="IP o Radio">
+            </div>
+            <div class="form-group">
+                <label>Sitio</label>
+                <input type="text" [(ngModel)]="form.sitio" class="form-input" placeholder="Sitio">
+            </div>
+            <div class="form-group">
+                <label>Semáforo Funciona</label>
+                <select [(ngModel)]="form.semaforoFunciona" class="form-select">
+                    <option [ngValue]="true">Sí</option>
+                    <option [ngValue]="false">No</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Clase Semáforo</label>
+                <select [(ngModel)]="form.claseSem" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let c of clasesSem" [value]="c">{{ c }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Número de Caras</label>
+                <select [(ngModel)]="form.numCaras" class="form-select" (change)="onNumCarasChange()">
+                    <option *ngFor="let n of numCarasOpts" [ngValue]="n">{{ n }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Obstrucción</label>
+                <select [(ngModel)]="form.obstruccion" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let o of obstrucciones" [value]="o">{{ o }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Visibilidad Óptima</label>
+                <select [(ngModel)]="form.visibilidadOptima" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let v of visibilidades" [value]="v">{{ v }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Estado General Pintura</label>
+                <select [(ngModel)]="form.estadoGenPint" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Implementación</label>
+                <select [(ngModel)]="form.implementacion" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let i of implementaciones" [value]="i">{{ i }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fase</label>
+                <select [(ngModel)]="form.fase" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let f of fases" [value]="f">{{ f }}</option>
+                </select>
+            </div>
+            <div class="form-group form-full">
+                <label>Acción</label>
+                <select [(ngModel)]="form.accion" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let a of acciones" [value]="a">{{ a }}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-divider"><span>Accesorios</span></div>
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Pulsador</label>
+                <select [(ngModel)]="form.pulsador" class="form-select">
+                    <option [ngValue]="false">No</option>
+                    <option [ngValue]="true">Sí</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="form.pulsador">
+                <label>Estado Pulsador</label>
+                <select [(ngModel)]="form.estadoPulsador" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Temporizador</label>
+                <select [(ngModel)]="form.temporizador" class="form-select">
+                    <option [ngValue]="false">No</option>
+                    <option [ngValue]="true">Sí</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="form.temporizador">
+                <label>Estado Temporizador</label>
+                <select [(ngModel)]="form.estadoTemp" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Dispositivo Auditivo</label>
+                <select [(ngModel)]="form.dispositivoAuditivo" class="form-select">
+                    <option [ngValue]="false">No</option>
+                    <option [ngValue]="true">Sí</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="form.dispositivoAuditivo">
+                <label>Estado Dispositivo Auditivo</label>
+                <select [(ngModel)]="form.estadoDispAud" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-divider"><span>Foto Semáforo</span></div>
+        <div class="foto-unica" *ngIf="form.urlFotoSemaforo && !previewSemaforo">
+            <img [src]="apiUrl + form.urlFotoSemaforo" alt="Foto" class="foto-preview-img">
+            <button class="btn-cambiar-foto" (click)="fotoSemInput.click()">🔄 Reemplazar</button>
+        </div>
+        <div class="foto-unica" *ngIf="previewSemaforo">
+            <img [src]="previewSemaforo" alt="Preview" class="foto-preview-img">
+            <button class="btn-cambiar-foto" (click)="fotoSemInput.click()">🔄 Cambiar</button>
+        </div>
+        <div class="foto-drop" *ngIf="!form.urlFotoSemaforo && !previewSemaforo" (click)="fotoSemInput.click()">
+            📷 Foto del semáforo <span>JPG, PNG — Máx 5MB</span>
+        </div>
+        <input #fotoSemInput type="file" accept="image/*" style="display:none" (change)="onFoto($event, 'Semaforo')">
+    </div>
+
+    <!-- PASO 4 - CARAS -->
+    <div class="step-content" *ngIf="pasoActual === 4">
+        <h2 class="step-title">👁️ Caras del Semáforo</h2>
+        <p class="step-desc">{{ form.numCaras }} cara(s) configurada(s)</p>
+
+        <div class="cara-panel" *ngFor="let cara of form.caras; let i = index">
+            <div class="cara-header">Cara {{ i + 1 }}</div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>Tipo Módulo</label>
+                    <select [(ngModel)]="cara.tipoModulo" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let t of tiposModulo" [value]="t">{{ t }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Diámetro Lente</label>
+                    <select [(ngModel)]="cara.diametroLente" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let d of diametros" [value]="d">{{ d }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>N° Módulos</label>
+                    <select [(ngModel)]="cara.numeroModulos" class="form-select">
+                        <option [ngValue]="null">Seleccionar...</option>
+                        <option *ngFor="let n of numModOpts" [ngValue]="n">{{ n }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>N° Vísceras</label>
+                    <select [(ngModel)]="cara.numeroVisceras" class="form-select">
+                        <option [ngValue]="null">Seleccionar...</option>
+                        <option *ngFor="let n of numModOpts" [ngValue]="n">{{ n }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Despliegue</label>
+                    <select [(ngModel)]="cara.despliegue" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let d of despliegues" [value]="d">{{ d }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado Cara</label>
+                    <select [(ngModel)]="cara.estadoCara" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Colores</label>
+                    <select [(ngModel)]="cara.colores" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let c of coloresOpts" [value]="c">{{ c }}</option>
+                    </select>
+                </div>
+                <div class="form-group form-full">
+                    <label>Daños Cara {{ i + 1 }}</label>
+                    <div class="checkbox-grid">
+                        <div *ngFor="let d of danosCaraOpts"
+                            class="checkbox-item"
+                            [class.selected]="cara.danos?.includes(d)"
+                            (click)="toggleDanoCara(cara, d)">
+                            {{ d }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Flecha Direccional</label>
+                    <select [(ngModel)]="cara.flechaDir" class="form-select">
+                        <option [ngValue]="false">No</option>
+                        <option [ngValue]="true">Sí</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Placa Contraste</label>
+                    <select [(ngModel)]="cara.placaContraste" class="form-select">
+                        <option [ngValue]="false">No</option>
+                        <option [ngValue]="true">Sí</option>
+                    </select>
+                </div>
+                <div class="form-group" *ngIf="cara.placaContraste">
+                    <label>Estado Placa Contraste</label>
+                    <select [(ngModel)]="cara.estadoPlacaCont" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                    </select>
+                </div>
+                <div class="form-group form-full">
+                    <label>Observación Cara</label>
+                    <input type="text" [(ngModel)]="cara.obs" class="form-input" placeholder="Observación">
+                </div>
+            </div>
+            <div class="section-divider"><span>Estado Módulos y Vísceras</span></div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>Estado Módulo 1</label>
+                    <select [(ngModel)]="cara.estadoMod1" class="form-select">
+                        <option value="">N/A</option>
+                        <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado Víscera 1</label>
+                    <select [(ngModel)]="cara.estadoViscera1" class="form-select">
+                        <option value="">N/A</option>
+                        <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado Módulo 2</label>
+                    <select [(ngModel)]="cara.estadoMod2" class="form-select">
+                        <option value="">N/A</option>
+                        <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado Víscera 2</label>
+                    <select [(ngModel)]="cara.estadoViscera2" class="form-select">
+                        <option value="">N/A</option>
+                        <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado Módulo 3</label>
+                    <select [(ngModel)]="cara.estadoMod3" class="form-select">
+                        <option value="">N/A</option>
+                        <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado Víscera 3</label>
+                    <select [(ngModel)]="cara.estadoViscera3" class="form-select">
+                        <option value="">N/A</option>
+                        <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                    </select>
+                </div>
+            <div class="form-group">
+                <label>Estado Módulo 4</label>
+                <select [(ngModel)]="cara.estadoMod4" class="form-select">
+                    <option value="">N/A</option>
+                    <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Estado Víscera 4</label>
+                <select [(ngModel)]="cara.estadoViscera4" class="form-select">
+                    <option value="">N/A</option>
+                    <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+        </div>
+            <div class="form-group form-full">
+                <label>Foto Cara {{ i + 1 }}</label>
+                <div class="foto-unica" *ngIf="cara.urlFoto || previewsCaras[i]">
+                    <img [src]="previewsCaras[i] || (apiUrl + cara.urlFoto)" class="foto-preview-img">
+                    <button class="btn-cambiar-foto" (click)="triggerFotoCara(i)">🔄 Cambiar</button>
+                </div>
+                <div class="foto-drop" *ngIf="!cara.urlFoto && !previewsCaras[i]" (click)="triggerFotoCara(i)">
+                    📷 Foto cara {{ i + 1 }} <span>JPG, PNG</span>
+                </div>
+                <input type="file" accept="image/*" style="display:none"
+                    [id]="'fotoCara_' + i"
+                    (change)="onFotoCara($event, i)">
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+    <!-- PASO 5 - SOPORTE -->
+    <div class="step-content" *ngIf="pasoActual === 5">
+        <h2 class="step-title">🔧 Soporte</h2>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Tipo Soporte</label>
+                <select [(ngModel)]="form.tipoSoporte" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let t of tiposSoporte" [value]="t">{{ t }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Estado Soporte</label>
+                <select [(ngModel)]="form.estadoSoporte" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Pintura Soporte</label>
+                <select [(ngModel)]="form.pinturaSoporte" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sistema Soporte</label>
+                <select [(ngModel)]="form.sistemaSoporte" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let s of sistemasSop" [value]="s">{{ s }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Estado Anclaje</label>
+                <select [(ngModel)]="form.estadoAnclaje" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadoOpts" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-divider"><span>Fotos Soporte y Accesorios</span></div>
+        <div class="fotos-grid">
+            <div class="foto-slot">
+                <div class="foto-slot-label">Soporte</div>
+                <div class="foto-unica" *ngIf="previewSoporte || form.urlFotoSoporte">
+                    <img [src]="previewSoporte || (apiUrl + form.urlFotoSoporte)" class="foto-preview-img">
+                    <button class="btn-cambiar-foto" (click)="fotoSopInput.click()">🔄</button>
+                </div>
+                <div class="foto-drop" *ngIf="!previewSoporte && !form.urlFotoSoporte" (click)="fotoSopInput.click()">📷<span>Soporte</span></div>
+                <input #fotoSopInput type="file" accept="image/*" style="display:none" (change)="onFoto($event, 'Soporte')">
+            </div>
+            <div class="foto-slot">
+                <div class="foto-slot-label">Anclaje</div>
+                <div class="foto-unica" *ngIf="previewAnclaje || form.urlFotoAnclaje">
+                    <img [src]="previewAnclaje || (apiUrl + form.urlFotoAnclaje)" class="foto-preview-img">
+                    <button class="btn-cambiar-foto" (click)="fotoAncInput.click()">🔄</button>
+                </div>
+                <div class="foto-drop" *ngIf="!previewAnclaje && !form.urlFotoAnclaje" (click)="fotoAncInput.click()">📷<span>Anclaje</span></div>
+                <input #fotoAncInput type="file" accept="image/*" style="display:none" (change)="onFoto($event, 'Anclaje')">
+            </div>
+            <div class="foto-slot" *ngIf="form.pulsador">
+                <div class="foto-slot-label">Pulsador</div>
+                <div class="foto-unica" *ngIf="previewPulsador || form.urlFotoPulsador">
+                    <img [src]="previewPulsador || (apiUrl + form.urlFotoPulsador)" class="foto-preview-img">
+                    <button class="btn-cambiar-foto" (click)="fotoPulInput.click()">🔄</button>
+                </div>
+                <div class="foto-drop" *ngIf="!previewPulsador && !form.urlFotoPulsador" (click)="fotoPulInput.click()">📷<span>Pulsador</span></div>
+                <input #fotoPulInput type="file" accept="image/*" style="display:none" (change)="onFoto($event, 'Pulsador')">
+            </div>
+            <div class="foto-slot" *ngIf="form.dispositivoAuditivo">
+                <div class="foto-slot-label">Disp. Auditivo</div>
+                <div class="foto-unica" *ngIf="previewDispAud || form.urlFotoDispAud">
+                    <img [src]="previewDispAud || (apiUrl + form.urlFotoDispAud)" class="foto-preview-img">
+                    <button class="btn-cambiar-foto" (click)="fotoAudInput.click()">🔄</button>
+                </div>
+                <div class="foto-drop" *ngIf="!previewDispAud && !form.urlFotoDispAud" (click)="fotoAudInput.click()">📷<span>Auditivo</span></div>
+                <input #fotoAudInput type="file" accept="image/*" style="display:none" (change)="onFoto($event, 'DispAud')">
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 6 - OBSERVACIONES -->
+    <div class="step-content" *ngIf="pasoActual === 6">
+        <h2 class="step-title">📝 Observaciones</h2>
+
+        <div class="form-group" *ngFor="let i of [1,2,3,4,5,6]">
+            <label>Observación {{ i }}</label>
+            <select [(ngModel)]="form['obs' + i]" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let o of obsSem" [value]="o._id">{{ o.textoObs }}</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Notas Generales</label>
+            <textarea [(ngModel)]="form.notasGenerales" class="form-textarea" rows="4" placeholder="Notas adicionales..."></textarea>
+        </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="wizard-actions">
+        <button class="btn-secondary" (click)="anterior()" [disabled]="pasoActual === 1">← Anterior</button>
+        <span class="paso-indicator">Paso {{ pasoActual }} de {{ totalPasos }}</span>
+        <div style="display:flex; gap:0.75rem;">
+            <button *ngIf="pasoActual < totalPasos" class="btn-primary" (click)="siguiente()">Siguiente →</button>
+            <button *ngIf="pasoActual === totalPasos" class="btn-success" (click)="guardar(true)" [disabled]="loading">➕ Guardar y agregar otro</button>
+            <button *ngIf="pasoActual === totalPasos" class="btn-primary" (click)="guardar(false)" [disabled]="loading">
+                <span *ngIf="!loading">💾 Guardar</span>
+                <span *ngIf="loading">Guardando...</span>
+            </button>
+        </div>
+    </div>
+
+</div>
