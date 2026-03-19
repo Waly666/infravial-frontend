@@ -1,25 +1,25 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { SenVertService } from '../../../core/services/sen-vert.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { JornadaService } from '../../../core/services/jornada.service';
+﻿import { Component, OnInit } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
+import { SenVertService } from "../../../core/services/sen-vert.service";
+import { AuthService } from "../../../core/services/auth.service";
+import { JornadaService } from "../../../core/services/jornada.service";
 
 @Component({
-    selector: 'app-sen-vert-lista',
+    selector: "app-sen-vert-lista",
     standalone: true,
     imports: [CommonModule, FormsModule],
-    templateUrl: './sen-vert-lista.html',
-    styleUrl: './sen-vert-lista.scss'
+    templateUrl: "./sen-vert-lista.html",
+    styleUrl: "./sen-vert-lista.scss"
 })
 export class SenVertListaComponent implements OnInit {
 
-    registros: any[]  = [];
+    registros: any[]   = [];
     loading:   boolean = true;
-    error:     string  = '';
+    error:     string  = "";
     jornada:   any     = null;
-    busqueda:  string  = '';
+    busqueda:  string  = "";
 
     constructor(
         private senVertService: SenVertService,
@@ -48,7 +48,7 @@ export class SenVertListaComponent implements OnInit {
                 this.loading   = false;
             },
             error: () => {
-                this.error   = 'Error al cargar señales verticales';
+                this.error   = "Error al cargar señales verticales";
                 this.loading = false;
             }
         });
@@ -58,22 +58,22 @@ export class SenVertListaComponent implements OnInit {
         if (!this.busqueda) return this.registros;
         const q = this.busqueda.toLowerCase();
         return this.registros.filter(r =>
-            r.codSenVert?.toLowerCase().includes(q) ||
+            r.codSe?.toLowerCase().includes(q) ||
             r.idViaTramo?.via?.toLowerCase().includes(q) ||
-            r.estadoSen?.toLowerCase().includes(q)
+            r.estado?.toLowerCase().includes(q)
         );
     }
 
-    nuevo()              { this.router.navigate(['/sen-verticales/nuevo']); }
-    editar(id: string)   { this.router.navigate(['/sen-verticales/editar', id]); }
-    isAdmin():   boolean { return this.authService.isAdmin(); }
+    nuevo()            { this.router.navigate(["/sen-verticales/nuevo"]); }
+    editar(id: string) { this.router.navigate(["/sen-verticales/editar", id]); }
+    isAdmin():      boolean { return this.authService.isAdmin(); }
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
 
     eliminar(id: string) {
-        if (!confirm('¿Eliminar esta señal vertical?')) return;
+        if (!confirm("Eliminar esta señal vertical?")) return;
         this.senVertService.delete(id).subscribe({
             next: () => this.loadRegistros(),
-            error: (err) => alert(err.error?.message || 'Error al eliminar')
+            error: (err) => alert(err.error?.message || "Error al eliminar")
         });
     }
 }

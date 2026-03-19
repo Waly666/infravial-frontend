@@ -1,1 +1,299 @@
-<p>sen-hor-form works!</p>
+﻿<div class="wizard-container">
+
+    <div class="wizard-header">
+        <div class="wizard-title">
+            <button class="btn-back" (click)="router.navigate(['/sen-horizontales'])">←</button>
+            <span>{{ modoEdicion ? "Editar Señal Horizontal" : "Nueva Señal Horizontal" }}</span>
+        </div>
+        <div class="jornada-info" *ngIf="jornada">
+            🟢 {{ jornada.municipio }} — {{ jornada.supervisor }}
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progreso"></div>
+    </div>
+
+    <div class="steps-nav">
+        <div *ngFor="let paso of [1,2,3,4]"
+            class="step-dot"
+            [class.active]="pasoActual === paso"
+            [class.done]="pasoActual > paso"
+            (click)="irAPaso(paso)">
+            {{ paso }}
+        </div>
+    </div>
+
+    <div class="error-msg" *ngIf="error">⚠️ {{ error }}</div>
+
+    <!-- PASO 1 - DATOS GENERALES -->
+    <div class="step-content" *ngIf="pasoActual === 1">
+        <h2 class="step-title">📋 Datos Generales</h2>
+        <p class="step-desc">Selecciona el tramo de vía donde está la demarcación</p>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Municipio</label>
+                <input type="text" [(ngModel)]="form.municipio" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+                <label>Supervisor</label>
+                <input type="text" [(ngModel)]="form.supervisor" class="form-input" readonly>
+            </div>
+            <div class="form-group form-full">
+                <label class="label-required">Tramo de Vía *</label>
+                <div class="tramo-seleccionado" *ngIf="tramoSeleccionado">
+                    <div class="tramo-info">
+                        <strong>{{ tramoSeleccionado.via || tramoSeleccionado.nomenclatura?.completa }}</strong>
+                        <span>{{ tramoSeleccionado.nomenclatura?.completa }}</span>
+                    </div>
+                    <button class="btn-cambiar" (click)="tramoSeleccionado = null; form.idViaTramo = ''; busquedaTramo = ''">Cambiar</button>
+                </div>
+                <div *ngIf="!tramoSeleccionado" style="position:relative">
+                    <input type="text" [(ngModel)]="busquedaTramo"
+                        (focus)="mostrarTramos = true"
+                        (input)="mostrarTramos = true"
+                        placeholder="🔍 Buscar tramo..."
+                        class="form-input">
+                    <div class="tramos-dropdown" *ngIf="mostrarTramos && tramosFiltrados.length > 0">
+                        <div class="tramo-item" *ngFor="let t of tramosFiltrados" (click)="seleccionarTramo(t)">
+                            <strong>{{ t.via || "—" }}</strong>
+                            <span>{{ t.nomenclatura?.completa }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tramo-nomenclatura" *ngIf="tramoSeleccionado">
+            <span class="nom-label">📍 Dirección</span>
+            <span class="nom-valor">{{ tramoSeleccionado.nomenclatura?.completa || tramoSeleccionado.via }}</span>
+        </div>
+    </div>
+
+    <!-- PASO 2 - GEORREFERENCIACIÓN -->
+    <div class="step-content" *ngIf="pasoActual === 2">
+        <h2 class="step-title">📍 Georreferenciación</h2>
+        <p class="step-desc">Fija el punto exacto de la demarcación</p>
+
+        <div class="coords-display">
+            <div class="coord-item" [class.set]="form.lat">
+                <span class="coord-label">📍 Coordenadas</span>
+                <span class="coord-val" *ngIf="form.lat">{{ form.lat | number:"1.6-6" }}, {{ form.lng | number:"1.6-6" }}</span>
+                <span class="coord-val empty" *ngIf="!form.lat">Sin definir</span>
+            </div>
+        </div>
+
+        <button class="btn-mapa" (click)="abrirMapa()">
+            🗺️ {{ form.lat ? "Ver / Editar en Mapa" : "Fijar en Mapa" }}
+        </button>
+
+        <div class="mapa-overlay" *ngIf="mapaAbierto">
+            <div class="mapa-modal">
+                <div class="mapa-header">
+                    <span>🗺️ {{ jornada?.municipio }} — Click para fijar la demarcación</span>
+                    <button class="mapa-close" (click)="cerrarMapa()">✕ Cerrar</button>
+                </div>
+                <div id="leaflet-map-sh" class="leaflet-map"></div>
+                <div class="mapa-footer">
+                    <div class="mapa-instruccion">
+                        <span *ngIf="!form.lat">👆 Click para fijar la ubicación</span>
+                        <span *ngIf="form.lat">✅ {{ form.lat | number:"1.6-6" }}, {{ form.lng | number:"1.6-6" }}</span>
+                    </div>
+                    <button class="btn-primary" (click)="cerrarMapa()" *ngIf="form.lat">✅ Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 3 - DEMARCACIÓN -->
+    <div class="step-content" *ngIf="pasoActual === 3">
+        <h2 class="step-title">🚦 Demarcación</h2>
+
+        <!-- Demarcación seleccionada -->
+        <div class="sen-seleccionada" *ngIf="demSeleccionada">
+            <img [src]="getImgUrl(demSeleccionada)" [alt]="demSeleccionada.codDem" class="sen-img">
+            <div class="sen-info">
+                <strong>{{ demSeleccionada.codDem }}</strong>
+                <span>{{ demSeleccionada.descripcion }}</span>
+                <span class="sen-class">{{ demSeleccionada.claseDem }}</span>
+            </div>
+            <button class="btn-cambiar" (click)="mostrarGaleria = true">Cambiar</button>
+        </div>
+
+        <button class="btn-galeria" *ngIf="!demSeleccionada" (click)="mostrarGaleria = true">
+            🔍 Seleccionar Demarcación por Imagen
+        </button>
+
+        <!-- Modal galería -->
+        <div class="galeria-overlay" *ngIf="mostrarGaleria" (click)="mostrarGaleria = false">
+            <div class="galeria-modal" (click)="$event.stopPropagation()">
+                <div class="galeria-header">
+                    <span>🚦 Selecciona la Demarcación</span>
+                    <button class="modal-close" (click)="mostrarGaleria = false">✕</button>
+                </div>
+                <div class="galeria-search">
+                    <input type="text" [(ngModel)]="filtroCatalogo" placeholder="🔍 Buscar..." class="search-input">
+                </div>
+                <div class="galeria-grid">
+                    <div class="galeria-item" *ngFor="let d of catalogoFiltrado"
+                        (click)="seleccionarDem(d)"
+                        [class.selected]="demSeleccionada?._id === d._id">
+                        <img [src]="getImgUrl(d)" [alt]="d.codDem" class="galeria-img">
+                        <div class="galeria-info">
+                            <strong>{{ d.codDem }}</strong>
+                            <span>{{ d.descripcion }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"><span>Características</span></div>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Tipo Demarcación</label>
+                <select [(ngModel)]="form.tipoDem" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let t of tiposDem" [value]="t">{{ t }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Estado Demarcación</label>
+                <select [(ngModel)]="form.estadoDem" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let e of estadosDem" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Material</label>
+                <select [(ngModel)]="form.material" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let m of materiales" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tipo Pintura</label>
+                    <select [(ngModel)]="form.tipoPintura" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let t of tiposPintura" [value]="t">{{ t }}</option>
+                    </select>
+            </div>
+            <div class="form-group">
+                <label>Color</label>
+                <input type="text" [(ngModel)]="form.color" class="form-input" placeholder="Color">
+            </div>
+            <div class="form-group">
+                <label>Reflectividad Óptima</label>
+                <select [(ngModel)]="form.reflectOptima" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let r of reflectOpts" [value]="r">{{ r }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Retroreflectividad</label>
+                <input type="text" [(ngModel)]="form.retroreflectividad" class="form-input" placeholder="Valor">
+            </div>
+            <div class="form-group">
+                <label>Ubicación en Tramo</label>
+                <select [(ngModel)]="form.ubicResTramo" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let u of catalogoUbicSH" [value]="u._id">{{ u.ubicacion }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Clase Demarcación Línea</label>
+                <select [(ngModel)]="form.claseDemLinea" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let c of clasesLinea" [value]="c">{{ c }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Clase Demarcación Punto</label>
+                 <select [(ngModel)]="form.claseDemPunto" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let c of clasesPunto" [value]="c">{{ c }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fase</label>
+                <select [(ngModel)]="form.fase" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let f of fases" [value]="f">{{ f }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Acción</label>
+                <select [(ngModel)]="form.accion" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let a of acciones" [value]="a">{{ a }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha Instalación</label>
+                <input type="date" [(ngModel)]="form.fechaInst" class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Fecha Acción</label>
+                <input type="date" [(ngModel)]="form.fechaAccion" class="form-input">
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 4 - OBSERVACIONES Y FOTO -->
+    <div class="step-content" *ngIf="pasoActual === 4">
+        <h2 class="step-title">📝 Observaciones y Foto</h2>
+
+        <div class="section-divider"><span>Observaciones</span></div>
+        <div class="form-group" *ngFor="let i of [1,2,3,4,5,6]">
+            <label>Observación {{ i }}</label>
+            <select [(ngModel)]="form['obs' + i]" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let o of obsSH" [value]="o._id">{{ o.obsSH }}</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Notas</label>
+            <textarea [(ngModel)]="form.notas" class="form-textarea" rows="3" placeholder="Notas adicionales..."></textarea>
+        </div>
+
+        <div class="section-divider"><span>Foto</span></div>
+
+        <div class="foto-unica" *ngIf="form.urlFotoSH && !fotoPreview">
+            <img [src]="apiUrl + form.urlFotoSH" alt="Foto" class="foto-preview-img">
+            <button class="btn-cambiar-foto" (click)="fotoInput.click()">🔄 Reemplazar foto</button>
+        </div>
+
+        <div class="foto-unica" *ngIf="fotoPreview">
+            <img [src]="fotoPreview" alt="Nueva foto" class="foto-preview-img">
+            <div class="foto-actions">
+                <button class="btn-cambiar-foto" (click)="fotoInput.click()">🔄 Cambiar</button>
+                <button class="btn-remove-foto" (click)="removeFoto()">✕ Quitar</button>
+            </div>
+        </div>
+
+        <div class="foto-drop" *ngIf="!form.urlFotoSH && !fotoPreview" (click)="fotoInput.click()">
+            📷 Click para agregar foto
+            <span>JPG, PNG — Máx 5MB</span>
+        </div>
+
+        <input #fotoInput type="file" accept="image/*" style="display:none" (change)="onFotoSeleccionada($event)">
+    </div>
+
+    <!-- Botones -->
+    <div class="wizard-actions">
+        <button class="btn-secondary" (click)="anterior()" [disabled]="pasoActual === 1">← Anterior</button>
+        <span class="paso-indicator">Paso {{ pasoActual }} de {{ totalPasos }}</span>
+        <div style="display:flex; gap:0.75rem;">
+            <button *ngIf="pasoActual < totalPasos" class="btn-primary" (click)="siguiente()">Siguiente →</button>
+            <button *ngIf="pasoActual === totalPasos" class="btn-success" (click)="guardar(true)" [disabled]="loading">➕ Guardar y agregar otra</button>
+            <button *ngIf="pasoActual === totalPasos" class="btn-primary" (click)="guardar(false)" [disabled]="loading">
+                <span *ngIf="!loading">💾 Guardar</span>
+                <span *ngIf="loading">Guardando...</span>
+            </button>
+        </div>
+    </div>
+
+</div>
