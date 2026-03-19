@@ -82,6 +82,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./modules/control-semaforo/control-sem-form/control-sem-form').then(m => m.ControlSemFormComponent)
             },
             {
+                path: 'control-semaforo/editar/:id',
+                loadComponent: () => import('./modules/control-semaforo/control-sem-form/control-sem-form').then(m => m.ControlSemFormComponent)
+            },
+            {
                 path: 'cajas-inspeccion',
                 loadComponent: () => import('./modules/cajas-inspeccion/caja-insp-lista/caja-insp-lista').then(m => m.CajaInspListaComponent)
             },
