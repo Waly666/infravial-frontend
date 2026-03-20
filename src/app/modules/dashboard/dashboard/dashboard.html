@@ -48,6 +48,9 @@
         <div class="topbar">
             <div class="page-title">{{ seccionActiva | titlecase }}</div>
             <div class="topbar-actions">
+                <button class="toggle-modo" (click)="toggleModo()" [title]="modoClaro ? 'Modo Oscuro' : 'Modo Claro'">
+                    {{ modoClaro ? '☀️' : '🌙' }}
+                </button>
                 <span class="jornada-status" *ngIf="jornada">
                     🟢 Jornada activa: {{ jornada.municipio }}
                 </span>

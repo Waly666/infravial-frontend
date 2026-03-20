@@ -1,1 +1,72 @@
-<p>auditoria-lista works!</p>
+﻿<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Auditoría del Sistema</h1>
+            <p class="page-sub">Registro de actividad — últimos 500 eventos</p>
+        </div>
+        <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+    </div>
+
+    <div class="filtros-bar">
+        <input type="text" [(ngModel)]="busqueda"
+            placeholder="🔍 Buscar por cédula, usuario o ruta..."
+            class="search-input">
+
+        <select [(ngModel)]="filtroMetodo" class="filter-select">
+            <option value="">Todos los métodos</option>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+        </select>
+
+        <select [(ngModel)]="filtroUsuario" class="filter-select">
+            <option value="">Todos los usuarios</option>
+            <option *ngFor="let u of usuariosUnicos" [value]="u._id">
+                {{ u.cedula }} — {{ u.nombres }} {{ u.apellidos }}
+            </option>
+        </select>
+
+        <span class="total-badge">{{ registrosFiltrados.length }} registros</span>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div><p>Cargando...</p>
+    </div>
+
+    <div class="table-card" *ngIf="!loading">
+        <table class="data-table">
+            <thead>
+                <tr>
+                     <th>Fecha</th>
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Método</th>
+                    <th>Ruta</th>
+                    <th>Status</th>
+                    <th>Duración</th>
+                    <th>IP</th>>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let r of registrosFiltrados">
+                    <td class="td-fecha">{{ r.fecha | date:"dd/MM/yy HH:mm:ss" }}</td>
+                    <td><span class="badge-codigo">{{ r.user?.user || "—" }}</span></td>
+                    <td class="td-usuario">{{ r.user?.nombres }} {{ r.user?.apellidos }}</td>
+                    <td>
+                        <span class="badge" [ngClass]="getBadgeMetodo(r.metodo)">{{ r.metodo }}</span>
+                    </td>
+                    <td class="td-ruta" [title]="r.ruta">{{ r.ruta }}</td>
+                    <td>
+                        <span class="badge" [ngClass]="getBadgeStatus(r.status)">{{ r.status }}</span>
+                    </td>
+                    <td class="td-muted">{{ r.duracion }}ms</td>
+                    <td class="td-muted">{{ r.ip }}</td>
+                </tr>
+                <tr *ngIf="registrosFiltrados.length === 0">
+                    <td colspan="7" class="empty-state">No hay registros</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

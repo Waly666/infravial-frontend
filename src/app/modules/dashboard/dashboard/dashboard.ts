@@ -19,6 +19,7 @@ export class DashboardComponent implements OnInit {
     jornada: any  = null;
     loading       = true;
     seccionActiva = 'dashboard';
+    modoClaro = false;
 
     menuItems = [
         { id: 'dashboard',        label: 'Dashboard',        icon: '📊', roles: ['admin','supervisor','encuestador','invitado'] },
@@ -45,6 +46,13 @@ export class DashboardComponent implements OnInit {
     ngOnInit() {
         this.usuario = this.authService.getUsuario();
         this.loadData();
+        this.modoClaro = localStorage.getItem('modoClaro') === 'true';
+        document.body.classList.toggle('light-mode', this.modoClaro);
+    }
+    toggleModo() {
+        this.modoClaro = !this.modoClaro;
+        document.body.classList.toggle('light-mode', this.modoClaro);
+        localStorage.setItem('modoClaro', this.modoClaro.toString());
     }
 
     loadData() {
@@ -88,4 +96,5 @@ export class DashboardComponent implements OnInit {
         return `${u.nombres?.charAt(0)}${u.apellidos?.charAt(0)}`.toUpperCase();
     }
 }
+
 

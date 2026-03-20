@@ -11,3 +11,216 @@ html, body {
     background: #050d1a;
     font-family: sans-serif;
 }
+/* ── VARIABLES MODO OSCURO (default) ── */
+:root {
+    --bg-primary:     #070c1a;
+    --bg-card:        rgba(10, 18, 40, 0.85);
+    --bg-input:       rgba(74, 158, 255, 0.05);
+    --border-color:   rgba(74, 158, 255, 0.12);
+    --border-input:   rgba(74, 158, 255, 0.2);
+    --text-primary:   #e8f0ff;
+    --text-secondary: rgba(180, 200, 255, 0.55);
+    --text-muted:     rgba(180, 200, 255, 0.35);
+    --accent:         #4a9eff;
+    --accent-hover:   rgba(74, 158, 255, 0.08);
+    --th-color:       #ffffff;
+    --row-hover:      rgba(74, 158, 255, 0.04);
+}
+
+/* ── VARIABLES MODO CLARO ── */
+body.light-mode {
+    --bg-primary:     #f0f4ff;
+    --bg-card:        #ffffff;
+    --bg-input:       #f5f7ff;
+    --border-color:   #d0d9f0;
+    --border-input:   #b0bfdf;
+    --text-primary:   #1a2540;
+    --text-secondary: #2a3a60;
+    --text-muted:     #4a5a80;
+    --accent:         #2563eb;
+    --accent-hover:   rgba(37, 99, 235, 0.08);
+    --th-color:       #1a2540;
+    --row-hover:      rgba(37, 99, 235, 0.04);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* ── SOLO APLICA EN MODO CLARO ── */
+body.light-mode .table-card { background: var(--bg-card) !important; border-color: var(--border-color) !important; }
+body.light-mode .step-content { background: var(--bg-card) !important; border-color: var(--border-color) !important; }
+body.light-mode .card { background: var(--bg-card) !important; border-color: var(--border-color) !important; }
+body.light-mode .data-table th { color: var(--th-color) !important; background: var(--accent-hover) !important; }
+body.light-mode .data-table td { color: var(--text-primary) !important; border-color: var(--border-color) !important; }
+body.light-mode .data-table tbody tr:hover { background: var(--row-hover) !important; }
+body.light-mode .td-muted { color: var(--text-secondary) !important; }
+body.light-mode .form-input,
+body.light-mode .form-select,
+body.light-mode .form-textarea,
+body.light-mode .search-input,
+body.light-mode .filter-select { background: var(--bg-input) !important; border-color: var(--border-input) !important; color: var(--text-primary) !important; }
+body.light-mode .form-select option { background: var(--bg-card) !important; color: var(--text-primary) !important; }
+body.light-mode .page-title,
+body.light-mode .step-title { color: var(--text-primary) !important; }
+body.light-mode .page-sub,
+body.light-mode .step-desc { color: var(--text-muted) !important; }
+body.light-mode .form-group label { color: var(--text-secondary) !important; }
+body.light-mode .tramos-dropdown { background: var(--bg-card) !important; border-color: var(--border-input) !important; }
+body.light-mode .tramo-item strong { color: var(--text-primary) !important; }
+body.light-mode .tramo-item:hover { background: var(--accent-hover) !important; }
+body.light-mode .sidebar { background: #1e2d5a !important; }
+body.light-mode .main-content { background: var(--bg-primary) !important; }
+body.light-mode .topbar { background: #ffffff !important; border-bottom: 1px solid var(--border-color) !important; }
+body.light-mode .topbar .page-title { color: var(--text-primary) !important; }
+body.light-mode .stat-card { background: #ffffff !important; border-color: var(--border-color) !important; box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important; }
+body.light-mode .stat-value { color: var(--text-primary) !important; }
+body.light-mode .stat-label { color: var(--text-secondary) !important; }
+body.light-mode .welcome-card { background: #ffffff !important; border-color: var(--border-color) !important; }
+body.light-mode .welcome-title { color: var(--text-primary) !important; }
+body.light-mode .recent-card { background: #ffffff !important; border-color: var(--border-color) !important; }
+body.light-mode .wizard-actions { background: var(--bg-primary) !important; border-top-color: var(--border-color) !important; }
+body.light-mode .section-divider { border-color: var(--border-color) !important; }
+body.light-mode .section-divider span { background: var(--bg-card) !important; color: var(--text-secondary) !important; }
+body.light-mode .cara-panel { background: var(--bg-input) !important; border-color: var(--border-input) !important; }
+body.light-mode .foto-drop { background: var(--bg-input) !important; border-color: var(--border-input) !important; color: var(--text-secondary) !important; }
+body.light-mode .checkbox-item { background: var(--bg-input) !important; border-color: var(--border-input) !important; color: var(--text-secondary) !important; }
+body.light-mode .total-badge { background: var(--bg-input) !important; border-color: var(--border-color) !important; color: var(--text-secondary) !important; }
+body.light-mode .galeria-modal { background: var(--bg-card) !important; }
+body.light-mode .galeria-item { background: var(--bg-input) !important; border-color: var(--border-color) !important; }
+body.light-mode .mapa-modal { background: var(--bg-card) !important; }
+body.light-mode .content { background: var(--bg-primary) !important; }
+body.light-mode .welcome-sub {
+    color: #2a3a60 !important;
+}
+
+body.light-mode .recent-title {
+    color: #2a3a60 !important;
+}
+
+body.light-mode .recent-meta {
+    color: #3a4a70 !important;
+}
+
+body.light-mode .stat-label {
+    color: #2a3a60 !important;
+}
+
+body.light-mode .jornada-txt {
+    color: #2a3a60 !important;
+}
+
+body.light-mode .recent-name {
+    color: #1a2540 !important;
+}
+
+body.light-mode .app-layout {
+    background: #f0f4ff !important;
+    color: #1a2540 !important;
+}
+/* ── MODALES JORNADAS ── */
+body.light-mode .modal-overlay,
+body.light-mode .modal-content,
+body.light-mode .modal {
+    background: #ffffff !important;
+    color: #1a2540 !important;
+    border-color: var(--border-color) !important;
+}
+
+body.light-mode .modal-header,
+body.light-mode .modal-title {
+    color: #1a2540 !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+body.light-mode .modal-body label,
+body.light-mode .modal label,
+body.light-mode label {
+    color: #2a3a60 !important;
+}
+
+body.light-mode .section-title,
+body.light-mode .section-header {
+    color: #1a2540 !important;
+}
+
+/* ── CATÁLOGOS ── */
+body.light-mode .catalogo-sidebar,
+body.light-mode .catalogo-panel,
+body.light-mode .catalogo-content {
+    background: #ffffff !important;
+    border-color: var(--border-color) !important;
+    color: #1a2540 !important;
+}
+
+body.light-mode .catalogo-item,
+body.light-mode .cat-item {
+    color: #2a3a60 !important;
+}
+
+body.light-mode .catalogo-item:hover,
+body.light-mode .cat-item:hover,
+body.light-mode .catalogo-item.active,
+body.light-mode .cat-item.active {
+    background: var(--accent-hover) !important;
+    color: var(--accent) !important;
+}
+
+body.light-mode .catalogo-table td,
+body.light-mode .catalogo-table th {
+    color: #1a2540 !important;
+    border-color: var(--border-color) !important;
+}
+
+/* ── INPUTS READONLY ── */
+body.light-mode input[readonly],
+body.light-mode input:disabled {
+    background: #e8edf8 !important;
+    color: #4a5a80 !important;
+}
+
+/* ── PLACEHOLDERS ── */
+body.light-mode input::placeholder,
+body.light-mode textarea::placeholder {
+    color: #8090b0 !important;
+}
+/* ── JORNADA FORM ── */
+body.light-mode .form-card {
+    background: #ffffff !important;
+    border-color: var(--border-color) !important;
+}
+
+body.light-mode .form-section {
+    border-bottom-color: var(--border-color) !important;
+}
+
+body.light-mode .form-group label {
+    color: #2a3a60 !important;
+}
+
+body.light-mode .page-title {
+    color: #1a2540 !important;
+}
+
+body.light-mode .page-sub {
+    color: #4a5a80 !important;
+}
+
+body.light-mode .divipol-results {
+    background: #ffffff !important;
+    border-color: var(--border-input) !important;
+}
+
+body.light-mode .divipol-item strong {
+    color: #1a2540 !important;
+}
+
+body.light-mode .divipol-item span {
+    color: #4a5a80 !important;
+}
+
+body.light-mode .divipol-item:hover {
+    background: var(--accent-hover) !important;
+}
+
+body.light-mode .form-actions {
+    border-top-color: var(--border-color) !important;
+}
