@@ -75,4 +75,7 @@ export class ViaTramoListaComponent implements OnInit {
             error: (err) => alert(err.error?.message || 'Error al eliminar')
         });
     }
+        generarReporte(id: string) {
+        this.router.navigate(['/via-tramos/reporte', id]);
+    }
 }

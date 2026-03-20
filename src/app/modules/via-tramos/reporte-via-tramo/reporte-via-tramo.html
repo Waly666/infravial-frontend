@@ -1,0 +1,544 @@
+﻿<div class="reporte-container" *ngIf="!loading && tramo">
+
+    <!-- BOTONES ACCION -->
+    <div class="reporte-actions no-print">
+        <button class="btn-volver" (click)="volver()">← Volver</button>
+        <button class="btn-imprimir" (click)="imprimir()">🖨️ Imprimir / Descargar PDF</button>
+    </div>
+
+    <!-- ══ PÁGINA 1 - ENCABEZADO ══ -->
+    <div class="pagina">
+
+        <!-- HEADER -->
+        <div class="reporte-header">
+            <div class="header-logo">
+                <img src="logos/logo_fondoClaro.png" alt="INFRAVIAL" class="logo-reporte">
+            </div>
+            <div class="header-titulo">
+                <div class="titulo-principal">DESCRIPCION DE PERFIL VIAL URBANO</div>
+                <div class="titulo-tipo">{{ esCalzadaDoble ? "CALZADA DOBLE" : "CALZADA SENCILLA" }} FE 001</div>
+            </div>
+            <div class="header-numero">
+                <div class="numero-label">Numero de Encuesta</div>
+                <div class="numero-valor">{{ tramo.codTramo || tramo._id?.slice(-8).toUpperCase() }}</div>
+            </div>
+        </div>
+
+        <!-- FILA FECHA / VIA -->
+        <div class="reporte-row-2">
+            <div class="campo-reporte">
+                <div class="campo-label">Fecha</div>
+                <div class="campo-valor">{{ tramo.fechaCreacion | date:"EEEE, d 'de' MMMM 'de' yyyy" }}</div>
+            </div>
+            <div class="campo-reporte">
+                <div class="campo-label">Vía</div>
+                <div class="campo-valor highlight">{{ tramo.via || "—" }}</div>
+            </div>
+        </div>
+
+        <!-- FILA ENCUESTADOR / ZAT -->
+        <div class="reporte-row-2">
+            <div class="campo-reporte">
+                <div class="campo-label">Encuestador</div>
+                <div class="campo-valor">{{ tramo.encuestador || "—" }}</div>
+            </div>
+            <div class="campo-reporte">
+                <div class="campo-label">ZAT</div>
+                <div class="campo-valor">{{ tramo.zat?.zatNumero || "—" }}</div>
+            </div>
+        </div>
+
+        <!-- FILA NOMENCLATURA / COORDENADAS -->
+        <div class="reporte-row-3">
+            <div class="campo-reporte">
+                <div class="campo-label">Comuna</div>
+                <div class="campo-valor">{{ tramo.comuna?.comunaNumero || "—" }}</div>
+            </div>
+            <div class="campo-reporte">
+                <div class="campo-label">Barrio</div>
+                <div class="campo-valor">{{ tramo.barrio?.nombre || "—" }}</div>
+            </div>
+            <div class="campo-reporte">
+                <div class="campo-label">Sentido Cardinal</div>
+                <div class="campo-valor">{{ tramo.sentidoCardinal || "—" }}</div>
+            </div>
+        </div>
+
+        <!-- FILA TIPO VIA / CLASIFICACION / DEPTO / MUNICIPIO -->
+       <div class="reporte-row-4 reporte-subheader">
+            <div class="campo-reporte">
+                <div class="campo-label">Tipo de Ubicación</div>
+                <div class="campo-valor">{{ tramo.tipoUbic || "—" }}</div>
+            </div>
+            <div class="campo-reporte">
+                <div class="campo-label">Clase de Vía</div>
+                <div class="campo-valor">{{ tramo.claseVia || "—" }}</div>
+            </div>
+            <div class="campo-reporte">
+                <div class="campo-label">Departamento</div>
+                <div class="campo-valor">{{ tramo.idJornada?.dpto || "—" }}</div>
+            </div>
+            <div class="campo-reporte municipio-grande">
+                <div class="campo-valor-grande">{{ tramo.municipio || tramo.idJornada?.municipio || "—" }}</div>
+            </div>
+        </div>
+        <div class="reporte-row-4">
+            <div class="campo-reporte">
+                <div class="campo-label">Clasificación Nacional</div>
+                <div class="campo-valor">{{ tramo.clasNacional || "—" }}</div>
+            </div>
+            <div class="campo-reporte">
+                <div class="campo-label">Clasificación Prelación</div>
+                <div class="campo-valor">{{ tramo.clasPrelacion || "—" }}</div>
+            </div>
+            <div class="campo-reporte">
+                <div class="campo-label">Clasificación Competencia</div>
+                <div class="campo-valor">{{ tramo.clasCompetencia || "—" }}</div>
+            </div>
+            <div class="campo-reporte">
+                <div class="campo-label">Clasificación Funcionalidad</div>
+                <div class="campo-valor">{{ tramo.clasFuncionalidad || "—" }}</div>
+            </div>
+        </div>
+
+        <!-- ESQUEMA + MAPA -->
+        <div class="reporte-row-2 esquema-mapa">
+            <div class="esquema-box">
+                <div class="box-titulo">Esquema Perfil Vial {{ esCalzadaDoble ? "Calzada Doble" : "Calzada Sencilla" }}</div>
+                <div class="esquema-img-container">
+                    <img *ngIf="tramo.perfilEsquema?.urlImgEsq"
+                        [src]="apiUrl + tramo.perfilEsquema.urlImgEsq"
+                        alt="Esquema Perfil" class="esquema-img">
+                    <div *ngIf="!tramo.perfilEsquema?.urlImgEsq" class="esquema-placeholder">
+                        Sin imagen de esquema
+                    </div>
+                </div>
+            </div>
+            <div class="mapa-box">
+            <div class="box-titulo">Mapa</div>
+            <div class="mapa-container">
+                <iframe *ngIf="mapUrl" [src]="mapUrl" class="mapa-iframe" frameborder="0"></iframe>
+                <div *ngIf="!mapUrl" class="mapa-placeholder">Sin coordenadas</div>
+            </div>
+</div>
+        </div>
+
+        <!-- MEDIDAS DEL PERFIL -->
+        <div class="seccion-titulo">MEDIDAS DEL PERFIL</div>
+        <span class="longitud-label">Longitud del Tramo:</span>
+        <span class="longitud-valor">{{ tramo.longitud || tramo.anchoTotalPerfil || "—" }} m</span>
+
+        <div class="medidas-grid">
+            <!-- Columna izquierda -->
+            <div class="medidas-col">
+                <div class="medida-item">
+                    <span class="medida-label">Andén Izquierdo</span>
+                    <span class="medida-valor">{{ tramo.andenIzq || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Zona Verde Izquierdo</span>
+                    <span class="medida-valor">{{ tramo.zonaVerdeIzq || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Antejardín Izquierdo</span>
+                    <span class="medida-valor">{{ tramo.antejardinIzq || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Sardinel Izquierdo</span>
+                    <span class="medida-valor">{{ tramo.sardinelIzq || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Ciclo-ruta Izquierda</span>
+                    <span class="medida-valor">{{ tramo.ciclorutaIzq || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Área de Servicio Izq.</span>
+                    <span class="medida-valor">{{ tramo.areaServIzq || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Cuneta Izquierda</span>
+                    <span class="medida-valor">{{ tramo.cunetaIzq || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Berma Izquierda</span>
+                    <span class="medida-valor">{{ tramo.bermaIzq || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Calzada Izquierda</span>
+                    <span class="medida-valor">{{ tramo.calzadaIzq || 0 }}</span>
+                </div>
+            </div>
+
+            <!-- Columna derecha -->
+            <div class="medidas-col">
+                <div class="medida-item">
+                    <span class="medida-label">Andén Derecho</span>
+                    <span class="medida-valor">{{ tramo.andenDer || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Zona Verde Derecha</span>
+                    <span class="medida-valor">{{ tramo.zonaVerdeDer || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Antejardín Derecho</span>
+                    <span class="medida-valor">{{ tramo.antejardinDer || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Sardinel Derecho</span>
+                    <span class="medida-valor">{{ tramo.sardinelDer || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Ciclo-ruta Derecha</span>
+                    <span class="medida-valor">{{ tramo.ciclorutaDer || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Área de Servicio Der.</span>
+                    <span class="medida-valor">{{ tramo.areaServDer || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Cuneta Derecha</span>
+                    <span class="medida-valor">{{ tramo.cunetaDer || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Berma Derecha</span>
+                    <span class="medida-valor">{{ tramo.bermaDer || 0 }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Calzada Derecha</span>
+                    <span class="medida-valor">{{ tramo.calzadaDer || 0 }}</span>
+                </div>
+            </div>
+
+            <!-- Pendiente -->
+            <div class="medidas-pendiente">
+                <div class="pendiente-titulo">Cálculo de la pendiente de la Vía</div>
+                <div class="medida-item">
+                    <span class="medida-label">Base</span>
+                    <span class="medida-valor">{{ tramo.pendienteBase || "0,00" }}</span>
+                </div>
+                <div class="medida-item">
+                    <span class="medida-label">Altura</span>
+                    <span class="medida-valor">{{ tramo.pendienteAltura || 0 }}</span>
+                </div>
+                <div class="pendiente-resultado">
+                    Pendiente de la Vía<br>
+                    <strong>{{ tramo.pendiente || "0,00" }} %</strong>
+                </div>
+                <div class="caract-item"><span class="caract-label">Diseño geométrico</span><span class="caract-valor">{{ tramo.disenioGeometrico || "—" }}</span></div>
+                <div class="caract-item"><span class="caract-label">Grado de inclinación</span><span class="caract-valor">{{ tramo.inclinacionVia || "—" }}</span></div>
+            </div>
+        </div>
+
+        <!-- Separador y totales -->
+        <div class="totales-row" *ngIf="esCalzadaDoble">
+            <div class="total-item">
+                <span class="total-label">Separador</span>
+                <span class="total-valor">{{ tramo.separador || "0,00" }}</span>
+            </div>
+        </div>
+        <div class="total-perfil">
+            <span class="total-perfil-label">Ancho total del perfil</span>
+            <span class="total-perfil-valor">{{ tramo.anchoTotalPerfil || "0,00" }}</span>
+        </div>
+
+        <!-- FOTOS -->
+        <div class="fotos-reporte">
+            <div class="foto-reporte-item">
+                <div class="foto-reporte-label">Foto perfil izquierdo</div>
+                <img *ngIf="tramo.fotos?.[0]" [src]="apiUrl + tramo.fotos[0]" class="foto-reporte-img">
+                <div *ngIf="!tramo.fotos?.[0]" class="foto-reporte-placeholder">Sin foto</div>
+            </div>
+            <div class="foto-reporte-item">
+                <div class="foto-reporte-label">Foto frontal</div>
+                <img *ngIf="tramo.fotos?.[1]" [src]="apiUrl + tramo.fotos[1]" class="foto-reporte-img">
+                <div *ngIf="!tramo.fotos?.[1]" class="foto-reporte-placeholder">Sin foto</div>
+            </div>
+            <div class="foto-reporte-item">
+                <div class="foto-reporte-label">Foto perfil derecho</div>
+                <img *ngIf="tramo.fotos?.[2]" [src]="apiUrl + tramo.fotos[2]" class="foto-reporte-img">
+                <div *ngIf="!tramo.fotos?.[2]" class="foto-reporte-placeholder">Sin foto</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ══ PÁGINA 2 - CARACTERÍSTICAS ══ -->
+    <div class="seccion-reporte">
+        <div class="seccion-titulo">Características de la Vía</div>
+
+        <div class="caracteristicas-grid">
+            <!-- Geométricas -->
+            <div class="caract-grupo">
+                <div class="caract-grupo-titulo">Geométricas:</div>
+                <div class="caract-item">
+                    <span class="caract-label">Diseño geométrico</span>
+                    <span class="caract-valor">{{ tramo.disenioGeom || "—" }}</span>
+                </div>
+                <div class="caract-item">
+                    <span class="caract-label">Grado de inclinación</span>
+                    <span class="caract-valor">{{ tramo.gradoInclinacion || "—" }}</span>
+                </div>
+                <div class="caract-item">
+                    <span class="caract-label">Bahía Est</span>
+                    <span class="caract-valor">{{ tramo.bahiaEst ? "Sí" : "No" }}</span>
+                </div>
+                <div class="caract-item">
+                    <span class="caract-label">Sentido vial</span>
+                    <span class="caract-valor">{{ tramo.sentidoVial || "—" }}</span>
+                </div>
+                <div class="caract-item">
+                    <span class="caract-label">Calzadas</span>
+                    <span class="caract-valor">{{ tramo.calzada || "—" }}</span>
+                </div>
+                <div class="caract-item">
+                    <span class="caract-label">N° Carriles</span>
+                    <span class="caract-valor">{{ tramo.numCarriles || "—" }}</span>
+                </div>
+                <div class="caract-item">
+                    <span class="caract-label">Superficie Rodadura</span>
+                    <span class="caract-valor">{{ tramo.capaRodadura || "—" }}</span>
+                </div>
+                <div class="caract-item">
+                    <span class="caract-label">Estado</span>
+                    <span class="caract-valor">{{ tramo.estado || "—" }}</span>
+                </div>
+            </div>
+
+            <!-- Estado Vía -->
+            <div class="caract-grupo">
+                <div class="caract-grupo-titulo">Estado de la Vía:</div>
+                <div class="caract-item" *ngFor="let d of tramo.danos">
+                    <span class="caract-label">{{ d.dano }}</span>
+                    <span class="caract-valor">{{ d.clase || "—" }}</span>
+                </div>
+                <div class="caract-item" *ngIf="!tramo.danos?.length">
+                    <span class="caract-label">Sin daños registrados</span>
+                </div>
+            </div>
+
+            <!-- Visibilidad -->
+            <div class="caract-grupo">
+                <div class="caract-grupo-titulo">Visibilidad:</div>
+                <div class="caract-item">
+                    <span class="caract-label">Visibilidad en la vía</span>
+                    <span class="caract-valor">{{ tramo.visibilidad || "—" }}</span>
+                </div>
+                <div class="caract-item">
+                    <span class="caract-label">Iluminación</span>
+                    <span class="caract-valor">{{ tramo.iluminacion || "—" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- OBSERVACIONES GENERALES -->
+        <div class="seccion-titulo" style="margin-top:1.5rem">Observaciones Generales</div>
+        <div class="obs-grid">
+            <div class="obs-item" *ngFor="let i of [1,2,3,4,5,6]">
+                {{ tramo["obs" + i]?.txtObs || "" }}
+            </div>
+        </div>
+    </div>
+    <!-- ENCUESTA VIAL -->
+        <div *ngIf="preguntas.length > 0">
+            <div class="seccion-titulo" style="margin-top:0.5rem">Encuesta Vial</div>
+            <table class="tabla-reporte">
+                <thead>
+                    <tr>
+                        <th style="width:40px">N°</th>
+                        <th>Pregunta</th>
+                        <th style="width:50px">Respuesta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let p of preguntas">
+                        <td>{{ p.consecutivo }}</td>
+                        <td>{{ p.pregunta }}</td>
+                        <td style="text-align:center; font-weight:800">
+                            {{ getRespuesta(p._id) }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    <!-- ══ PÁGINA 3 - SEÑALES VERTICALES ══ -->
+    <div class="seccion-reporte" *ngIf="senVerticales.length > 0">
+        <div class="seccion-titulo">Inventario de Señales Verticales</div>
+        <div class="subtitulo-tramo">Tramo: {{ tramo.via }} — {{ tramo.nomenclatura?.completa }}</div>
+
+        <table class="tabla-reporte">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Estado</th>
+                    <th>Material</th>
+                    <th>Soporte</th>
+                    <th>Orientación</th>
+                    <th>Fase</th>
+                    <th>Acción</th>
+                    <th>Foto</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let s of senVerticales">
+                    <td><strong>{{ s.codSe || "—" }}</strong></td>
+                    <td>{{ s.estado || "—" }}</td>
+                    <td>{{ s.matPlaca || "—" }}</td>
+                    <td>{{ s.tipoSoporte || "—" }}</td>
+                    <td>{{ s.orientacion || "—" }}</td>
+                    <td>{{ s.fase || "—" }}</td>
+                    <td>{{ s.accion || "—" }}</td>
+                    <td>
+                        <img *ngIf="s.urlFotoSenVert" [src]="apiUrl + s.urlFotoSenVert"
+                            class="foto-tabla" alt="Foto señal">
+                        <span *ngIf="!s.urlFotoSenVert">—</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ══ PÁGINA 4 - SEÑALES HORIZONTALES ══ -->
+    <div class="seccion-reporte" *ngIf="senHorizontales.length > 0">
+        <div class="seccion-titulo">Inventario de Señales Horizontales</div>
+        <div class="subtitulo-tramo">Tramo: {{ tramo.via }} — {{ tramo.nomenclatura?.completa }}</div>
+
+        <table class="tabla-reporte">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Tipo Dem.</th>
+                    <th>Estado</th>
+                    <th>Material</th>
+                    <th>Reflectividad</th>
+                    <th>Fase</th>
+                    <th>Acción</th>
+                    <th>Foto</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let s of senHorizontales">
+                    <td><strong>{{ s.codSeHor || "—" }}</strong></td>
+                    <td>{{ s.tipoDem || "—" }}</td>
+                    <td>{{ s.estadoDem || "—" }}</td>
+                    <td>{{ s.material || "—" }}</td>
+                    <td>{{ s.reflectOptima || "—" }}</td>
+                    <td>{{ s.fase || "—" }}</td>
+                    <td>{{ s.accion || "—" }}</td>
+                    <td>
+                        <img *ngIf="s.urlFotoSH" [src]="apiUrl + s.urlFotoSH"
+                            class="foto-tabla" alt="Foto">
+                        <span *ngIf="!s.urlFotoSH">—</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ══ PÁGINA 5 - SEMÁFOROS ══ -->
+    <div class="seccion-reporte" *ngIf="semaforos.length > 0">
+        <div class="seccion-titulo">Inventario de Semáforos</div>
+        <div class="subtitulo-tramo">Tramo: {{ tramo.via }} — {{ tramo.nomenclatura?.completa }}</div>
+
+        <table class="tabla-reporte">
+            <thead>
+                <tr>
+                    <th>N° Ext.</th>
+                    <th>Clase</th>
+                    <th>Funciona</th>
+                    <th>N° Caras</th>
+                    <th>Soporte</th>
+                    <th>Fase</th>
+                    <th>Acción</th>
+                    <th>Foto</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let s of semaforos">
+                    <td><strong>{{ s.numExterno || "—" }}</strong></td>
+                    <td>{{ s.claseSem || "—" }}</td>
+                    <td>{{ s.semaforoFunciona ? "Sí" : "No" }}</td>
+                    <td>{{ s.numCaras || "—" }}</td>
+                    <td>{{ s.tipoSoporte || "—" }}</td>
+                    <td>{{ s.fase || "—" }}</td>
+                    <td>{{ s.accion || "—" }}</td>
+                    <td>
+                        <img *ngIf="s.urlFotoSemaforo" [src]="apiUrl + s.urlFotoSemaforo"
+                            class="foto-tabla" alt="Foto">
+                        <span *ngIf="!s.urlFotoSemaforo">—</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ══ PÁGINA 6 - CONTROL SEMAFÓRICO + CAJAS ══ -->
+    <div class="pagina salto-pagina" *ngIf="controles.length > 0 || cajas.length > 0">
+
+        <div *ngIf="controles.length > 0">
+            <div class="seccion-titulo">Control Semafórico</div>
+            <table class="tabla-reporte">
+                <thead>
+                    <tr>
+                        <th>N° Ext.</th>
+                        <th>Tipo Controlador</th>
+                        <th>Estado</th>
+                        <th>Implementación</th>
+                        <th>UPS</th>
+                        <th>Material Armario</th>
+                        <th>Estado Armario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let c of controles">
+                        <td><strong>{{ c.numExterno || "—" }}</strong></td>
+                        <td>{{ c.tipoControlador || "—" }}</td>
+                        <td>{{ c.estadoControlador || "—" }}</td>
+                        <td>{{ c.implementacion || "—" }}</td>
+                        <td>{{ c.ups ? "Sí" : "No" }}</td>
+                        <td>{{ c.materialArmario || "—" }}</td>
+                        <td>{{ c.estadoArmario || "—" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div *ngIf="cajas.length > 0" style="margin-top:1.5rem">
+            <div class="seccion-titulo">Cajas de Inspección</div>
+            <table class="tabla-reporte">
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Estado</th>
+                        <th>Tapa</th>
+                        <th>Estado Tapa</th>
+                        <th>Fase</th>
+                        <th>Acción</th>
+                        <th>Foto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let c of cajas">
+                        <td>{{ c.materialCaja || "—" }}</td>
+                        <td>{{ c.estadoCaja || "—" }}</td>
+                        <td>{{ c.tapa ? "Sí" : "No" }}</td>
+                        <td>{{ c.estadoTapa || "—" }}</td>
+                        <td>{{ c.fase || "—" }}</td>
+                        <td>{{ c.accion || "—" }}</td>
+                        <td>
+                            <img *ngIf="c.urlFotoCaja" [src]="apiUrl + c.urlFotoCaja"
+                                class="foto-tabla" alt="Foto">
+                            <span *ngIf="!c.urlFotoCaja">—</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<div class="loading-reporte" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Generando reporte...</p>
+</div>

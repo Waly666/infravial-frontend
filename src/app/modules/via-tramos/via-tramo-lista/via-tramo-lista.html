@@ -78,13 +78,13 @@
                     <td class="td-muted">{{ t.fechaCreacion | date:'dd/MM/yyyy' }}</td>
                     <td>
                         <div class="actions-cell">
-                            <button class="btn-edit-sm" (click)="editar(t._id)" title="Editar">✏️</button>
-                            <button
-                                class="btn-danger-sm"
-                                *ngIf="isAdmin() || isSupervisor()"
-                                (click)="eliminar(t._id, t.via)"
-                                title="Eliminar">🗑️</button>
-                        </div>
+                        <button class="btn-edit-sm" (click)="editar(t._id)" title="Editar">✏️</button>
+                        <button class="btn-report-sm" (click)="generarReporte(t._id)" title="Generar FE001">📄</button>
+                        <button class="btn-danger-sm"
+                            *ngIf="isAdmin() || isSupervisor()"
+                            (click)="eliminar(t._id, t.via)"
+                            title="Eliminar">🗑️</button>
+                    </div>
                     </td>
                 </tr>
                 <tr *ngIf="tramosFiltrados.length === 0">

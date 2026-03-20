@@ -194,11 +194,9 @@
 }
 
 .content {
-    padding: 1.5rem;
-    flex: 1;
-    overflow-y: auto;      // ← agregar
-        height: calc(100vh - 60px);
-    width: 100%;  // ← agregar
+   padding: 0 !important;
+    overflow: hidden !important;
+    height: calc(100vh - 60px) !important;
 
 }
 

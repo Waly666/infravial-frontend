@@ -124,6 +124,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./modules/reportes/reporte-lista/reporte-lista').then(m => m.ReporteListaComponent)
             },
             {
+                path: 'via-tramos/reporte/:id',
+                loadComponent: () => import('./modules/via-tramos/reporte-via-tramo/reporte-via-tramo').then(m => m.ReporteViaTramoComponent)
+            },
+            {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full'
