@@ -4,15 +4,12 @@
     box-sizing: border-box;
 }
 
-html, body {
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    background: #050d1a;
-    font-family: sans-serif;
-}
+/* Tipografías (mismo stack que https://engineerssoftware.github.io/web/) */
 /* ── VARIABLES MODO OSCURO (default) ── */
 :root {
+    --font-sans:    'Syne', system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+    --font-display: 'DM Serif Display', Georgia, serif;
     --bg-primary:     #070c1a;
     --bg-card:        rgba(10, 18, 40, 0.85);
     --bg-input:       rgba(74, 158, 255, 0.05);
@@ -25,6 +22,72 @@ html, body {
     --accent-hover:   rgba(74, 158, 255, 0.08);
     --th-color:       #ffffff;
     --row-hover:      rgba(74, 158, 255, 0.04);
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    background-attachment: fixed;
+    background-image:
+        radial-gradient(ellipse 100% 80% at 0% 0%, rgba(91, 79, 255, 0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 60% at 100% 10%, rgba(0, 229, 192, 0.08) 0%, transparent 45%),
+        radial-gradient(ellipse 70% 50% at 50% 100%, rgba(74, 158, 255, 0.12) 0%, transparent 50%),
+        linear-gradient(165deg, #030712 0%, #0a0f1f 22%, #0d1528 45%, #0f172a 72%, #080c18 100%);
+    background-color: #050816;
+}
+
+.page-title,
+.step-title,
+h1.app-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+/* Subtítulos y jerarquía secundaria (misma familia display que el sitio de referencia) */
+.page-sub,
+.step-desc,
+.section-title,
+.section-header,
+.welcome-title,
+.recent-title,
+.section-divider span,
+app-root h2,
+app-root h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+}
+
+.page-sub,
+.step-desc {
+    font-weight: 500;
+}
+
+.section-title,
+.section-header,
+.welcome-title,
+.recent-title,
+app-root h2,
+app-root h3 {
+    font-weight: 600;
+}
+
+code, kbd, pre, samp {
+    font-family: var(--font-mono);
+}
+
+.badge-codigo {
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+}
+
+.mat-mdc-typography,
+.mat-mdc-select,
+.mat-mdc-dialog-container,
+.mat-mdc-menu-content {
+    font-family: var(--font-sans);
 }
 
 /* ── VARIABLES MODO CLARO ── */
@@ -41,7 +104,12 @@ body.light-mode {
     --accent-hover:   rgba(37, 99, 235, 0.08);
     --th-color:       #1a2540;
     --row-hover:      rgba(37, 99, 235, 0.04);
-    background: var(--bg-primary);
+    background-attachment: fixed;
+    background-image:
+        radial-gradient(ellipse 90% 70% at 0% 0%, rgba(37, 99, 235, 0.09) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 100% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 45%),
+        linear-gradient(168deg, #fafbff 0%, #eef2ff 40%, #f5f8ff 100%);
+    background-color: #f8faff;
     color: var(--text-primary);
 }
 
@@ -67,9 +135,8 @@ body.light-mode .form-group label { color: var(--text-secondary) !important; }
 body.light-mode .tramos-dropdown { background: var(--bg-card) !important; border-color: var(--border-input) !important; }
 body.light-mode .tramo-item strong { color: var(--text-primary) !important; }
 body.light-mode .tramo-item:hover { background: var(--accent-hover) !important; }
-body.light-mode .sidebar { background: #1e2d5a !important; }
-body.light-mode .main-content { background: var(--bg-primary) !important; }
-body.light-mode .topbar { background: #ffffff !important; border-bottom: 1px solid var(--border-color) !important; }
+/* Sidebar / layout: estilos en dashboard.component (gradientes modo claro) */
+body.light-mode .main-content { background: transparent !important; }
 body.light-mode .topbar .page-title { color: var(--text-primary) !important; }
 body.light-mode .stat-card { background: #ffffff !important; border-color: var(--border-color) !important; box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important; }
 body.light-mode .stat-value { color: var(--text-primary) !important; }
@@ -113,8 +180,23 @@ body.light-mode .recent-name {
 }
 
 body.light-mode .app-layout {
-    background: #f0f4ff !important;
+    background: transparent !important;
     color: #1a2540 !important;
+}
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
 }
 /* ── MODALES JORNADAS ── */
 body.light-mode .modal-overlay,
