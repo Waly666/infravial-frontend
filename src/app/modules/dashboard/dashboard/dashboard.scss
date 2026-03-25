@@ -334,3 +334,18 @@
     margin-right: 0.75rem;
     &:hover { transform: scale(1.1); background: rgba(74, 158, 255, 0.1); }
 }
+@media print {
+    .app-layout { background: #ffffff !important; }
+    .sidebar    { display: none !important; }
+    .topbar     { display: none !important; }
+    .main-content { 
+        margin-left: 0 !important;
+        background: #ffffff !important;
+    }
+    .content { 
+        padding: 0 !important; 
+        height: auto !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+    }
+}

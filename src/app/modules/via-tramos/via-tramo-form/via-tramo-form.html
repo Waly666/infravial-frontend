@@ -203,7 +203,7 @@
             </select>
         </div>
         <div class="form-group">
-            <label>Tipo Vía *</label>
+            <label>Area *</label>
             <select [(ngModel)]="form.tipoVia" class="form-select" (change)="calcularClasificacion()">
                 <option value="">Seleccionar...</option>
                 <option *ngFor="let t of tiposVia" [value]="t">{{ t }}</option>

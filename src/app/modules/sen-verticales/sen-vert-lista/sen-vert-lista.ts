@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
@@ -66,6 +66,7 @@ export class SenVertListaComponent implements OnInit {
 
     nuevo()            { this.router.navigate(["/sen-verticales/nuevo"]); }
     editar(id: string) { this.router.navigate(["/sen-verticales/editar", id]); }
+    verReporte(id: string) { this.router.navigate(["/sen-verticales/reporte", id]); }
     isAdmin():      boolean { return this.authService.isAdmin(); }
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
 

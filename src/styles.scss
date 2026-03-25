@@ -35,8 +35,8 @@ body.light-mode {
     --border-color:   #d0d9f0;
     --border-input:   #b0bfdf;
     --text-primary:   #1a2540;
-    --text-secondary: #2a3a60;
-    --text-muted:     #4a5a80;
+    --text-secondary: #0b111f;
+    --text-muted:     #0c101b;
     --accent:         #2563eb;
     --accent-hover:   rgba(37, 99, 235, 0.08);
     --th-color:       #1a2540;
@@ -223,4 +223,26 @@ body.light-mode .divipol-item:hover {
 
 body.light-mode .form-actions {
     border-top-color: var(--border-color) !important;
+}
+@media print {
+    html,
+    body,
+    app-root {
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+    
+    .reporte-actions { display: none !important; }
+    
+    .reporte-wrapper,
+    .reporte-scroll-area,
+    .reporte-container {
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    @page { size: 8.5in 13in; margin: 0; }
 }

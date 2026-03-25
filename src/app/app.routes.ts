@@ -8,6 +8,11 @@ export const routes: Routes = [
         loadComponent: () => import('./modules/auth/login/login').then(m => m.LoginComponent)
     },
     {
+        path: 'via-tramos/reporte/:id',
+        canActivate: [authGuard],
+        loadComponent: () => import('./modules/via-tramos/reporte-via-tramo/reporte-via-tramo').then(m => m.ReporteViaTramoComponent)
+    },
+    {
         path: '',
         canActivate: [authGuard],
         children: [
@@ -50,6 +55,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./modules/sen-verticales/sen-vert-form/sen-vert-form').then(m => m.SenVertFormComponent)
             },
             {
+                path: 'sen-verticales/reporte/:id',
+                loadComponent: () => import('./modules/sen-verticales/reporte-sen-vert/reporte-sen-vert').then(m => m.ReporteSenVertComponent)
+            },
+            {
                 path: 'sen-horizontales',
                 loadComponent: () => import('./modules/sen-horizontales/sen-hor-lista/sen-hor-lista').then(m => m.SenHorListaComponent)
             },
@@ -60,6 +69,10 @@ export const routes: Routes = [
             {
                 path: 'sen-horizontales/editar/:id',
                 loadComponent: () => import('./modules/sen-horizontales/sen-hor-form/sen-hor-form').then(m => m.SenHorFormComponent)
+            },
+            {
+                path: 'sen-horizontales/reporte/:id',
+                loadComponent: () => import('./modules/sen-horizontales/reporte-sen-hor/reporte-sen-hor').then(m => m.ReporteSenHorComponent)
             },
             {
                 path: 'semaforos',
@@ -122,10 +135,6 @@ export const routes: Routes = [
             {
                 path: 'reportes',
                 loadComponent: () => import('./modules/reportes/reporte-lista/reporte-lista').then(m => m.ReporteListaComponent)
-            },
-            {
-                path: 'via-tramos/reporte/:id',
-                loadComponent: () => import('./modules/via-tramos/reporte-via-tramo/reporte-via-tramo').then(m => m.ReporteViaTramoComponent)
             },
             {
                 path: '',

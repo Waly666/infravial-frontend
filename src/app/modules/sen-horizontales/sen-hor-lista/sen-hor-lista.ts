@@ -66,6 +66,7 @@ export class SenHorListaComponent implements OnInit {
 
     nuevo()            { this.router.navigate(['/sen-horizontales/nuevo']); }
     editar(id: string) { this.router.navigate(['/sen-horizontales/editar', id]); }
+    verReporte(id: string) { this.router.navigate(['/sen-horizontales/reporte', id]); }
     isAdmin():      boolean { return this.authService.isAdmin(); }
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
 

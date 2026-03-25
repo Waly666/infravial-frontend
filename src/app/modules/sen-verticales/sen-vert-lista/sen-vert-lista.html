@@ -1,4 +1,4 @@
-﻿<div class="page-container">
+<div class="page-container">
 
     <div class="page-header">
         <div>
@@ -62,6 +62,7 @@
                     <td class="td-muted">{{ r.accion || "—" }}</td>
                     <td>
                         <div class="actions-cell">
+                            <button class="btn-view-sm" (click)="verReporte(r._id)">👁️</button>
                             <button class="btn-edit-sm" (click)="editar(r._id)">✏️</button>
                             <button class="btn-danger-sm"
                                 *ngIf="isAdmin() || isSupervisor()"

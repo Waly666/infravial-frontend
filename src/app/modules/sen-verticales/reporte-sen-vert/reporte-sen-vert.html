@@ -1,0 +1,120 @@
+<div class="reporte-wrapper">
+    <div class="reporte-actions no-print">
+        <button class="btn-volver" (click)="volver()">← Volver</button>
+        <button class="btn-imprimir" (click)="imprimir()">🖨️ Imprimir / Descargar PDF</button>
+    </div>
+
+    <div class="loading-reporte" *ngIf="loading">
+        <p>Generando reporte...</p>
+    </div>
+
+    <div class="reporte-scroll-area" *ngIf="!loading && registro">
+        <div class="reporte-container">
+            <div class="reporte-header">
+                <div class="header-logo">
+                    <img src="logos/logo_fondoClaro.png" alt="INFRAVIAL" class="logo-reporte">
+                </div>
+                <div class="header-titulo">
+                    <div class="titulo-principal">ANALISIS INDIVIDUAL DE SENALES VERTICALES</div>
+                    <div class="titulo-tipo">INFRAVIAL - FORMATO DE REPORTE</div>
+                </div>
+                <div class="header-numero">
+                    <div class="numero-label">Codigo de Senal</div>
+                    <div class="numero-valor">{{ registro.codSe || "—" }}</div>
+                    <img *ngIf="qrDataUrl" [src]="qrDataUrl" class="qr-img" alt="QR">
+                </div>
+            </div>
+
+            <div class="reporte-row-4">
+                <div class="campo-reporte">
+                    <div class="campo-label">Fecha</div>
+                    <div class="campo-valor">{{ registro.fechaCreacion | date:"dd/MM/yyyy" }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Municipio</div>
+                    <div class="campo-valor">{{ municipio }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">ZAT</div>
+                    <div class="campo-valor">{{ zat }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Nomenclatura</div>
+                    <div class="campo-valor">{{ nomenclatura }}</div>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">Datos de Ubicacion</div>
+            <div class="reporte-row-3">
+                <div class="campo-reporte">
+                    <div class="campo-label">Coordenadas</div>
+                    <div class="campo-valor">{{ coordenadasTexto }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Ubicacion Espacial</div>
+                    <div class="campo-valor">{{ registro.ubicEspacial || "—" }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Ubicacion Perfil Vial</div>
+                    <div class="campo-valor">{{ registro.ubicPerVial || "—" }}</div>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">Caracteristicas de la Senal</div>
+            <div class="reporte-row-4">
+                <div class="campo-reporte"><div class="campo-label">Estado</div><div class="campo-valor">{{ registro.estado || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Fase</div><div class="campo-valor">{{ registro.fase || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Accion</div><div class="campo-valor">{{ registro.accion || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Forma</div><div class="campo-valor">{{ registro.forma || "—" }}</div></div>
+            </div>
+            <div class="reporte-row-4">
+                <div class="campo-reporte"><div class="campo-label">Material Placa</div><div class="campo-valor">{{ registro.matPlaca || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Orientacion</div><div class="campo-valor">{{ registro.orientacion || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Reflectividad</div><div class="campo-valor">{{ registro.reflecOptima || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Obstruccion</div><div class="campo-valor">{{ registro.obstruccion || "—" }}</div></div>
+            </div>
+
+            <div class="seccion-titulo">Diagnostico y Soporte</div>
+            <div class="reporte-row-4">
+                <div class="campo-reporte"><div class="campo-label">Tipo Soporte</div><div class="campo-valor">{{ registro.tipoSoporte || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Sistema Soporte</div><div class="campo-valor">{{ registro.sistemaSoporte || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Estado Soporte</div><div class="campo-valor">{{ registro.estadoSoporte || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Estado Anclaje</div><div class="campo-valor">{{ registro.estadoAnclaje || "—" }}</div></div>
+            </div>
+            <div class="reporte-row-3">
+                <div class="campo-reporte"><div class="campo-label">Altura</div><div class="campo-valor">{{ registro.altura ?? "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Diag. Altura</div><div class="campo-valor">{{ registro.diagAltura || "—" }}</div></div>
+                <div class="campo-reporte"><div class="campo-label">Diag. Ubicacion Lateral</div><div class="campo-valor">{{ registro.diagUbicLat || "—" }}</div></div>
+            </div>
+
+            <div class="seccion-titulo">Imagenes de la Senal</div>
+            <div class="fotos-reporte">
+                <div class="foto-reporte-item referencia-item">
+                    <div class="campo-label foto-label">Referencia catalogo</div>
+                    <img *ngIf="referenciaSenal?.urlImgSenVert" [src]="apiUrl + referenciaSenal.urlImgSenVert" class="foto-reporte-img">
+                    <div *ngIf="!referenciaSenal?.urlImgSenVert" class="foto-reporte-placeholder">Sin imagen de referencia</div>
+                    <div class="referencia-meta">
+                        <div><strong>Clasificacion:</strong> {{ referenciaSenal?.clasificacion || "—" }}</div>
+                        <div><strong>Funcion:</strong> {{ referenciaSenal?.funcion || "—" }}</div>
+                        <div><strong>Descripcion:</strong> {{ referenciaSenal?.descripcion || "—" }}</div>
+                    </div>
+                </div>
+                <div class="foto-reporte-item campo-item">
+                    <div class="campo-label foto-label">Foto levantada en campo</div>
+                    <img *ngIf="registro.urlFotoSenVert" [src]="apiUrl + registro.urlFotoSenVert" class="foto-reporte-img">
+                    <div *ngIf="!registro.urlFotoSenVert" class="foto-reporte-placeholder">Sin foto</div>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">Observaciones</div>
+            <div class="obs-grid">
+                <div class="obs-item">{{ registro.obs1?.observacion || "" }}</div>
+                <div class="obs-item">{{ registro.obs2?.observacion || "" }}</div>
+                <div class="obs-item">{{ registro.obs3?.observacion || "" }}</div>
+                <div class="obs-item">{{ registro.obs4?.observacion || "" }}</div>
+                <div class="obs-item">{{ registro.obs5?.observacion || "" }}</div>
+                <div class="obs-item">{{ registro.notas || "" }}</div>
+            </div>
+        </div>
+    </div>
+</div>

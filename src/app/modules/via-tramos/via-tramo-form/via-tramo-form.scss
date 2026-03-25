@@ -221,7 +221,7 @@
     border: 1px solid rgba(74, 158, 255, 0.2);
     border-radius: 6px;
     padding: 0.5rem 0.65rem;
-    color: #e8f0ff;
+    color: #ef0606;
     font-size: 0.78rem;
     outline: none;
     min-width: 120px;
@@ -231,6 +231,7 @@
 .nom-select-sm {
     @extend .nom-select;
     min-width: 70px;
+    
 }
 
 .nom-input {
@@ -238,7 +239,7 @@
     border: 1px solid rgba(74, 158, 255, 0.2);
     border-radius: 6px;
     padding: 0.5rem 0.65rem;
-    color: #e8f0ff;
+    color: #ef0606;
     font-size: 0.78rem;
     outline: none;
     width: 70px;
@@ -252,7 +253,7 @@
     border: 1px solid rgba(74, 158, 255, 0.2);
     border-radius: 6px;
     font-size: 0.85rem;
-    color: #e8f0ff;
+    color: #140f5c;
 }
 
 // ── MEDIDAS ───────────────────────────────────────
@@ -456,7 +457,7 @@
 
 .encuesta-pregunta {
     font-size: 0.82rem;
-    color: #e8f0ff;
+    color: #747577;
     line-height: 1.4;
 }
 
@@ -491,8 +492,9 @@
 
 .map-hint {
     font-size: 0.75rem;
+   
     margin-top: 0.5rem;
-    color: rgba(180, 200, 255, 0.3);
+    color: rgba(2, 6, 19, 0.3);
 }
 
 // ── ALERTS ────────────────────────────────────────
@@ -666,7 +668,7 @@
 
 .map-hint {
     font-size: 0.75rem;
-    color: rgba(180, 200, 255, 0.35);
+    color: rgba(72, 72, 75, 0.35);
     line-height: 1.8;
 }
 

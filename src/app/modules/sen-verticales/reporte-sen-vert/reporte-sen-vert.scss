@@ -1,0 +1,253 @@
+:host {
+    display: block;
+    background: #888888;
+    min-height: 100vh;
+}
+
+.reporte-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #888888;
+}
+
+.reporte-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: #1a2540;
+    border-bottom: 2px solid #4a9eff;
+}
+
+.btn-volver, .btn-imprimir {
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.btn-volver {
+    background: rgba(74,158,255,0.1);
+    border: 1px solid rgba(74,158,255,0.3);
+    color: #4a9eff;
+}
+
+.btn-imprimir {
+    background: #2563eb;
+    border: none;
+    color: #ffffff;
+}
+
+.loading-reporte {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #ffffff;
+}
+
+.reporte-scroll-area {
+    overflow-y: auto;
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.reporte-container {
+    background: #ffffff;
+    color: #000000;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    width: 216mm;
+    padding: 10mm;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    border-radius: 6px;
+}
+
+.reporte-header {
+    display: grid;
+    grid-template-columns: 80px 1fr 160px;
+    gap: 0.5rem;
+    align-items: center;
+    border: 2px solid #000;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #f8f8f8;
+}
+
+.logo-reporte {
+    width: 70px;
+    height: auto;
+}
+
+.header-titulo { text-align: center; }
+.titulo-principal { font-size: 14px; font-weight: 800; text-transform: uppercase; }
+.titulo-tipo { font-size: 11px; font-weight: 700; }
+
+.header-numero {
+    text-align: center;
+    border: 2px solid #000;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+}
+
+.numero-label { font-size: 9px; font-weight: 600; }
+.numero-valor { font-size: 17px; font-weight: 800; font-family: monospace; }
+.qr-img { width: 80px; height: 80px; margin: 0.25rem auto 0; display: block; }
+
+.reporte-row-3,
+.reporte-row-4 {
+    display: grid;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.reporte-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.reporte-row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+.campo-reporte {
+    border: 1px solid #000;
+    border-radius: 3px;
+    padding: 0.2rem 0.4rem;
+}
+
+.campo-label {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #444;
+}
+
+.campo-valor {
+    font-size: 10px;
+    font-weight: 600;
+    color: #000;
+}
+
+.seccion-titulo {
+    background: #000;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+    padding: 0.3rem;
+    text-transform: uppercase;
+    margin: 0.5rem 0 0.25rem 0;
+    border-radius: 4px;
+}
+
+.obs-grid { display: flex; flex-direction: column; gap: 0.25rem; }
+.obs-item {
+    border: 1px solid #000;
+    border-radius: 3px;
+    padding: 0.3rem 0.5rem;
+    min-height: 22px;
+}
+
+.fotos-reporte {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 0.5rem;
+    border: 1px solid #000;
+    border-radius: 4px;
+    padding: 0.3rem;
+}
+
+.foto-reporte-item {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.25rem;
+}
+
+.foto-label {
+    margin-bottom: 0.2rem;
+    text-align: center;
+}
+.foto-reporte-img {
+    width: 100%;
+    max-height: 190px;
+    object-fit: contain;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #fff;
+}
+.foto-reporte-placeholder {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed #ccc;
+    color: #999;
+}
+
+.referencia-meta {
+    margin-top: 0.35rem;
+    border-top: 1px solid #ddd;
+    padding-top: 0.25rem;
+    font-size: 9px;
+    line-height: 1.25;
+}
+
+.referencia-item .foto-reporte-img {
+    max-height: 130px;
+}
+
+.campo-item .foto-reporte-img {
+    max-height: 220px;
+}
+
+@media print {
+    html, body {
+        height: auto !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    :host {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .reporte-wrapper {
+        display: block !important;
+        height: auto !important;
+        background: #ffffff !important;
+    }
+
+    .reporte-actions { display: none !important; }
+
+    .reporte-scroll-area {
+        overflow: visible !important;
+        height: auto !important;
+        padding: 0 !important;
+        display: block !important;
+        background: #ffffff !important;
+    }
+
+    .reporte-container {
+        box-shadow: none !important;
+        width: 216mm !important;
+        max-width: 216mm !important;
+        margin: 0 auto !important;
+        padding: 8mm !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .reporte-row-3,
+    .reporte-row-4,
+    .fotos-reporte,
+    .obs-grid {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    @page { size: 8.5in 13in; margin: 0; }
+}

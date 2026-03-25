@@ -176,6 +176,16 @@
     &:hover { background: rgba(74, 158, 255, 0.2); }
 }
 
+.btn-view-sm {
+    padding: 0.3rem 0.6rem;
+    background: rgba(76, 175, 130, 0.1);
+    border: 1px solid rgba(76, 175, 130, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    &:hover { background: rgba(76, 175, 130, 0.2); }
+}
+
 .btn-danger-sm {
     padding: 0.3rem 0.6rem;
     background: rgba(224, 92, 92, 0.1);
