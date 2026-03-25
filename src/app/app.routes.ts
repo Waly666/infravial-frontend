@@ -138,6 +138,12 @@ export const routes: Routes = [
                 loadComponent: () => import('./modules/auditoria/auditoria-lista/auditoria-lista').then(m => m.AuditoriaListaComponent)
             },
             {
+                path: 'respaldos',
+                canActivate: [roleGuard],
+                data: { roles: ['admin'] },
+                loadComponent: () => import('./modules/backups/backup-admin/backup-admin').then(m => m.BackupAdminComponent)
+            },
+            {
                 path: 'reportes',
                 loadComponent: () => import('./modules/reportes/reporte-lista/reporte-lista').then(m => m.ReporteListaComponent)
             },

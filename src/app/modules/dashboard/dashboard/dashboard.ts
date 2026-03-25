@@ -38,6 +38,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         { id: 'catalogos',        label: 'Catálogos',          icon: 'menu_book', roles: ['admin'] },
         { id: 'usuarios',         label: 'Usuarios',           icon: 'groups', roles: ['admin'] },
         { id: 'auditoria',        label: 'Auditoría',          icon: 'fact_check', roles: ['admin'] },
+        { id: 'respaldos',        label: 'Respaldos',          icon: 'settings_backup_restore', roles: ['admin'] },
         { id: 'reportes',         label: 'Reportes',           icon: 'analytics', roles: ['admin','supervisor'] },
     ];
 

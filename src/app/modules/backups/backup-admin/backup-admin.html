@@ -1,0 +1,76 @@
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Respaldo y restauración</h1>
+            <p class="page-sub">Gestión profesional de copias de seguridad desde la aplicación</p>
+        </div>
+        <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+    </div>
+
+    <div class="actions-card">
+        <button class="btn-primary" (click)="crearBackup()" [disabled]="creando || restaurando">
+            {{ creando ? 'Generando respaldo...' : 'Generar backup ahora' }}
+        </button>
+
+        <select [(ngModel)]="selectedArchivo" class="file-select" [disabled]="restaurando || creando">
+            <option value="">Seleccionar backup para restaurar</option>
+            <option *ngFor="let l of logs" [value]="l.archivo" [disabled]="l.tipo !== 'backup' || l.estado !== 'success'">
+                {{ l.archivo }} ({{ l.fechaFin | date:'dd/MM/yyyy HH:mm' }})
+            </option>
+        </select>
+
+        <button class="btn-danger" (click)="restaurarBackup()" [disabled]="!selectedArchivo || restaurando || creando">
+            {{ restaurando ? 'Restaurando...' : 'Restaurar backup seleccionado' }}
+        </button>
+    </div>
+
+    <div class="alert-success" *ngIf="mensaje">{{ mensaje }}</div>
+    <div class="alert-warning" *ngIf="error">{{ error }}</div>
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <p>Cargando historial...</p>
+    </div>
+
+    <div class="table-card" *ngIf="!loading">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Archivo</th>
+                    <th>Tamaño</th>
+                    <th>SHA256</th>
+                    <th>Colecciones</th>
+                    <th>Registros</th>
+                    <th>Actor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let l of logs">
+                    <td>{{ l.fechaFin || l.fechaInicio | date:'dd/MM/yy HH:mm:ss' }}</td>
+                    <td>
+                        <span class="badge" [ngClass]="l.tipo === 'backup' ? 'badge-info' : 'badge-warn'">
+                            {{ l.tipo }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge" [ngClass]="l.estado === 'success' ? 'badge-ok' : 'badge-error'">
+                            {{ l.estado }}
+                        </span>
+                    </td>
+                    <td class="mono">{{ l.archivo || '—' }}</td>
+                    <td class="mono">{{ fmtSize(l.tamanoBytes) }}</td>
+                    <td class="mono hash" [title]="l.sha256">{{ l.sha256 || '—' }}</td>
+                    <td class="mono">{{ l.colecciones ?? '—' }}</td>
+                    <td class="mono">{{ l.registros ?? '—' }}</td>
+                    <td>{{ l.actor || l.user?.user || 'system' }}</td>
+                </tr>
+                <tr *ngIf="logs.length === 0">
+                    <td colspan="9" class="empty-state">Aún no hay respaldos registrados.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
