@@ -12,14 +12,25 @@
             {{ creando ? 'Generando respaldo...' : 'Generar backup ahora' }}
         </button>
 
-        <select [(ngModel)]="selectedArchivo" class="file-select" [disabled]="restaurando || creando">
-            <option value="">Seleccionar backup para restaurar</option>
-            <option *ngFor="let l of logs" [value]="l.archivo" [disabled]="l.tipo !== 'backup' || l.estado !== 'success'">
-                {{ l.archivo }} ({{ l.fechaFin | date:'dd/MM/yyyy HH:mm' }})
-            </option>
-        </select>
+        <div class="file-stack">
+            <select [(ngModel)]="selectedArchivo" class="file-select" [disabled]="restaurando || creando">
+                <option value="">Seleccionar backup para restaurar (historial)</option>
+                <option *ngFor="let l of logs" [value]="l.archivo" [disabled]="l.tipo !== 'backup' || l.estado !== 'success'">
+                    {{ l.archivo }} ({{ l.fechaFin | date:'dd/MM/yyyy HH:mm' }})
+                </option>
+            </select>
 
-        <button class="btn-danger" (click)="restaurarBackup()" [disabled]="!selectedArchivo || restaurando || creando">
+            <input
+                type="text"
+                class="file-select"
+                [(ngModel)]="manualArchivo"
+                [disabled]="restaurando || creando"
+                placeholder="Nombre exacto del archivo (ej: infravial-backup-...json.gz)"
+                spellcheck="false"
+            />
+        </div>
+
+        <button class="btn-danger" (click)="restaurarBackup()" [disabled]="!archivoParaRestaurar() || restaurando || creando">
             {{ restaurando ? 'Restaurando...' : 'Restaurar backup seleccionado' }}
         </button>
     </div>

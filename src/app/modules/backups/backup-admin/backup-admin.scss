@@ -22,6 +22,12 @@
     margin-bottom: 1rem;
 }
 
+.file-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
 .file-select {
     background: rgba(74, 158, 255, 0.08);
     border: 1px solid rgba(74, 158, 255, 0.25);

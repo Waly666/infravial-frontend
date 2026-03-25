@@ -18,6 +18,7 @@ export class BackupAdminComponent implements OnInit {
     creando = false;
     restaurando = false;
     selectedArchivo = '';
+    manualArchivo = '';
     mensaje = '';
     error = '';
 
@@ -67,17 +68,22 @@ export class BackupAdminComponent implements OnInit {
         });
     }
 
+    archivoParaRestaurar(): string {
+        return (this.manualArchivo || this.selectedArchivo || '').trim();
+    }
+
     restaurarBackup(): void {
-        if (!this.selectedArchivo) return;
-        const ok = confirm(`Vas a restaurar el backup "${this.selectedArchivo}". Esta accion reemplaza los datos actuales. Deseas continuar?`);
+        const archivo = this.archivoParaRestaurar();
+        if (!archivo) return;
+        const ok = confirm(`Vas a restaurar el backup "${archivo}". Esta accion reemplaza los datos actuales. Deseas continuar?`);
         if (!ok) return;
 
         this.restaurando = true;
         this.error = '';
         this.mensaje = '';
-        this.backupService.restoreBackup(this.selectedArchivo).subscribe({
+        this.backupService.restoreBackup(archivo).subscribe({
             next: (res: any) => {
-                this.mensaje = `Restore aplicado: ${res?.restore?.archivo || this.selectedArchivo}`;
+                this.mensaje = `Restore aplicado: ${res?.restore?.archivo || archivo}`;
                 this.restaurando = false;
                 this.loadLogs();
             },
