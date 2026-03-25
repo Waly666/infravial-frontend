@@ -50,7 +50,9 @@
                     <td>
                         <div class="actions-cell">
                             <button class="btn-edit-sm" (click)="editar(r._id)">✏️</button>
+                            <button class="btn-report-sm" (click)="generarReporte(r._id)" title="Generar Reporte">📄</button>
                             <button class="btn-danger-sm" *ngIf="isAdmin() || isSupervisor()" (click)="eliminar(r._id)">🗑️</button>
+
                         </div>
                     </td>
                 </tr>

@@ -13,6 +13,11 @@ export const routes: Routes = [
         loadComponent: () => import('./modules/via-tramos/reporte-via-tramo/reporte-via-tramo').then(m => m.ReporteViaTramoComponent)
     },
     {
+        path: 'semaforos/reporte/:id',
+        canActivate: [authGuard],
+        loadComponent: () => import('./modules/semaforos/reporte-semaforo/reporte-semaforo').then(m => m.ReporteSemaforoComponent)
+    },
+        {
         path: '',
         canActivate: [authGuard],
         children: [

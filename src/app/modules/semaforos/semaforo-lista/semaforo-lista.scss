@@ -235,3 +235,13 @@
     color: #ffffff;
     font-weight: 500;
 }
+.btn-report-sm {
+    padding: 0.3rem 0.6rem;
+    background: rgba(76, 175, 130, 0.1);
+    border: 1px solid rgba(76, 175, 130, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    &:hover { background: rgba(76, 175, 130, 0.2); }
+}

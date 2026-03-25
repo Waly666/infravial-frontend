@@ -53,6 +53,9 @@ export class SemaforoListaComponent implements OnInit {
             }
         });
     }
+    generarReporte(id: string) {
+        this.router.navigate(['/semaforos/reporte', id]);
+    }
 
     get registrosFiltrados() {
         if (!this.busqueda) return this.registros;

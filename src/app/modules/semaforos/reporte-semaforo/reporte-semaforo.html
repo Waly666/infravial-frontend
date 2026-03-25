@@ -1,0 +1,207 @@
+﻿<div class="reporte-wrapper">
+
+    <div class="reporte-actions no-print">
+        <button class="btn-volver" (click)="volver()">← Volver</button>
+        <button class="btn-imprimir" (click)="imprimir()">🖨️ Imprimir / Descargar PDF</button>
+    </div>
+
+    <div class="loading-reporte" *ngIf="loading">
+        <p>Generando reporte...</p>
+    </div>
+
+    <div class="reporte-scroll-area" *ngIf="!loading && semaforo">
+        <div class="reporte-container">
+
+            <!-- HEADER -->
+            <div class="reporte-header">
+                <div class="header-logo">
+                    <img src="logos/logo_fondoClaro.png" alt="INFRAVIAL" class="logo-reporte">
+                </div>
+                <div class="header-titulo">
+                    <div class="titulo-principal">INVENTARIO DE SEMÁFOROS</div>
+                    <div class="titulo-tipo">FICHA TÉCNICA DE SEMÁFORO</div>
+                </div>
+                <div class="header-numero">
+                    <div class="numero-label">Id Semaforo</div>
+                    <div class="numero-valor">{{ semaforo._id?.slice(-8).toUpperCase() }}</div>
+                    <img *ngIf="qrDataUrl" [src]="qrDataUrl" class="qr-img" alt="QR">
+                </div>
+            </div>
+
+            <!-- FILA 1: TRAMO / MUNICIPIO -->
+            <div class="reporte-row-2">
+                <div class="campo-reporte">
+                    <div class="campo-label">Vía Tramo</div>
+                    <div class="campo-valor highlight">{{ semaforo.idViaTramo?.via || "—" }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Municipio</div>
+                    <div class="campo-valor">{{ semaforo.idViaTramo?.municipio || "—" }}</div>
+                </div>
+            </div>
+
+            <!-- FILA 2: NOMENCLATURA / CONTROL -->
+            <div class="reporte-row-2">
+                <div class="campo-reporte">
+                    <div class="campo-label">Nomenclatura</div>
+                    <div class="campo-valor">{{ semaforo.idViaTramo?.nomenclatura?.completa || "—" }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Control Semafórico N°</div>
+                    <div class="campo-valor">{{ semaforo.idControSem?.numExterno || "—" }}</div>
+                </div>
+            </div>
+
+            <!-- FILA 3: COORDENADAS / FECHA -->
+            <div class="reporte-row-3">
+                <div class="campo-reporte">
+                    <div class="campo-label">Latitud</div>
+                    <div class="campo-valor">{{ semaforo.ubicacion?.coordinates?.[1] | number:"1.4-4" }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Longitud</div>
+                    <div class="campo-valor">{{ semaforo.ubicacion?.coordinates?.[0] | number:"1.4-4" }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Fecha Registro</div>
+                    <div class="campo-valor">{{ semaforo.fechaCreacion | date:"dd/MM/yyyy" }}</div>
+                </div>
+            </div>
+
+            <!-- MAPA -->
+            <div class="reporte-row-2 esquema-mapa">
+                <div class="mapa-box">
+                    <div class="box-titulo">Mapa</div>
+                    <div class="mapa-container">
+                        <img *ngIf="mapUrl" [src]="mapUrl" class="mapa-img" alt="Mapa">
+                        <div *ngIf="!mapUrl" class="mapa-placeholder">Sin coordenadas</div>
+                    </div>
+                </div>
+                <div class="esquema-box">
+                    <div class="box-titulo">Foto Semáforo</div>
+                    <div class="esquema-img-container">
+                        <img *ngIf="semaforo?.urlFotoSemaforo" [src]="apiUrl + semaforo.urlFotoSemaforo" class="esquema-img">
+                        <div *ngIf="!semaforo?.urlFotoSemaforo" class="esquema-placeholder">Sin foto</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATOS TÉCNICOS -->
+            <div class="seccion-titulo">Datos Técnicos del Semáforo</div>
+            <div class="caracteristicas-grid">
+                <div class="caract-grupo">
+                    <div class="caract-grupo-titulo">Identificación:</div>
+                    <div class="caract-item"><span class="caract-label">N° Externo</span><span class="caract-valor">{{ semaforo.numExterno || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">IP/Radio</span><span class="caract-valor">{{ semaforo.ipRadio || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Sitio</span><span class="caract-valor">{{ semaforo.sitio || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Clase Semáforo</span><span class="caract-valor">{{ semaforo.claseSem || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Funciona</span><span class="caract-valor">{{ semaforo.semaforoFunciona ? "Sí" : "No" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">N° Caras</span><span class="caract-valor">{{ semaforo.numCaras || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Obstrucción</span><span class="caract-valor">{{ semaforo.obstruccion || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Visibilidad Óptima</span><span class="caract-valor">{{ semaforo.visibilidadOptima || "—" }}</span></div>
+                </div>
+                <div class="caract-grupo">
+                    <div class="caract-grupo-titulo">Estado:</div>
+                    <div class="caract-item"><span class="caract-label">Estado Gral. Pintura</span><span class="caract-valor">{{ semaforo.estadoGenPint || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Implementación</span><span class="caract-valor">{{ semaforo.implementacion || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Fase</span><span class="caract-valor">{{ semaforo.fase || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Acción</span><span class="caract-valor">{{ semaforo.accion || "—" }}</span></div>
+                    <div class="caract-grupo-titulo" style="margin-top:0.5rem">Accesorios:</div>
+                    <div class="caract-item"><span class="caract-label">Pulsador</span><span class="caract-valor">{{ semaforo.pulsador ? "Sí" : "No" }}</span></div>
+                    <div class="caract-item" *ngIf="semaforo.pulsador"><span class="caract-label">Estado Pulsador</span><span class="caract-valor">{{ semaforo.estadoPulsador || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Temporizador</span><span class="caract-valor">{{ semaforo.temporizador ? "Sí" : "No" }}</span></div>
+                    <div class="caract-item" *ngIf="semaforo.temporizador"><span class="caract-label">Estado Temporizador</span><span class="caract-valor">{{ semaforo.estadoTemp || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Disp. Auditivo</span><span class="caract-valor">{{ semaforo.dispositivoAuditivo ? "Sí" : "No" }}</span></div>
+                </div>
+                <div class="caract-grupo">
+                    <div class="caract-grupo-titulo">Soporte:</div>
+                    <div class="caract-item"><span class="caract-label">Tipo Soporte</span><span class="caract-valor">{{ semaforo.tipoSoporte || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Sistema Soporte</span><span class="caract-valor">{{ semaforo.sistemaSoporte || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Estado Soporte</span><span class="caract-valor">{{ semaforo.estadoSoporte || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Pintura Soporte</span><span class="caract-valor">{{ semaforo.pinturaSoporte || "—" }}</span></div>
+                    <div class="caract-item"><span class="caract-label">Estado Anclaje</span><span class="caract-valor">{{ semaforo.estadoAnclaje || "—" }}</span></div>
+                </div>
+            </div>
+
+            <!-- CARAS -->
+            <div class="seccion-titulo" style="margin-top:0.5rem">Diagnóstico de Caras</div>
+            <table class="tabla-reporte">
+                <thead>
+                    <tr>
+                        <th>Cara</th>
+                        <th>Tipo Módulo</th>
+                        <th>Diámetro</th>
+                        <th>N° Mód.</th>
+                        <th>Despliegue</th>
+                        <th>Estado Cara</th>
+                        <th>Colores</th>
+                        <th>Placa Cont.</th>
+                        <th>Flecha Dir.</th>
+                        <th>Daños</th>
+                        <th>Foto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let c of semaforo.caras; let i = index">
+                        <td><strong>{{ i + 1 }}</strong></td>
+                        <td>{{ c.tipoModulo || "—" }}</td>
+                        <td>{{ c.diametroLente || "—" }}</td>
+                        <td>{{ c.numeroModulos || "—" }}</td>
+                        <td>{{ c.despliegue || "—" }}</td>
+                        <td>{{ c.estadoCara || "—" }}</td>
+                        <td>{{ c.colores || "—" }}</td>
+                        <td>{{ c.placaContraste ? "Sí" : "No" }}</td>
+                        <td>{{ c.flechaDir ? "Sí" : "No" }}</td>
+                        <td>{{ c.danos?.join(", ") || "—" }}</td>
+                        <td>
+                            <img *ngIf="c.urlFoto" [src]="apiUrl + c.urlFoto" class="foto-tabla">
+                            <span *ngIf="!c.urlFoto">—</span>
+                        </td>
+                    </tr>
+                    <tr *ngIf="!semaforo.caras?.length">
+                        <td colspan="11" style="text-align:center">Sin caras registradas</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- FOTOS -->
+            <div class="seccion-titulo" style="margin-top:0.5rem">Registro Fotográfico</div>
+            <div class="fotos-reporte">
+                <div class="foto-reporte-item">
+                    <div class="foto-reporte-label">Soporte</div>
+                    <img *ngIf="semaforo?.urlFotoSoporte" [src]="apiUrl + semaforo.urlFotoSoporte" class="foto-reporte-img">
+                    <div *ngIf="!semaforo?.urlFotoSoporte" class="foto-reporte-placeholder">Sin foto</div>
+                </div>
+                <div class="foto-reporte-item">
+                    <div class="foto-reporte-label">Anclaje</div>
+                    <img *ngIf="semaforo?.urlFotoAnclaje" [src]="apiUrl + semaforo.urlFotoAnclaje" class="foto-reporte-img">
+                    <div *ngIf="!semaforo?.urlFotoAnclaje" class="foto-reporte-placeholder">Sin foto</div>
+                </div>
+                <div class="foto-reporte-item" *ngIf="semaforo?.pulsador">
+                    <div class="foto-reporte-label">Pulsador</div>
+                    <img *ngIf="semaforo?.urlFotoPulsador" [src]="apiUrl + semaforo.urlFotoPulsador" class="foto-reporte-img">
+                    <div *ngIf="!semaforo?.urlFotoPulsador" class="foto-reporte-placeholder">Sin foto</div>
+                </div>
+                <div class="foto-reporte-item" *ngIf="semaforo?.dispositivoAuditivo">
+                    <div class="foto-reporte-label">Disp. Auditivo</div>
+                    <img *ngIf="semaforo?.urlFotoDispAud" [src]="apiUrl + semaforo.urlFotoDispAud" class="foto-reporte-img">
+                    <div *ngIf="!semaforo?.urlFotoDispAud" class="foto-reporte-placeholder">Sin foto</div>
+                </div>
+            </div>
+
+            <!-- FOTOS CARAS -->
+            
+            <!-- OBSERVACIONES -->
+            <div class="seccion-titulo" style="margin-top:0.5rem">Observaciones</div>
+            <div class="obs-grid">
+                <div class="obs-item" *ngFor="let i of [1,2,3,4,5,6]">
+                    {{ semaforo["obs" + i]?.textoObs || "" }}
+                </div>
+            </div>
+            <div class="obs-item" style="margin-top:0.25rem">
+                <strong>Notas:</strong> {{ semaforo.notasGenerales || "—" }}
+            </div>
+
+        </div>
+    </div>
+</div>
