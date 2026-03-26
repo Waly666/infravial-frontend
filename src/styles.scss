@@ -29,6 +29,7 @@ html, body {
     width: 100%;
     overflow: hidden;
     font-family: var(--font-sans);
+    color: var(--text-primary);
     background-attachment: fixed;
     background-image:
         radial-gradient(ellipse 100% 80% at 0% 0%, rgba(91, 79, 255, 0.22) 0%, transparent 55%),
@@ -150,7 +151,42 @@ body.light-mode .section-divider span { background: var(--bg-card) !important; c
 body.light-mode .cara-panel { background: var(--bg-input) !important; border-color: var(--border-input) !important; }
 body.light-mode .foto-drop { background: var(--bg-input) !important; border-color: var(--border-input) !important; color: var(--text-secondary) !important; }
 body.light-mode .checkbox-item { background: var(--bg-input) !important; border-color: var(--border-input) !important; color: var(--text-secondary) !important; }
+body.light-mode .checkbox-item:hover:not(.selected) { color: #1a2540 !important; }
 body.light-mode .total-badge { background: var(--bg-input) !important; border-color: var(--border-color) !important; color: var(--text-secondary) !important; }
+
+/* Wizards / formularios largos: contraste en modo claro (componentes usan tonos oscuros para tema nocturno) */
+body.light-mode .wizard-title { color: #1a2540 !important; }
+body.light-mode .step-dot:not(.active):not(.done) { color: #5a6b8c !important; }
+body.light-mode .step-dot:hover:not(.active) { color: #1a2540 !important; }
+body.light-mode .ancho-total { color: #3d4f72 !important; }
+body.light-mode .ancho-total strong { color: var(--accent) !important; }
+body.light-mode .clas-label { color: #4a5a80 !important; }
+body.light-mode .clas-hint { color: #6a7a98 !important; }
+body.light-mode .encuesta-pregunta { color: #1a2540 !important; }
+body.light-mode .coord-label { color: #5a6b8c !important; }
+body.light-mode .coord-val.empty { color: #8090b0 !important; }
+body.light-mode .coord-input { color: var(--text-primary) !important; border-bottom-color: var(--border-input) !important; }
+body.light-mode .map-hint { color: #5a6b8c !important; }
+body.light-mode .mapa-header { color: #1a2540 !important; }
+body.light-mode .mapa-instruccion { color: #4a5a80 !important; }
+body.light-mode .galeria-header { color: #1a2540 !important; }
+body.light-mode .modal-close { color: #5a6b8c !important; }
+body.light-mode .modal-close:hover { color: #1a2540 !important; }
+body.light-mode .galeria-info strong { color: #1a2540 !important; }
+body.light-mode .galeria-info span { color: #5a6b8c !important; }
+body.light-mode .sen-info strong { color: #1a2540 !important; }
+body.light-mode .sen-info span { color: #4a5a80 !important; }
+body.light-mode .btn-galeria { color: #4a5a80 !important; }
+body.light-mode .btn-galeria:hover { color: #1a2540 !important; }
+body.light-mode .foto-drop { color: #4a5a80 !important; }
+body.light-mode .foto-drop span { color: #6a7a98 !important; }
+body.light-mode .foto-drop:hover { color: #1a2540 !important; }
+body.light-mode .foto-info span { color: #5a6b8c !important; }
+body.light-mode .tramo-info strong { color: #1a2540 !important; }
+body.light-mode .tramo-info span { color: #4a5a80 !important; }
+body.light-mode .tramo-item span { color: #5a6b8c !important; }
+body.light-mode .tramo-empty { color: #6a7a98 !important; }
+body.light-mode .nomenclatura-result { color: var(--text-primary) !important; }
 body.light-mode .galeria-modal { background: var(--bg-card) !important; }
 body.light-mode .galeria-item { background: var(--bg-input) !important; border-color: var(--border-color) !important; }
 body.light-mode .mapa-modal { background: var(--bg-card) !important; }

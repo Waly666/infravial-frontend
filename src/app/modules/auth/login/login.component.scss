@@ -57,6 +57,17 @@
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
 }
 
+.login-card-footer {
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid rgba(74, 158, 255, 0.15);
+    background: linear-gradient(180deg, rgba(10, 20, 45, 0.45) 0%, rgba(10, 20, 45, 0.75) 100%);
+    text-align: center;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    color: rgba(180, 200, 255, 0.55);
+    text-transform: uppercase;
+}
+
 .logo-section {
     background: linear-gradient(135deg, #0a1428, #0d1e3d);
     border-bottom: 1px solid rgba(74, 158, 255, 0.15);

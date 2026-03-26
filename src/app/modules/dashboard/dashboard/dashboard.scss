@@ -306,7 +306,19 @@
     overflow: auto !important;
     flex: 1;
     height: auto !important;
-    min-height: calc(100vh - 56px);
+    min-height: 0;
+}
+
+.app-footer {
+    flex-shrink: 0;
+    padding: 0.85rem 1.5rem;
+    border-top: 1px solid rgba(91, 143, 255, 0.12);
+    background: linear-gradient(180deg, rgba(7, 12, 26, 0.25) 0%, rgba(7, 12, 26, 0.55) 100%);
+    color: var(--text-muted, rgba(180, 200, 255, 0.55));
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
 }
 
 // ── STATS ─────────────────────────────────────────

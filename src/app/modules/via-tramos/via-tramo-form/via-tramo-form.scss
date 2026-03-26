@@ -221,7 +221,7 @@
     border: 1px solid rgba(74, 158, 255, 0.2);
     border-radius: 6px;
     padding: 0.5rem 0.65rem;
-    color: #ef0606;
+    color: var(--text-primary);
     font-size: 0.78rem;
     outline: none;
     min-width: 120px;
@@ -239,21 +239,47 @@
     border: 1px solid rgba(74, 158, 255, 0.2);
     border-radius: 6px;
     padding: 0.5rem 0.65rem;
-    color: #ef0606;
+    color: var(--text-primary);
     font-size: 0.78rem;
     outline: none;
     width: 70px;
     &::placeholder { color: rgba(180, 200, 255, 0.3); }
 }
 
-.nomenclatura-result {
+/* Mismo resaltado que «Dirección» en señales verticales */
+.tramo-nomenclatura {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     margin-top: 0.75rem;
-    padding: 0.6rem 1rem;
-    background: rgba(74, 158, 255, 0.08);
-    border: 1px solid rgba(74, 158, 255, 0.2);
+    padding: 0.85rem 1.25rem;
+    background: linear-gradient(135deg, rgba(76, 175, 130, 0.1), rgba(76, 175, 130, 0.05));
+    border: 1px solid rgba(76, 175, 130, 0.3);
+    border-left: 4px solid #4caf82;
     border-radius: 6px;
-    font-size: 0.85rem;
-    color: #140f5c;
+    animation: fadeInNom 0.3s ease;
+}
+
+.nom-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(76, 175, 130, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+}
+
+.nom-valor {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #4caf82;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 20px rgba(76, 175, 130, 0.4);
+}
+
+@keyframes fadeInNom {
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 // ── MEDIDAS ───────────────────────────────────────

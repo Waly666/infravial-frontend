@@ -175,8 +175,9 @@
         <input type="text" [(ngModel)]="form.nomenclatura.numero3" class="nom-input" placeholder="Núm" (input)="actualizarNomenclatura()">
     </div>
 
-    <div class="nomenclatura-result" *ngIf="form.nomenclatura.completa">
-        📍 <strong>{{ form.nomenclatura.completa }}</strong>
+    <div class="tramo-nomenclatura" *ngIf="form.nomenclatura.completa">
+        <span class="nom-label">📍 Nomenclatura</span>
+        <span class="nom-valor">{{ form.nomenclatura.completa }}</span>
     </div>
 
     <div class="section-divider"><span>Datos de la Vía</span></div>
