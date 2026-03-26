@@ -1,0 +1,114 @@
+<!-- STATS CARDS (admin/supervisor) -->
+<div class="stats-grid" *ngIf="(isAdmin() || isSupervisor()) && stats">
+    <div class="stat-card" data-stat="via-tramos">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">route</span></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ stats.totalTramos }}</div>
+            <div class="stat-label">Vía Tramos</div>
+        </div>
+    </div>
+    <div class="stat-card" data-stat="sen-verticales">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">vertical_align_top</span></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ stats.totalSenVert }}</div>
+            <div class="stat-label">Señales Verticales</div>
+        </div>
+    </div>
+    <div class="stat-card" data-stat="sen-horizontales">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">horizontal_rule</span></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ stats.totalSenHor }}</div>
+            <div class="stat-label">Señales Horizontales</div>
+        </div>
+    </div>
+    <div class="stat-card" data-stat="semaforos">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">traffic</span></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ stats.totalSemaforos }}</div>
+            <div class="stat-label">Semáforos</div>
+        </div>
+    </div>
+    <div class="stat-card" data-stat="cajas-inspeccion">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">inventory_2</span></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ stats.totalCajasInsp ?? 0 }}</div>
+            <div class="stat-label">Cajas inspección</div>
+        </div>
+    </div>
+</div>
+
+<section class="quick-actions" *ngIf="usuario" aria-label="Accesos rápidos">
+    <button type="button" class="quick-btn" data-quick="via-tramos" (click)="navegarA('via-tramos')">
+        <span class="material-symbols-outlined quick-btn-ic">route</span> Vía tramos
+    </button>
+    <button type="button" class="quick-btn" data-quick="sen-verticales" (click)="navegarA('sen-verticales')">
+        <span class="material-symbols-outlined quick-btn-ic">vertical_align_top</span> Señales V.
+    </button>
+    <button type="button" class="quick-btn" data-quick="sen-horizontales" (click)="navegarA('sen-horizontales')">
+        <span class="material-symbols-outlined quick-btn-ic">horizontal_rule</span> Señales H.
+    </button>
+    <button type="button" class="quick-btn" data-quick="semaforos" (click)="navegarA('semaforos')">
+        <span class="material-symbols-outlined quick-btn-ic">traffic</span> Semáforos
+    </button>
+    <button type="button" class="quick-btn" data-quick="reportes" (click)="navegarA('reportes')" *ngIf="isAdmin() || isSupervisor()">
+        <span class="material-symbols-outlined quick-btn-ic">analytics</span> Reportes
+    </button>
+</section>
+
+<section class="dashboard-charts" *ngIf="stats" aria-label="Gráficos del inventario">
+    <h2 class="charts-section-title">Indicadores y distribución</h2>
+    <div class="charts-grid-main">
+        <div class="chart-card chart-card--tall">
+            <canvas id="chart-inventario" role="img" aria-label="Gráfico de barras del inventario"></canvas>
+        </div>
+        <div class="chart-card chart-card--tall" *ngIf="stats.tramosPorMes?.length">
+            <canvas id="chart-tramos-mes" role="img" aria-label="Tendencia de tramos por mes"></canvas>
+        </div>
+        <div class="chart-card chart-card--tall chart-card--placeholder" *ngIf="!stats.tramosPorMes?.length">
+            <span class="material-symbols-outlined placeholder-ic">show_chart</span>
+            <p>Aún no hay datos de tramos por mes en el rango reciente. Los registros nuevos aparecerán aquí.</p>
+        </div>
+    </div>
+    <div class="charts-grid-donuts">
+        <div class="chart-card chart-card--donut">
+            <canvas *ngIf="stats.senVertEstados?.length" id="chart-estado-sv" role="img" aria-label="Estados señales verticales"></canvas>
+            <div *ngIf="!stats.senVertEstados?.length" class="chart-fallback">
+                <span class="material-symbols-outlined">vertical_align_top</span>
+                <p>Sin señales verticales registradas.</p>
+            </div>
+        </div>
+        <div class="chart-card chart-card--donut">
+            <canvas *ngIf="stats.senHorEstados?.length" id="chart-estado-sh" role="img" aria-label="Estados señales horizontales"></canvas>
+            <div *ngIf="!stats.senHorEstados?.length" class="chart-fallback">
+                <span class="material-symbols-outlined">horizontal_rule</span>
+                <p>Sin señales horizontales registradas.</p>
+            </div>
+        </div>
+        <div class="chart-card chart-card--donut">
+            <canvas *ngIf="stats.semaforosEstados?.length" id="chart-estado-sem" role="img" aria-label="Estado pintura semáforos"></canvas>
+            <div *ngIf="!stats.semaforosEstados?.length" class="chart-fallback">
+                <span class="material-symbols-outlined">traffic</span>
+                <p>Sin semáforos registrados.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ÚLTIMOS REGISTROS -->
+<div class="recent-card" *ngIf="stats?.ultimosTramos?.length">
+    <div class="recent-title">Últimos tramos registrados</div>
+    <div class="recent-list">
+        <div class="recent-item" *ngFor="let t of stats.ultimosTramos">
+            <span class="material-symbols-outlined recent-icon" aria-hidden="true">route</span>
+            <div class="recent-info">
+                <div class="recent-name">{{ t.via || 'Sin nombre' }}</div>
+                <div class="recent-meta">
+                    <span class="recent-meta-place">{{ t.municipio }}</span>
+                    <span class="recent-meta-sep"> — </span>
+                    <span class="recent-meta-date tab-figures">{{ t.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

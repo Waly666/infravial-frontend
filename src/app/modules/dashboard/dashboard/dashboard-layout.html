@@ -1,0 +1,98 @@
+<div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="logos/logo_fondo_dark.png" alt="INFRAVIAL" class="logo">
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">{{ getInitials() }}</div>
+            <div class="user-info">
+                <div class="user-name">{{ usuario?.nombres }} {{ usuario?.apellidos }}</div>
+                <div class="user-role">{{ usuario?.rol }}</div>
+            </div>
+        </div>
+
+        <!-- JORNADA ACTIVA -->
+        <div class="jornada-badge" *ngIf="jornada">
+            <span class="jornada-dot"></span>
+            <span class="jornada-txt">{{ jornada.municipio }}</span>
+        </div>
+        <div class="jornada-badge inactive" *ngIf="!jornada">
+            <span class="jornada-dot inactive"></span>
+            <span class="jornada-txt">Sin jornada activa</span>
+        </div>
+
+        <!-- NAVEGACIÓN -->
+        <nav class="sidebar-nav">
+            <div
+                *ngFor="let item of getMenuItems()"
+                class="nav-item"
+                [attr.data-nav]="item.id"
+                [class.active]="seccionActiva === item.id"
+                (click)="navegarA(item.id)">
+                <span class="nav-icon-wrap" aria-hidden="true">
+                    <span class="material-symbols-outlined nav-icon">{{ item.icon }}</span>
+                </span>
+                <span class="nav-label">{{ item.label }}</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button type="button" class="btn-logout" (click)="logout()">
+                <span class="material-symbols-outlined btn-logout-icon" aria-hidden="true">logout</span>
+                Cerrar sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+        <div class="topbar">
+            <div class="topbar-welcome" *ngIf="usuario">
+                <div class="welcome-title">
+                    Bienvenido, {{ usuario?.nombres }}
+                    <span class="material-symbols-outlined welcome-wave" aria-hidden="true">waving_hand</span>
+                </div>
+                <div class="welcome-sub">Sistema de Inventario Vial — INFRAVIAL</div>
+                <div class="welcome-jornada" *ngIf="jornada">
+                    <strong>Jornada activa:</strong>
+                    {{ jornada.municipio }}, {{ jornada.dpto }} —
+                    Supervisor: {{ jornada.supervisor }}
+                </div>
+                <div class="welcome-jornada warn" *ngIf="!jornada && !isAdmin()">
+                    <span class="material-symbols-outlined warn-ic" aria-hidden="true">warning</span>
+                    No hay jornada activa. Contacta al administrador para iniciar una jornada.
+                </div>
+                <div class="welcome-jornada warn" *ngIf="!jornada && isAdmin()">
+                    <span class="material-symbols-outlined warn-ic" aria-hidden="true">warning</span>
+                    No hay jornada activa.
+                    <span class="link" (click)="navegarA('jornadas')">Crear jornada →</span>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button type="button" class="toggle-modo" (click)="toggleModo()" [attr.aria-label]="modoClaro ? 'Activar modo oscuro' : 'Activar modo claro'" [title]="modoClaro ? 'Modo oscuro' : 'Modo claro'">
+                    <span class="material-symbols-outlined toggle-modo-icon" aria-hidden="true">{{ modoClaro ? 'dark_mode' : 'light_mode' }}</span>
+                </button>
+                <span class="jornada-status" *ngIf="jornada">
+                    <span class="material-symbols-outlined jornada-status-ic" aria-hidden="true">check_circle</span>
+                    Jornada activa: {{ jornada.municipio }}
+                </span>
+                <span class="jornada-status inactive" *ngIf="!jornada">
+                    <span class="material-symbols-outlined jornada-status-ic" aria-hidden="true">cancel</span>
+                    Sin jornada activa
+                </span>
+            </div>
+        </div>
+
+        <div class="content">
+            <router-outlet></router-outlet>
+        </div>
+
+        <footer class="app-footer">
+            © INFRAVIAL — DESARROLLADOR - WALTER AGUILAR
+        </footer>
+    </main>
+</div>
+
