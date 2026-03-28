@@ -9,14 +9,19 @@ import {
     geoDepartamentos,
     geoMunicipios,
     geoZatOptions,
-    matchesGeoFilters
+    matchesGeoFilters,
+    rowZatLabel,
+    rowZatValue,
+    badgeClassMunicipio,
+    badgeClassZat,
+    badgeClassVia
 } from '../../../shared/utils/geo-list-filters';
 @Component({
     selector: 'app-via-tramo-lista',
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './via-tramo-lista.html',
-    styleUrl: './via-tramo-lista.scss'
+    styleUrls: ['./via-tramo-lista.scss', '../../../shared/styles/geo-badges.scss']
 })
 export class ViaTramoListaComponent implements OnInit {
 
@@ -71,11 +76,13 @@ export class ViaTramoListaComponent implements OnInit {
             if (!matchesGeoFilters(t, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
 
             if (!q) return true;
+            const zatL = rowZatLabel(t);
             return (
                 t.via?.toLowerCase().includes(q) ||
                 t.municipio?.toLowerCase().includes(q) ||
                 t.departamento?.toLowerCase().includes(q) ||
-                t.nomenclatura?.completa?.toLowerCase().includes(q)
+                t.nomenclatura?.completa?.toLowerCase().includes(q) ||
+                (zatL !== '—' && zatL.toLowerCase().includes(q))
             );
         });
     }
@@ -133,16 +140,21 @@ export class ViaTramoListaComponent implements OnInit {
         this.currentPage = 1;
     }
 
-    getMunicipioBadgeClass(municipio: string): string {
-        const value = (municipio || '').trim().toUpperCase();
-        if (!value) return 'badge-municipio-1';
-        let hash = 0;
-        for (let i = 0; i < value.length; i++) {
-            hash = ((hash << 5) - hash) + value.charCodeAt(i);
-            hash |= 0;
-        }
-        const idx = Math.abs(hash % 8) + 1;
-        return `badge-municipio-${idx}`;
+    viaBadge(t: any): string {
+        return badgeClassVia(t.via);
+    }
+
+    munBadge(t: any): string {
+        return badgeClassMunicipio(t.municipio);
+    }
+
+    zatTxt(t: any): string {
+        const x = rowZatLabel(t);
+        return x === '—' && !rowZatValue(t) ? '—' : x;
+    }
+
+    zatBadge(t: any): string {
+        return badgeClassZat(rowZatValue(t) || rowZatLabel(t) || '—');
     }
 
     nuevo()          { this.router.navigate(['/via-tramos/nuevo']); }

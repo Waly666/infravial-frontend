@@ -1,0 +1,85 @@
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Importar Excel</h1>
+            <p class="page-sub">
+                Carga masiva de vía tramos y señales (verticales y horizontales). Solo administradores. Requiere jornada activa y municipio coincidente con el archivo.
+            </p>
+        </div>
+        <button type="button" class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+    </div>
+
+    <div class="actions-card">
+        <div class="file-row">
+            <label class="file-label">
+                <span class="file-label-text">Archivo (.xlsx / .xls)</span>
+                <input type="file" accept=".xlsx,.xls" (change)="onFileChange($event)" [disabled]="subiendo" />
+            </label>
+            <span class="file-name" *ngIf="archivo">{{ archivo.name }}</span>
+        </div>
+
+        <label class="check-row">
+            <input type="checkbox" [(ngModel)]="dryRun" [disabled]="subiendo" />
+            <span>Dry-run (simular sin guardar en base de datos)</span>
+        </label>
+
+        <div class="btn-row">
+            <button
+                type="button"
+                class="btn-primary"
+                (click)="ejecutarImportacion()"
+                [disabled]="!archivo || subiendo">
+                {{ subiendo ? 'Importando…' : 'Ejecutar importación' }}
+            </button>
+            <button
+                type="button"
+                class="btn-danger-outline"
+                (click)="rollback()"
+                [disabled]="subiendo || revirtiendo || dryRun">
+                {{ revirtiendo ? 'Revirtiendo…' : 'Revertir última importación real' }}
+            </button>
+        </div>
+    </div>
+
+    <div class="alert-success" *ngIf="mensaje">{{ mensaje }}</div>
+    <div class="alert-warning" *ngIf="error">{{ error }}</div>
+
+    <div class="status-card" *ngIf="status">
+        <h2 class="status-title">Estado del importador</h2>
+        <p class="status-line" *ngIf="status.lastLine"><strong>Log:</strong> {{ status.lastLine }}</p>
+        <ul class="status-meta">
+            <li><span>En ejecución:</span> {{ status.running ? 'Sí' : 'No' }}</li>
+            <li *ngIf="status.archivo"><span>Archivo:</span> {{ status.archivo }}</li>
+            <li *ngIf="status.municipio"><span>Municipio (Excel):</span> {{ status.municipio }}</li>
+            <li *ngIf="status.jornadaActiva"><span>Jornada:</span> {{ status.jornadaActiva }}</li>
+            <li><span>Modo:</span> {{ status.dryRun ? 'Dry-run' : 'Real' }}</li>
+        </ul>
+
+        <div class="progress-grid">
+            <div class="progress-block">
+                <div class="progress-head">Vías</div>
+                <div class="progress-bar"><div class="progress-fill" [style.width.%]="pct(status.via)"></div></div>
+                <div class="progress-foot">
+                    {{ status.via.current || 0 }} / {{ status.via.total || '—' }}
+                    — OK {{ status.via.ok || 0 }}, err {{ status.via.err || 0 }}
+                </div>
+            </div>
+            <div class="progress-block">
+                <div class="progress-head">Señales verticales</div>
+                <div class="progress-bar"><div class="progress-fill" [style.width.%]="pct(status.vert)"></div></div>
+                <div class="progress-foot">
+                    {{ status.vert.current || 0 }} / {{ status.vert.total || '—' }}
+                    — OK {{ status.vert.ok || 0 }}, err {{ status.vert.err || 0 }}
+                </div>
+            </div>
+            <div class="progress-block">
+                <div class="progress-head">Señales horizontales</div>
+                <div class="progress-bar"><div class="progress-fill" [style.width.%]="pct(status.hor)"></div></div>
+                <div class="progress-foot">
+                    {{ status.hor.current || 0 }} / {{ status.hor.total || '—' }}
+                    — OK {{ status.hor.ok || 0 }}, err {{ status.hor.err || 0 }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

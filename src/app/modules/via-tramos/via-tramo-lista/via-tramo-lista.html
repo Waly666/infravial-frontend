@@ -76,6 +76,7 @@
                     <th>Vía</th>
                     <th>Nomenclatura</th>
                     <th>Municipio</th>
+                    <th>ZAT</th>
                     <th>Calzada</th>
                     <th>Tipo Vía</th>
                     <th>Estado</th>
@@ -86,10 +87,15 @@
             </thead>
             <tbody>
                 <tr *ngFor="let t of tramosPaginados">
-                    <td><strong>{{ t.via || '—' }}</strong></td>
+                    <td>
+                        <span class="badge" [ngClass]="viaBadge(t)">{{ t.via || '—' }}</span>
+                    </td>
                     <td class="td-muted">{{ t.nomenclatura?.completa || '—' }}</td>
                     <td>
-                        <span class="badge" [ngClass]="getMunicipioBadgeClass(t.municipio)">{{ t.municipio || '—' }}</span>
+                        <span class="badge" [ngClass]="munBadge(t)">{{ t.municipio || '—' }}</span>
+                    </td>
+                    <td>
+                        <span class="badge" [ngClass]="zatBadge(t)">{{ zatTxt(t) }}</span>
                     </td>
                     <td>
                         <span class="badge badge-calzada">{{ t.calzada || '—' }}</span>
@@ -119,7 +125,7 @@
                     </td>
                 </tr>
                 <tr *ngIf="tramosFiltrados.length === 0">
-                    <td colspan="9" class="empty-state">No hay tramos registrados</td>
+                    <td colspan="10" class="empty-state">No hay tramos registrados</td>
                 </tr>
             </tbody>
         </table>

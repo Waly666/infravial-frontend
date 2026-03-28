@@ -53,6 +53,9 @@
     <button type="button" class="quick-btn" data-quick="reportes" (click)="navegarA('reportes')" *ngIf="isAdmin() || isSupervisor()">
         <span class="material-symbols-outlined quick-btn-ic">analytics</span> Reportes
     </button>
+    <button type="button" class="quick-btn" data-quick="importacion" (click)="navegarA('importacion')" *ngIf="isAdmin()">
+        <span class="material-symbols-outlined quick-btn-ic">upload_file</span> Importar Excel
+    </button>
 </section>
 
 <section class="dashboard-charts" *ngIf="stats" aria-label="Gráficos del inventario">

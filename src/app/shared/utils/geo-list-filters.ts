@@ -90,6 +90,11 @@ export function badgeClassZat(z: string | null | undefined): string {
     return `badge-geo-zat-${hashToIdx(z || '')}`;
 }
 
+/** Nombre de vía en lista de tramos (color por valor). */
+export function badgeClassVia(via: string | null | undefined): string {
+    return `badge-via-${hashToIdx(via || '')}`;
+}
+
 export function matchesGeoFilters(
     row: any,
     filtroDepartamento: string,
