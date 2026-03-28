@@ -72,6 +72,16 @@
                 </div>
             </div>
             <div class="topbar-actions">
+                <div class="topbar-shortcuts" role="toolbar" aria-label="Accesos rápidos">
+                    <button type="button" class="topbar-shortcut-btn" data-top-shortcut="mapa-inventario"
+                        *ngIf="isAdmin() || isSupervisor() || isEncuestador()"
+                        (click)="navegarA('mapa-inventario')"
+                        title="Mapa del inventario"
+                        aria-label="Ir al mapa del inventario">
+                        <span class="material-symbols-outlined topbar-shortcut-ic" aria-hidden="true">map</span>
+                        <span class="topbar-shortcut-label">Mapa</span>
+                    </button>
+                </div>
                 <button type="button" class="toggle-modo" (click)="toggleModo()" [attr.aria-label]="modoClaro ? 'Activar modo oscuro' : 'Activar modo claro'" [title]="modoClaro ? 'Modo oscuro' : 'Modo claro'">
                     <span class="material-symbols-outlined toggle-modo-icon" aria-hidden="true">{{ modoClaro ? 'dark_mode' : 'light_mode' }}</span>
                 </button>

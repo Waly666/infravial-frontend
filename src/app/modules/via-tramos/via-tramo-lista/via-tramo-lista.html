@@ -115,6 +115,7 @@
                     <td class="td-muted">{{ t.fechaCreacion | date:'dd/MM/yyyy' }}</td>
                     <td>
                         <div class="actions-cell">
+                        <button type="button" class="btn-streetview-sm" *ngIf="tieneStreetView(t)" (click)="abrirStreetView(t)" title="Street View (Google Maps)">🧭</button>
                         <button class="btn-edit-sm" (click)="editar(t._id)" title="Editar">✏️</button>
                         <button class="btn-report-sm" (click)="generarReporte(t._id)" title="Generar FE001">📄</button>
                         <button class="btn-danger-sm"

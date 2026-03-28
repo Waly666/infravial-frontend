@@ -16,12 +16,20 @@ import {
     badgeClassZat,
     badgeClassVia
 } from '../../../shared/utils/geo-list-filters';
+import {
+    hasStreetViewCoords,
+    openGoogleStreetView
+} from '../../../shared/utils/street-view';
 @Component({
     selector: 'app-via-tramo-lista',
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './via-tramo-lista.html',
-    styleUrls: ['./via-tramo-lista.scss', '../../../shared/styles/geo-badges.scss']
+    styleUrls: [
+        './via-tramo-lista.scss',
+        '../../../shared/styles/geo-badges.scss',
+        '../../../shared/styles/street-view-list-btn.scss'
+    ]
 })
 export class ViaTramoListaComponent implements OnInit {
 
@@ -169,7 +177,15 @@ export class ViaTramoListaComponent implements OnInit {
             error: (err) => alert(err.error?.message || 'Error al eliminar')
         });
     }
-        generarReporte(id: string) {
+    generarReporte(id: string) {
         this.router.navigate(['/via-tramos/reporte', id]);
+    }
+
+    tieneStreetView(t: any): boolean {
+        return hasStreetViewCoords(t?.ubicacion);
+    }
+
+    abrirStreetView(t: any): void {
+        openGoogleStreetView(t?.ubicacion);
     }
 }

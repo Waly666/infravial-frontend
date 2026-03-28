@@ -18,13 +18,21 @@ import {
     badgeClassMunicipio,
     badgeClassZat
 } from "../../../shared/utils/geo-list-filters";
+import {
+    hasStreetViewCoords,
+    openGoogleStreetView
+} from "../../../shared/utils/street-view";
 
 @Component({
     selector: "app-sen-vert-lista",
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: "./sen-vert-lista.html",
-    styleUrls: ["./sen-vert-lista.scss", "../../../shared/styles/geo-badges.scss"]
+    styleUrls: [
+        "./sen-vert-lista.scss",
+        "../../../shared/styles/geo-badges.scss",
+        "../../../shared/styles/street-view-list-btn.scss"
+    ]
 })
 export class SenVertListaComponent implements OnInit {
 
@@ -36,6 +44,8 @@ export class SenVertListaComponent implements OnInit {
     filtroDepartamento = "";
     filtroMunicipio = "";
     filtroZat = "";
+    /** Código de señal (codSe), exacto; opciones según filtros geo. */
+    filtroCodigo = "";
     pageSize:  number  = 30;
     currentPage: number = 1;
 
@@ -74,8 +84,10 @@ export class SenVertListaComponent implements OnInit {
 
     get registrosFiltrados() {
         const q = this.busqueda.trim().toLowerCase();
+        const fc = this.filtroCodigo.trim();
         return this.registros.filter(r => {
             if (!matchesGeoFilters(r, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
+            if (fc && (r.codSe || "").trim() !== fc) return false;
             if (!q) return true;
             return (
                 r.codSe?.toLowerCase().includes(q) ||
@@ -99,18 +111,35 @@ export class SenVertListaComponent implements OnInit {
         return geoZatOptions(this.registros, this.filtroDepartamento, this.filtroMunicipio);
     }
 
+    get codigosDisponibles(): string[] {
+        const set = new Set<string>();
+        for (const r of this.registros) {
+            if (!matchesGeoFilters(r, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) continue;
+            const c = (r.codSe || "").trim();
+            if (c) set.add(c);
+        }
+        return Array.from(set).sort((a, b) => a.localeCompare(b, "es", { numeric: true }));
+    }
+
     onDepartamentoChange() {
         this.filtroMunicipio = "";
         this.filtroZat = "";
+        this.filtroCodigo = "";
         this.currentPage = 1;
     }
 
     onMunicipioChange() {
         this.filtroZat = "";
+        this.filtroCodigo = "";
         this.currentPage = 1;
     }
 
     onZatChange() {
+        this.filtroCodigo = "";
+        this.currentPage = 1;
+    }
+
+    onCodigoChange() {
         this.currentPage = 1;
     }
 
@@ -164,5 +193,13 @@ export class SenVertListaComponent implements OnInit {
             next: () => this.loadRegistros(),
             error: (err) => alert(err.error?.message || "Error al eliminar")
         });
+    }
+
+    tieneStreetView(r: any): boolean {
+        return hasStreetViewCoords(r?.ubicacion);
+    }
+
+    abrirStreetView(r: any): void {
+        openGoogleStreetView(r?.ubicacion);
     }
 }

@@ -1,0 +1,106 @@
+<div class="mapa-page">
+    <div class="mapa-top">
+        <div class="mapa-title-row">
+            <div>
+                <h1 class="page-title">Mapa del inventario</h1>
+                <p class="page-sub">Tramos, señales V./H. y semáforos enlazados al tramo. Time-lapse por <strong>fecha de inventario</strong> del tramo (<code>fechaInv</code>).</p>
+            </div>
+            <button type="button" class="btn-back" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+        </div>
+
+        <div class="alert-success mapa-jornada" *ngIf="jornada">
+            Jornada activa: <strong>{{ jornada.municipio }}</strong>
+        </div>
+        <div class="alert-warn mapa-jornada" *ngIf="!jornada">
+            Sin jornada activa (el mapa igual muestra datos históricos).
+        </div>
+
+        <div class="map-toolbar">
+            <div class="toolbar-section">
+                <span class="toolbar-label">Mapa base</span>
+                <div class="btn-group">
+                    <button type="button" class="tb-btn" [class.active]="mapMode === 'dark'" (click)="setMapMode('dark')">Oscuro</button>
+                    <button type="button" class="tb-btn" [class.active]="mapMode === 'paper'" (click)="setMapMode('paper')" title="Mapa de calles con colores (estilo mapa estándar)">Calles</button>
+                    <button type="button" class="tb-btn" [class.active]="mapMode === 'satellite'" (click)="setMapMode('satellite')">Vista real</button>
+                </div>
+            </div>
+
+            <div class="toolbar-section">
+                <span class="toolbar-label">Capas</span>
+                <label class="chk"><input type="checkbox" [(ngModel)]="showTramos" (ngModelChange)="onLayerToggle()" /> Tramos</label>
+                <label class="chk"><input type="checkbox" [(ngModel)]="showSenVert" (ngModelChange)="onLayerToggle()" /> Señales V.</label>
+                <label class="chk"><input type="checkbox" [(ngModel)]="showSenHor" (ngModelChange)="onLayerToggle()" /> Señales H.</label>
+                <label class="chk"><input type="checkbox" [(ngModel)]="showSemaforos" (ngModelChange)="onLayerToggle()" /> Semáforos</label>
+            </div>
+
+            <div class="toolbar-section toolbar-grow">
+                <span class="toolbar-label">Buscar</span>
+                <input type="text" class="search-input" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="Vía, código, municipio, ZAT…" />
+            </div>
+
+            <div class="toolbar-section">
+                <span class="counts" *ngIf="!loading">
+                    Visibles: {{ conteos().tr }} tramos · {{ conteos().sv }} SV · {{ conteos().sh }} SH · {{ conteos().sem }} sem.
+                </span>
+                <button type="button" class="btn-reload" (click)="loadData()" [disabled]="loading">↻ Actualizar</button>
+            </div>
+        </div>
+
+        <div class="filter-row">
+            <select class="filter-select" [(ngModel)]="filtroDepartamento" (ngModelChange)="onDepartamentoChange()">
+                <option value="">Todos los departamentos</option>
+                <option *ngFor="let dep of departamentosDisponibles" [value]="dep">{{ dep }}</option>
+            </select>
+            <select class="filter-select" [(ngModel)]="filtroMunicipio" (ngModelChange)="onMunicipioChange()">
+                <option value="">Todos los municipios</option>
+                <option *ngFor="let mun of municipiosDisponibles" [value]="mun">{{ mun }}</option>
+            </select>
+            <select class="filter-select" *ngIf="filtroMunicipio" [(ngModel)]="filtroZat" (ngModelChange)="onZatChange()">
+                <option value="">Todas las ZAT</option>
+                <option *ngFor="let z of zatsDisponibles" [value]="z.value">{{ z.label }}</option>
+            </select>
+            <select class="filter-select" [(ngModel)]="filtroCodigoSv" (ngModelChange)="onCodigoSenalChange()">
+                <option value="">Código señal V. (todas)</option>
+                <option *ngFor="let c of codigosSvDisponibles" [value]="c">{{ c }}</option>
+            </select>
+            <select class="filter-select" [(ngModel)]="filtroCodigoSh" (ngModelChange)="onCodigoSenalChange()">
+                <option value="">Código señal H. (todas)</option>
+                <option *ngFor="let c of codigosShDisponibles" [value]="c">{{ c }}</option>
+            </select>
+        </div>
+
+        <div class="timelapse-bar" *ngIf="!loading && timelapseCutoffs.length">
+            <label class="timelapse-head chk">
+                <input type="checkbox" [(ngModel)]="timelapseActivo" (ngModelChange)="onTimelapseToggle()" />
+                Time-lapse por fecha inventario del tramo (acumulado hasta…)
+            </label>
+            <div class="timelapse-controls" *ngIf="timelapseActivo">
+                <input
+                    type="range"
+                    class="timelapse-range"
+                    min="0"
+                    [max]="timelapseCutoffs.length - 1"
+                    [(ngModel)]="timelapseIndex"
+                    (ngModelChange)="onTimelapseSliderChange()"
+                />
+                <span class="timelapse-date">{{ timelapseLabel() }}</span>
+                <button type="button" class="btn-play" (click)="toggleTimelapsePlay()">
+                    {{ timelapsePlaying ? 'Pausa' : 'Reproducir' }}
+                </button>
+            </div>
+            <p class="timelapse-hint" *ngIf="timelapseActivo">
+                Solo se muestran tramos y elementos cuyo tramo tiene inventario hasta la fecha indicada (según <code>fechaInv</code>, o <code>fechaCreación</code> si no hay inventario).
+            </p>
+        </div>
+    </div>
+
+    <div class="mapa-error" *ngIf="error">{{ error }}</div>
+
+    <div class="mapa-body">
+        <div class="map-loading" *ngIf="loading">
+            <div class="spinner"></div>
+            <p>Cargando geometrías…</p>
+        </div>
+        <div #mapHost class="map-host" [class.dimmed]="loading"></div>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+.btn-streetview-sm {
+    padding: 0.3rem 0.55rem;
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid rgba(251, 191, 36, 0.38);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    font-size: 0.88rem;
+    line-height: 1;
+
+    &:hover {
+        background: rgba(251, 191, 36, 0.22);
+        border-color: rgba(251, 191, 36, 0.55);
+    }
+}

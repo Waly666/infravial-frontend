@@ -39,6 +39,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
     isAdmin(): boolean { return this.authService.isAdmin(); }
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
+    isEncuestador(): boolean { return this.authService.isEncuestador(); }
 
     navegarA(ruta: string) {
         this.router.navigate([`/${ruta}`]);

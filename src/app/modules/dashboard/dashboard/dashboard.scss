@@ -189,6 +189,7 @@
 .nav-item[data-nav='dashboard']        .nav-icon-wrap { background: linear-gradient(145deg, #38bdf8 0%, #6366f1 100%); }
 .nav-item[data-nav='jornadas']         .nav-icon-wrap { background: linear-gradient(145deg, #fbbf24 0%, #f97316 100%); }
 .nav-item[data-nav='via-tramos']       .nav-icon-wrap { background: linear-gradient(145deg, #34d399 0%, #0d9488 100%); }
+.nav-item[data-nav='mapa-inventario']  .nav-icon-wrap { background: linear-gradient(145deg, #2dd4bf 0%, #0f766e 100%); }
 .nav-item[data-nav='sen-verticales']   .nav-icon-wrap { background: linear-gradient(145deg, #a78bfa 0%, #c026d3 100%); }
 .nav-item[data-nav='sen-horizontales'] .nav-icon-wrap { background: linear-gradient(145deg, #60a5fa 0%, #2563eb 100%); }
 .nav-item[data-nav='semaforos']        .nav-icon-wrap { background: linear-gradient(145deg, #f87171 0%, #dc2626 100%); }
@@ -301,6 +302,66 @@
     flex-wrap: wrap;
     gap: 0.75rem;
     flex-shrink: 0;
+}
+
+.topbar-shortcuts {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    padding-right: 0.35rem;
+    margin-right: 0.15rem;
+    border-right: 1px solid rgba(91, 143, 255, 0.18);
+}
+
+.topbar-shortcut-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    min-height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(20, 184, 166, 0.35);
+    background: linear-gradient(145deg, rgba(20, 184, 166, 0.14) 0%, rgba(15, 118, 110, 0.1) 100%);
+    color: #99f6e4;
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-family: var(--font-sans, 'Syne', system-ui, sans-serif);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+
+    &:hover {
+        transform: translateY(-1px);
+        border-color: rgba(45, 212, 191, 0.55);
+        box-shadow: 0 4px 18px rgba(20, 184, 166, 0.18);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(45, 212, 191, 0.65);
+        outline-offset: 2px;
+    }
+}
+
+.topbar-shortcut-ic {
+    font-size: 20px !important;
+    opacity: 0.95;
+}
+
+.topbar-shortcut-label {
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .topbar-shortcut-label {
+        display: none;
+    }
+
+    .topbar-shortcut-btn {
+        padding: 0.35rem;
+        min-width: 40px;
+        justify-content: center;
+    }
 }
 
 .content {
@@ -469,6 +530,7 @@
 }
 
 .quick-btn[data-quick='via-tramos']       { background: linear-gradient(145deg, #34d399 0%, #0d9488 100%); }
+.quick-btn[data-quick='mapa-inventario']  { background: linear-gradient(145deg, #14b8a6 0%, #0f766e 100%); }
 .quick-btn[data-quick='sen-verticales']   { background: linear-gradient(145deg, #a78bfa 0%, #c026d3 100%); }
 .quick-btn[data-quick='sen-horizontales'] { background: linear-gradient(145deg, #60a5fa 0%, #2563eb 100%); }
 .quick-btn[data-quick='semaforos']        { background: linear-gradient(145deg, #f87171 0%, #dc2626 100%); }
@@ -793,6 +855,20 @@
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 255, 0.92) 100%);
     border-bottom: 1px solid rgba(37, 99, 235, 0.1);
     box-shadow: 0 4px 20px rgba(37, 99, 235, 0.06);
+}
+
+:host-context(body.light-mode) .topbar-shortcuts {
+    border-right-color: rgba(37, 99, 235, 0.14);
+}
+
+:host-context(body.light-mode) .topbar-shortcut-btn {
+    border-color: rgba(13, 148, 136, 0.35);
+    background: linear-gradient(145deg, rgba(20, 184, 166, 0.12) 0%, rgba(15, 118, 110, 0.08) 100%);
+    color: #0f766e;
+}
+
+:host-context(body.light-mode) .topbar-shortcut-ic {
+    color: #0d9488;
 }
 
 :host-context(body.light-mode) .jornada-status {

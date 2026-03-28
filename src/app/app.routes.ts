@@ -52,6 +52,12 @@ export const routes: Routes = [
                         loadComponent: () => import('./modules/via-tramos/via-tramo-form/via-tramo-form').then(m => m.ViaTramoFormComponent)
                     },
                     {
+                        path: 'mapa-inventario',
+                        canActivate: [roleGuard],
+                        data: { roles: ['admin', 'supervisor', 'encuestador'] },
+                        loadComponent: () => import('./modules/mapa-inventario/mapa-inventario').then(m => m.MapaInventarioComponent)
+                    },
+                    {
                         path: 'sen-verticales',
                         loadComponent: () => import('./modules/sen-verticales/sen-vert-lista/sen-vert-lista').then(m => m.SenVertListaComponent)
                     },

@@ -18,13 +18,21 @@ import {
     badgeClassMunicipio,
     badgeClassZat
 } from '../../../shared/utils/geo-list-filters';
+import {
+    hasStreetViewCoords,
+    openGoogleStreetView
+} from '../../../shared/utils/street-view';
 
 @Component({
     selector: 'app-semaforo-lista',
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './semaforo-lista.html',
-    styleUrls: ['./semaforo-lista.scss', '../../../shared/styles/geo-badges.scss']
+    styleUrls: [
+        './semaforo-lista.scss',
+        '../../../shared/styles/geo-badges.scss',
+        '../../../shared/styles/street-view-list-btn.scss'
+    ]
 })
 export class SemaforoListaComponent implements OnInit {
 
@@ -166,6 +174,14 @@ export class SemaforoListaComponent implements OnInit {
             next: () => this.loadRegistros(),
             error: (err) => alert(err.error?.message || 'Error al eliminar')
         });
+    }
+
+    tieneStreetView(r: any): boolean {
+        return hasStreetViewCoords(r?.ubicacion);
+    }
+
+    abrirStreetView(r: any): void {
+        openGoogleStreetView(r?.ubicacion);
     }
 }
 

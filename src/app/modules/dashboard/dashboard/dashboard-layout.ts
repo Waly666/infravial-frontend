@@ -33,6 +33,7 @@ export class DashboardLayoutComponent implements OnInit {
         { id: 'auditoria',        label: 'Auditoría',          icon: 'fact_check', roles: ['admin'] },
         { id: 'respaldos',        label: 'Respaldos',          icon: 'settings_backup_restore', roles: ['admin'] },
         { id: 'importacion',      label: 'Importar Excel',     icon: 'upload_file', roles: ['admin'] },
+        { id: 'mapa-inventario',  label: 'Mapa inventario',    icon: 'map', roles: ['admin','supervisor','encuestador'] },
         { id: 'reportes',         label: 'Reportes',           icon: 'analytics', roles: ['admin','supervisor'] },
     ];
 
@@ -81,6 +82,7 @@ export class DashboardLayoutComponent implements OnInit {
 
     isAdmin(): boolean { return this.authService.isAdmin(); }
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
+    isEncuestador(): boolean { return this.authService.isEncuestador(); }
 
     logout() { this.authService.logout(); }
 
