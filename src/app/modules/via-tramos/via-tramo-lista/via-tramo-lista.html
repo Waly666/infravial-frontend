@@ -22,15 +22,44 @@
         Supervisor: {{ jornada.supervisor }}
     </div>
 
-    <!-- Buscador -->
+    <!-- Buscador + Paginación -->
     <div class="search-bar">
         <input
             type="text"
             [(ngModel)]="busqueda"
+            (ngModelChange)="onBusquedaChange()"
             placeholder="🔍 Buscar por vía, municipio o nomenclatura..."
             class="search-input"
         >
         <span class="total-badge">{{ tramosFiltrados.length }} registros</span>
+
+        <div class="pagination-controls">
+            <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
+                <option [ngValue]="30">30</option>
+                <option [ngValue]="50">50</option>
+                <option [ngValue]="100">100</option>
+            </select>
+            <button class="btn-pag" (click)="paginaAnterior()" [disabled]="currentPage === 1">← Anterior</button>
+            <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+            <button class="btn-pag" (click)="paginaSiguiente()" [disabled]="currentPage >= totalPages">Siguiente →</button>
+        </div>
+    </div>
+
+    <div class="filter-row">
+        <select class="filter-select" [(ngModel)]="filtroDepartamento" (ngModelChange)="onDepartamentoChange()">
+            <option value="">Todos los departamentos</option>
+            <option *ngFor="let dep of departamentosDisponibles" [value]="dep">{{ dep }}</option>
+        </select>
+
+        <select class="filter-select" [(ngModel)]="filtroMunicipio" (ngModelChange)="onMunicipioChange()">
+            <option value="">Todos los municipios</option>
+            <option *ngFor="let mun of municipiosDisponibles" [value]="mun">{{ mun }}</option>
+        </select>
+
+        <select class="filter-select" *ngIf="filtroMunicipio" [(ngModel)]="filtroZat" (ngModelChange)="onZatChange()">
+            <option value="">Todas las ZAT</option>
+            <option *ngFor="let z of zatsDisponibles" [value]="z.value">{{ z.label }}</option>
+        </select>
     </div>
 
     <!-- Loading -->
@@ -56,10 +85,12 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let t of tramosFiltrados">
+                <tr *ngFor="let t of tramosPaginados">
                     <td><strong>{{ t.via || '—' }}</strong></td>
                     <td class="td-muted">{{ t.nomenclatura?.completa || '—' }}</td>
-                    <td>{{ t.municipio || '—' }}</td>
+                    <td>
+                        <span class="badge" [ngClass]="getMunicipioBadgeClass(t.municipio)">{{ t.municipio || '—' }}</span>
+                    </td>
                     <td>
                         <span class="badge badge-calzada">{{ t.calzada || '—' }}</span>
                     </td>

@@ -18,6 +18,8 @@ export class AuditoriaListaComponent implements OnInit {
     loading:   boolean = true;
     error:     string  = '';
     busqueda:  string  = '';
+    pageSize:  number  = 30;
+    currentPage: number = 1;
     filtroMetodo  = '';
     filtroUsuario = '';
     usuarios:     any[] = [];
@@ -69,6 +71,32 @@ export class AuditoriaListaComponent implements OnInit {
           }
           return lista;
       }
+
+    get totalPages(): number {
+        return Math.ceil(this.registrosFiltrados.length / this.pageSize) || 1;
+    }
+
+    get registrosPaginados() {
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.registrosFiltrados.slice(start, start + this.pageSize);
+    }
+
+    cambiarPageSize(size: number) {
+        this.pageSize = size;
+        this.currentPage = 1;
+    }
+
+    paginaAnterior() {
+        if (this.currentPage > 1) this.currentPage--;
+    }
+
+    paginaSiguiente() {
+        if (this.currentPage < this.totalPages) this.currentPage++;
+    }
+
+    onBusquedaChange() {
+        this.currentPage = 1;
+    }
 
       get usuariosUnicos() {
           const mapa = new Map();

@@ -1,4 +1,4 @@
-﻿<div class="page-container">
+<div class="page-container">
     <div class="page-header">
         <div>
             <h1 class="page-title">Cajas de Inspección</h1>
@@ -14,8 +14,33 @@
     <div class="alert-success" *ngIf="jornada">🟢 Jornada activa: <strong>{{ jornada.municipio }}</strong></div>
 
     <div class="search-bar">
-        <input type="text" [(ngModel)]="busqueda" placeholder="🔍 Buscar..." class="search-input">
+        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="🔍 Buscar..." class="search-input">
         <span class="total-badge">{{ registrosFiltrados.length }} registros</span>
+        <div class="pagination-controls">
+            <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
+                <option [ngValue]="30">30</option>
+                <option [ngValue]="50">50</option>
+                <option [ngValue]="100">100</option>
+            </select>
+            <button class="btn-pag" (click)="paginaAnterior()" [disabled]="currentPage === 1">← Anterior</button>
+            <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+            <button class="btn-pag" (click)="paginaSiguiente()" [disabled]="currentPage >= totalPages">Siguiente →</button>
+        </div>
+    </div>
+
+    <div class="filter-row">
+        <select class="filter-select" [(ngModel)]="filtroDepartamento" (ngModelChange)="onDepartamentoChange()">
+            <option value="">Todos los departamentos</option>
+            <option *ngFor="let dep of departamentosDisponibles" [value]="dep">{{ dep }}</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="filtroMunicipio" (ngModelChange)="onMunicipioChange()">
+            <option value="">Todos los municipios</option>
+            <option *ngFor="let mun of municipiosDisponibles" [value]="mun">{{ mun }}</option>
+        </select>
+        <select class="filter-select" *ngIf="filtroMunicipio" [(ngModel)]="filtroZat" (ngModelChange)="onZatChange()">
+            <option value="">Todas las ZAT</option>
+            <option *ngFor="let z of zatsDisponibles" [value]="z.value">{{ z.label }}</option>
+        </select>
     </div>
 
     <div class="loading-state" *ngIf="loading">
@@ -26,6 +51,9 @@
         <table class="data-table">
             <thead>
                 <tr>
+                    <th>Departamento</th>
+                    <th>Municipio</th>
+                    <th>ZAT</th>
                     <th>Vía Tramo</th>
                     <th>Material</th>
                     <th>Estado</th>
@@ -36,7 +64,10 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let r of registrosFiltrados">
+                <tr *ngFor="let r of registrosPaginados">
+                    <td><span class="badge" [ngClass]="depBadge(r)">{{ depTxt(r) }}</span></td>
+                    <td><span class="badge" [ngClass]="munBadge(r)">{{ munTxt(r) }}</span></td>
+                    <td><span class="badge" [ngClass]="zatBadge(r)">{{ zatTxt(r) }}</span></td>
                     <td>{{ r.idViaTramo?.nomenclatura?.completa || r.idViaTramo?.via || "—" }}</td>
                     <td class="td-muted">{{ r.materialCaja || "—" }}</td>
                     <td>
@@ -60,7 +91,7 @@
                     </td>
                 </tr>
                 <tr *ngIf="registrosFiltrados.length === 0">
-                    <td colspan="7" class="empty-state">No hay cajas de inspección registradas</td>
+                    <td colspan="10" class="empty-state">No hay cajas de inspección registradas</td>
                 </tr>
             </tbody>
         </table>

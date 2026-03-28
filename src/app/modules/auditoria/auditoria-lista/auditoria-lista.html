@@ -1,4 +1,4 @@
-﻿<div class="page-container">
+<div class="page-container">
     <div class="page-header">
         <div>
             <h1 class="page-title">Auditoría del Sistema</h1>
@@ -8,7 +8,7 @@
     </div>
 
     <div class="filtros-bar">
-        <input type="text" [(ngModel)]="busqueda"
+        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()"
             placeholder="🔍 Buscar por cédula, usuario o ruta..."
             class="search-input">
 
@@ -28,6 +28,16 @@
         </select>
 
         <span class="total-badge">{{ registrosFiltrados.length }} registros</span>
+        <div class="pagination-controls">
+            <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
+                <option [ngValue]="30">30</option>
+                <option [ngValue]="50">50</option>
+                <option [ngValue]="100">100</option>
+            </select>
+            <button class="btn-pag" (click)="paginaAnterior()" [disabled]="currentPage === 1">← Anterior</button>
+            <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+            <button class="btn-pag" (click)="paginaSiguiente()" [disabled]="currentPage >= totalPages">Siguiente →</button>
+        </div>
     </div>
 
     <div class="loading-state" *ngIf="loading">
@@ -49,7 +59,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let r of registrosFiltrados">
+                <tr *ngFor="let r of registrosPaginados">
                     <td class="td-fecha">{{ r.fecha | date:"dd/MM/yy HH:mm:ss" }}</td>
                     <td><span class="badge-codigo">{{ r.user?.user || "—" }}</span></td>
                     <td class="td-usuario">{{ r.user?.nombres }} {{ r.user?.apellidos }}</td>

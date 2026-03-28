@@ -5,6 +5,12 @@ import { ViaTramoService } from '../../../core/services/via-tramo.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { JornadaService } from '../../../core/services/jornada.service';
 import { FormsModule } from '@angular/forms';
+import {
+    geoDepartamentos,
+    geoMunicipios,
+    geoZatOptions,
+    matchesGeoFilters
+} from '../../../shared/utils/geo-list-filters';
 @Component({
     selector: 'app-via-tramo-lista',
     standalone: true,
@@ -19,6 +25,11 @@ export class ViaTramoListaComponent implements OnInit {
     error:    string  = '';
     jornada:  any     = null;
     busqueda: string  = '';
+    filtroDepartamento: string = '';
+    filtroMunicipio: string = '';
+    filtroZat: string = '';
+    pageSize: number  = 30;
+    currentPage: number = 1;
 
     constructor(
         private viaTramoService: ViaTramoService,
@@ -54,13 +65,84 @@ export class ViaTramoListaComponent implements OnInit {
     }
 
     get tramosFiltrados() {
-        if (!this.busqueda) return this.tramos;
-        const q = this.busqueda.toLowerCase();
-        return this.tramos.filter(t =>
-            t.via?.toLowerCase().includes(q) ||
-            t.municipio?.toLowerCase().includes(q) ||
-            t.nomenclatura?.completa?.toLowerCase().includes(q)
-        );
+        const q = this.busqueda.trim().toLowerCase();
+
+        return this.tramos.filter(t => {
+            if (!matchesGeoFilters(t, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
+
+            if (!q) return true;
+            return (
+                t.via?.toLowerCase().includes(q) ||
+                t.municipio?.toLowerCase().includes(q) ||
+                t.departamento?.toLowerCase().includes(q) ||
+                t.nomenclatura?.completa?.toLowerCase().includes(q)
+            );
+        });
+    }
+
+    get totalPages(): number {
+        return Math.ceil(this.tramosFiltrados.length / this.pageSize) || 1;
+    }
+
+    get tramosPaginados() {
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.tramosFiltrados.slice(start, start + this.pageSize);
+    }
+
+    cambiarPageSize(size: number) {
+        this.pageSize = size;
+        this.currentPage = 1;
+    }
+
+    paginaAnterior() {
+        if (this.currentPage > 1) this.currentPage--;
+    }
+
+    paginaSiguiente() {
+        if (this.currentPage < this.totalPages) this.currentPage++;
+    }
+
+    onBusquedaChange() {
+        this.currentPage = 1;
+    }
+
+    get departamentosDisponibles(): string[] {
+        return geoDepartamentos(this.tramos);
+    }
+
+    get municipiosDisponibles(): string[] {
+        return geoMunicipios(this.tramos, this.filtroDepartamento);
+    }
+
+    get zatsDisponibles(): Array<{ value: string; label: string }> {
+        return geoZatOptions(this.tramos, this.filtroDepartamento, this.filtroMunicipio);
+    }
+
+    onDepartamentoChange() {
+        this.filtroMunicipio = '';
+        this.filtroZat = '';
+        this.currentPage = 1;
+    }
+
+    onMunicipioChange() {
+        this.filtroZat = '';
+        this.currentPage = 1;
+    }
+
+    onZatChange() {
+        this.currentPage = 1;
+    }
+
+    getMunicipioBadgeClass(municipio: string): string {
+        const value = (municipio || '').trim().toUpperCase();
+        if (!value) return 'badge-municipio-1';
+        let hash = 0;
+        for (let i = 0; i < value.length; i++) {
+            hash = ((hash << 5) - hash) + value.charCodeAt(i);
+            hash |= 0;
+        }
+        const idx = Math.abs(hash % 8) + 1;
+        return `badge-municipio-${idx}`;
     }
 
     nuevo()          { this.router.navigate(['/via-tramos/nuevo']); }

@@ -5,13 +5,26 @@ import { Router } from '@angular/router';
 import { SemaforoService } from '../../../core/services/semaforo.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { JornadaService } from '../../../core/services/jornada.service';
+import {
+    geoDepartamentos,
+    geoMunicipios,
+    geoZatOptions,
+    matchesGeoFilters,
+    rowDepartamento,
+    rowMunicipio,
+    rowZatLabel,
+    rowZatValue,
+    badgeClassDepartamento,
+    badgeClassMunicipio,
+    badgeClassZat
+} from '../../../shared/utils/geo-list-filters';
 
 @Component({
     selector: 'app-semaforo-lista',
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './semaforo-lista.html',
-    styleUrl: './semaforo-lista.scss'
+    styleUrls: ['./semaforo-lista.scss', '../../../shared/styles/geo-badges.scss']
 })
 export class SemaforoListaComponent implements OnInit {
 
@@ -20,6 +33,11 @@ export class SemaforoListaComponent implements OnInit {
     error:     string  = '';
     jornada:   any     = null;
     busqueda:  string  = '';
+    filtroDepartamento = '';
+    filtroMunicipio = '';
+    filtroZat = '';
+    pageSize:  number  = 30;
+    currentPage: number = 1;
 
     constructor(
         private semaforoService: SemaforoService,
@@ -58,13 +76,83 @@ export class SemaforoListaComponent implements OnInit {
     }
 
     get registrosFiltrados() {
-        if (!this.busqueda) return this.registros;
-        const q = this.busqueda.toLowerCase();
-        return this.registros.filter(r =>
-            r.idViaTramo?.via?.toLowerCase().includes(q) ||
-            r.claseSem?.toLowerCase().includes(q) ||
-            r.fase?.toLowerCase().includes(q)
-        );
+        const q = this.busqueda.trim().toLowerCase();
+        return this.registros.filter(r => {
+            if (!matchesGeoFilters(r, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
+            if (!q) return true;
+            return (
+                r.idViaTramo?.via?.toLowerCase().includes(q) ||
+                r.idViaTramo?.municipio?.toLowerCase().includes(q) ||
+                r.idViaTramo?.departamento?.toLowerCase().includes(q) ||
+                r.claseSem?.toLowerCase().includes(q) ||
+                r.fase?.toLowerCase().includes(q)
+            );
+        });
+    }
+
+    get departamentosDisponibles(): string[] {
+        return geoDepartamentos(this.registros);
+    }
+
+    get municipiosDisponibles(): string[] {
+        return geoMunicipios(this.registros, this.filtroDepartamento);
+    }
+
+    get zatsDisponibles(): Array<{ value: string; label: string }> {
+        return geoZatOptions(this.registros, this.filtroDepartamento, this.filtroMunicipio);
+    }
+
+    onDepartamentoChange() {
+        this.filtroMunicipio = '';
+        this.filtroZat = '';
+        this.currentPage = 1;
+    }
+
+    onMunicipioChange() {
+        this.filtroZat = '';
+        this.currentPage = 1;
+    }
+
+    onZatChange() {
+        this.currentPage = 1;
+    }
+
+    depTxt(r: any): string { return rowDepartamento(r) || '—'; }
+    munTxt(r: any): string { return rowMunicipio(r) || '—'; }
+    zatTxt(r: any): string {
+        const t = rowZatLabel(r);
+        return t === '—' && !rowZatValue(r) ? '—' : t;
+    }
+    depBadge(r: any): string { return badgeClassDepartamento(rowDepartamento(r)); }
+    munBadge(r: any): string { return badgeClassMunicipio(rowMunicipio(r)); }
+    zatBadge(r: any): string {
+        return badgeClassZat(rowZatValue(r) || rowZatLabel(r) || '—');
+    }
+
+    get totalPages(): number {
+        return Math.ceil(this.registrosFiltrados.length / this.pageSize) || 1;
+    }
+
+    get registrosPaginados() {
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.registrosFiltrados.slice(start, start + this.pageSize);
+    }
+
+    cambiarPageSize(size: number) {
+        this.pageSize = size;
+        this.currentPage = 1;
+    }
+
+    paginaAnterior() {
+        if (this.currentPage > 1) this.currentPage--;
+    }
+
+    paginaSiguiente() {
+        if (this.currentPage < this.totalPages) this.currentPage++;
+    }
+
+    onBusquedaChange() {
+        this.currentPage = 1;
     }
 
     nuevo()            { this.router.navigate(['/semaforos/nuevo']); }

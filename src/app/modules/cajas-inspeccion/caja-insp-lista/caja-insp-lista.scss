@@ -45,6 +45,29 @@
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    min-width: 210px;
+    background: rgba(74, 158, 255, 0.08);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 6px;
+    padding: 0.55rem 0.7rem;
+    color: #e8f0ff;
+    font-size: 0.8rem;
+    outline: none;
+
+    option { background: #0a1228; color: #e8f0ff; }
+    &:focus { border-color: rgba(74, 158, 255, 0.45); }
 }
 
 .search-input {
@@ -69,6 +92,49 @@
     padding: 0.3rem 0.75rem;
     border-radius: 20px;
     border: 1px solid rgba(74, 158, 255, 0.15);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.page-size-select {
+    background: rgba(74, 158, 255, 0.08);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 5px;
+    padding: 0.4rem 0.5rem;
+    color: #e8f0ff;
+    font-size: 0.78rem;
+    cursor: pointer;
+    outline: none;
+
+    option { background: #0a1228; color: #e8f0ff; }
+    &:focus { border-color: rgba(74, 158, 255, 0.5); }
+}
+
+.btn-pag {
+    padding: 0.35rem 0.75rem;
+    background: rgba(74, 158, 255, 0.08);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 5px;
+    color: #4a9eff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) { background: rgba(74, 158, 255, 0.18); }
+    &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+
+.page-info {
+    font-size: 0.75rem;
+    color: rgba(180, 200, 255, 0.5);
+    white-space: nowrap;
 }
 
 .loading-state {

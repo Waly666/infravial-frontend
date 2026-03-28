@@ -1,4 +1,4 @@
-﻿<div class="reporte-wrapper">
+<div class="reporte-wrapper">
 
     <div class="reporte-actions no-print">
         <button class="btn-volver" (click)="volver()">← Volver</button>
@@ -142,16 +142,19 @@
             <div class="medida-item"><span class="medida-label">Sardinel Izq. Calz A</span><span class="medida-valor">{{ tramo?.sardIzqCalzA || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Ciclo-ruta Izquierda</span><span class="medida-valor">{{ tramo?.cicloRutaIzq || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Área de Servicio Izq.</span><span class="medida-valor">{{ tramo?.areaServIzq || 0 }}</span></div>
+            <div class="medida-item"><span class="medida-label">Bahía Est Izquierda</span><span class="medida-valor">{{ tramo?.bahiaEstIzq || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Cuneta Izquierda</span><span class="medida-valor">{{ tramo?.cunetaIzq || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Berma Izquierda</span><span class="medida-valor">{{ tramo?.bermaIzq || 0 }}</span></div>
+            <div class="medida-item"><span class="medida-label">Ancho Calzada</span><span class="medida-valor">{{ tramo?.calzadaIzq || 0 }}</span></div>
         </div>
         <div class="medidas-col">
             <div class="medida-item"><span class="medida-label">Andén Derecho</span><span class="medida-valor">{{ tramo?.andenDer || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Zona Verde Derecha</span><span class="medida-valor">{{ tramo?.zonaVerdeDer || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Antejardín Derecho</span><span class="medida-valor">{{ tramo?.anteJardinDer || 0 }}</span></div>
-            <div class="medida-item"><span class="medida-label">Sardinel Der. Calz B</span><span class="medida-valor">{{ tramo?.sardDerCalzB || 0 }}</span></div>
+            <div class="medida-item"><span class="medida-label">Sardinel Der. Calz A</span><span class="medida-valor">{{ tramo?.sardDerCalzA || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Ciclo-ruta Derecha</span><span class="medida-valor">{{ tramo?.cicloRutaDer || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Área de Servicio Der.</span><span class="medida-valor">{{ tramo?.areaServDer || 0 }}</span></div>
+            <div class="medida-item"><span class="medida-label">Bahía Est Derecha</span><span class="medida-valor">{{ tramo?.bahiaEstDer || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Cuneta Derecha</span><span class="medida-valor">{{ tramo?.cunetaDer || 0 }}</span></div>
             <div class="medida-item"><span class="medida-label">Berma Derecha</span><span class="medida-valor">{{ tramo?.bermaDer || 0 }}</span></div>
         </div>
@@ -161,10 +164,6 @@
             <div class="medida-item"><span class="medida-label">Altura</span><span class="medida-valor">{{ tramo?.pendienteAltura || 0 }}</span></div>
             <div class="pendiente-resultado">Pendiente de la Vía<br><strong>{{ tramo?.pendiente || "0,00" }} %</strong></div>
         </div>
-    </div>
-    <div class="total-calzada-una">
-        <span class="total-label-una">Ancho de Calzada</span>
-        <span class="total-valor-una">{{ tramo?.calzadaIzq || 0 }}</span>
     </div>
 </div>
 
