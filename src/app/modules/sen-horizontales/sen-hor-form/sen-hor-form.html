@@ -42,33 +42,38 @@
             </div>
             <div class="form-group form-full">
                 <label class="label-required">Tramo de Vía *</label>
-                <div class="tramo-seleccionado" *ngIf="tramoSeleccionado">
-                    <div class="tramo-info">
-                        <span class="tramo-line-geo" *ngIf="(tramoSeleccionado | tramoGeo) as geo">{{ geo }}</span>
-                        <strong class="tramo-line-via">{{ tramoSeleccionado | tramoViaNom }}</strong>
+                <div class="tramo-panel" *ngIf="tramoSeleccionado">
+                    <div class="tramo-panel-head">
+                        <span class="tramo-panel-title">Tramo seleccionado</span>
+                        <button type="button" class="btn-cambiar" (click)="tramoSeleccionado = null; form.idViaTramo = ''; busquedaTramo = ''">Cambiar</button>
                     </div>
-                    <button class="btn-cambiar" (click)="tramoSeleccionado = null; form.idViaTramo = ''; busquedaTramo = ''">Cambiar</button>
+                    <div class="tramo-panel-body">
+                        <div class="tramo-panel-geo" *ngIf="(tramoSeleccionado | tramoGeo) as geo">{{ geo }}</div>
+                        <div class="tramo-panel-nom">{{ tramoSeleccionado | tramoNomenclatura }}</div>
+                        <div class="tramo-panel-id-row">
+                            <span class="tramo-panel-id-label">ID ViaTramo</span>
+                            <code class="tramo-panel-id-value">{{ tramoSeleccionado._id | mongoId }}</code>
+                        </div>
+                    </div>
                 </div>
                 <div *ngIf="!tramoSeleccionado" style="position:relative">
                     <input type="text" [(ngModel)]="busquedaTramo"
                         (focus)="mostrarTramos = true"
                         (input)="mostrarTramos = true"
-                        placeholder="🔍 Buscar por depto, municipio, vía o nomenclatura..."
+                        placeholder="🔍 Depto, municipio, nomenclatura o ID…"
                         class="form-input">
                     <div class="tramos-dropdown" *ngIf="mostrarTramos && tramosFiltrados.length > 0">
-                        <div class="tramo-item" *ngFor="let t of tramosFiltrados" (click)="seleccionarTramo(t)">
+                        <div class="tramo-item tramo-item--pick" *ngFor="let t of tramosFiltrados" (click)="seleccionarTramo(t)">
                             <span class="tramo-line-geo" *ngIf="(t | tramoGeo) as g">{{ g }}</span>
-                            <strong class="tramo-line-via">{{ t | tramoViaNom }}</strong>
+                            <strong class="tramo-item-nom">{{ t | tramoNomenclatura }}</strong>
+                            <span class="tramo-item-id">{{ t._id | mongoId }}</span>
                         </div>
+                    </div>
+                    <div class="tramos-dropdown" *ngIf="mostrarTramos && tramosFiltrados.length === 0">
+                        <div class="tramo-empty">No se encontraron tramos</div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="tramo-nomenclatura" *ngIf="tramoSeleccionado">
-            <span class="nom-label">📍 Tramo seleccionado</span>
-            <span class="nom-geo tramo-line-geo" *ngIf="(tramoSeleccionado | tramoGeo) as g2">{{ g2 }}</span>
-            <span class="nom-valor tramo-line-via">{{ tramoSeleccionado | tramoViaNom }}</span>
         </div>
     </div>
 

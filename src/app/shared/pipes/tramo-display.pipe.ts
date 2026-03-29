@@ -31,3 +31,25 @@ export class TramoViaNomPipe implements PipeTransform {
         return n || v || '—';
     }
 }
+
+/** Solo nomenclatura completa (sin vía). */
+@Pipe({ name: 'tramoNomenclatura', standalone: true })
+export class TramoNomenclaturaPipe implements PipeTransform {
+    transform(t: unknown): string {
+        const o = asRecord(t);
+        if (!o) return '—';
+        const nomObj = o['nomenclatura'] as Record<string, unknown> | undefined;
+        const n = String(nomObj?.['completa'] ?? '').trim();
+        return n || '—';
+    }
+}
+
+/** Texto del ObjectId / id tal cual (sin truncar), para copiar y cruzar con Compass. */
+@Pipe({ name: 'mongoId', standalone: true })
+export class MongoIdPipe implements PipeTransform {
+    transform(id: unknown): string {
+        const s = id == null ? '' : String(id).trim();
+        if (!s) return '—';
+        return s;
+    }
+}

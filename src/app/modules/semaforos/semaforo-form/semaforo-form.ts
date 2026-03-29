@@ -14,14 +14,22 @@ import {
     nomenclaturaSearchText,
     textBlobMatchesQuery
 } from '../../../shared/utils/geo-list-filters';
-import { TramoGeoPipe, TramoViaNomPipe } from '../../../shared/pipes/tramo-display.pipe';
+import {
+    TramoGeoPipe,
+    TramoNomenclaturaPipe,
+    MongoIdPipe
+} from '../../../shared/pipes/tramo-display.pipe';
 
 @Component({
     selector: 'app-semaforo-form',
     standalone: true,
-    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoViaNomPipe],
+    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoNomenclaturaPipe, MongoIdPipe],
     templateUrl: './semaforo-form.html',
-    styleUrls: ['./semaforo-form.scss', '../../../shared/styles/tramo-picker-labels.scss']
+    styleUrls: [
+        './semaforo-form.scss',
+        '../../../shared/styles/tramo-picker-labels.scss',
+        '../../../shared/styles/tramo-seleccionado-panel.scss'
+    ]
 })
 export class SemaforoFormComponent implements OnInit {
 

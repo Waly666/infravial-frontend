@@ -165,6 +165,34 @@ export function geoZatOptions(
         );
 }
 
+/**
+ * Normaliza pegados desde Compass / shell: `ObjectId("...")`, `{ "$oid": "..." }`, comillas, espacios.
+ * Devuelve el hex de 24 caracteres en minúsculas o `null` si no es un ObjectId completo.
+ */
+export function extractMongoObjectId(raw: string | null | undefined): string | null {
+    if (raw == null) return null;
+    let s = String(raw).trim();
+    if (!s) return null;
+
+    const jsonOid = /"?\$oid"?\s*:\s*"?([a-fA-F0-9]{24})"?/i.exec(s);
+    if (jsonOid) return jsonOid[1].toLowerCase();
+
+    const oidFn = /^ObjectId\s*\(\s*["']?([a-fA-F0-9]{24})["']?\s*\)\s*$/i.exec(
+        s.replace(/\s+/g, ' ').trim()
+    );
+    if (oidFn) return oidFn[1].toLowerCase();
+
+    if (
+        (s.startsWith('"') && s.endsWith('"')) ||
+        (s.startsWith("'") && s.endsWith("'"))
+    ) {
+        s = s.slice(1, -1).trim();
+    }
+    s = s.replace(/[\s\r\n\u00a0]+/g, '');
+    if (/^[a-fA-F0-9]{24}$/.test(s)) return s.toLowerCase();
+    return null;
+}
+
 /** Minúsculas, sin tildes y espacios colapsados (para comparar texto de búsqueda con datos guardados). */
 export function normalizeSearchText(s: string): string {
     return (s || '')

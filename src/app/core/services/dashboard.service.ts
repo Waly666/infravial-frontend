@@ -7,7 +7,7 @@ export class DashboardService {
 
     constructor(private api: ApiService) {}
 
-    getStats(): Observable<any> {
-        return this.api.get('/dashboard/stats');
+    getStats(filters?: { departamento?: string; municipio?: string }): Observable<any> {
+        return this.api.get('/dashboard/stats', filters);
     }
 }

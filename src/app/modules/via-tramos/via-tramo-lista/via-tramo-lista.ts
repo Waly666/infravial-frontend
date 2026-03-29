@@ -14,6 +14,7 @@ import {
     rowZatLabel,
     rowZatValue,
     textBlobMatchesQuery,
+    extractMongoObjectId,
     badgeClassMunicipio,
     badgeClassZat,
     badgeClassVia
@@ -40,6 +41,8 @@ export class ViaTramoListaComponent implements OnInit {
     error:    string  = '';
     jornada:  any     = null;
     busqueda: string  = '';
+    /** Fragmento del _id de MongoDB; las coincidencias suben al inicio de la lista. */
+    filtroIdTramo = '';
     filtroDepartamento: string = '';
     filtroMunicipio: string = '';
     filtroZat: string = '';
@@ -79,20 +82,58 @@ export class ViaTramoListaComponent implements OnInit {
         });
     }
 
-    get tramosFiltrados() {
+    get tramosFiltrados(): any[] {
+        const base = this.tramos.filter(t =>
+            matchesGeoFilters(t, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)
+        );
+
+        /** Prioridad: campo ID; si no, texto general (pegar ObjectId desde Compass). */
+        const idExact =
+            extractMongoObjectId(this.filtroIdTramo) ||
+            extractMongoObjectId(this.busqueda);
+
+        if (idExact) {
+            const hit = base.find(
+                t => (t._id ?? '').toString().toLowerCase() === idExact
+            );
+            return hit ? [hit] : [];
+        }
+
         const qRaw = this.busqueda.trim();
-        return this.tramos.filter(t => {
-            if (!matchesGeoFilters(t, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
+        let list = base.filter(t => {
             const zatL = rowZatLabel(t);
             const blob = [
                 t.via,
                 t.municipio,
                 t.departamento,
                 nomenclaturaSearchText(t),
-                zatL !== '—' ? zatL : ''
+                zatL !== '—' ? zatL : '',
+                (t._id ?? '').toString()
             ].join(' ');
             return textBlobMatchesQuery(blob, qRaw);
         });
+
+        const idQ = this.filtroIdTramo.trim().toLowerCase().replace(/[\s\r\n\u00a0]+/g, '');
+        if (idQ.length < 4) {
+            return list;
+        }
+
+        const matches = list.filter(t => (t._id ?? '').toString().toLowerCase().includes(idQ));
+        const others = list.filter(t => !(t._id ?? '').toString().toLowerCase().includes(idQ));
+
+        const rankId = (id: string | undefined): number => {
+            const x = (id ?? '').toString().toLowerCase();
+            if (x === idQ) return 0;
+            if (x.startsWith(idQ)) return 1;
+            return 2;
+        };
+        matches.sort(
+            (a, b) =>
+                rankId(a._id) - rankId(b._id) ||
+                (a._id ?? '').toString().localeCompare((b._id ?? '').toString())
+        );
+
+        return [...matches, ...others];
     }
 
     get totalPages(): number {
@@ -118,6 +159,10 @@ export class ViaTramoListaComponent implements OnInit {
     }
 
     onBusquedaChange() {
+        this.currentPage = 1;
+    }
+
+    onFiltroIdChange() {
         this.currentPage = 1;
     }
 

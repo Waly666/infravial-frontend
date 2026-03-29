@@ -1,37 +1,60 @@
+<!-- FILTROS GEOGRÁFICOS -->
+<div class="dash-geo-filters" *ngIf="(isAdmin() || isSupervisor()) && departamentos.length">
+    <span class="material-symbols-outlined dash-filter-icon" aria-hidden="true">filter_alt</span>
+    <select class="dash-filter-select" [(ngModel)]="filtroDepartamento" (ngModelChange)="onDepartamentoChange()">
+        <option value="">Todos los departamentos</option>
+        <option *ngFor="let d of departamentos" [value]="d">{{ d }}</option>
+    </select>
+    <select class="dash-filter-select" [(ngModel)]="filtroMunicipio" (ngModelChange)="onMunicipioChange()">
+        <option value="">Todos los municipios</option>
+        <option *ngFor="let m of municipios" [value]="m">{{ m }}</option>
+    </select>
+    <span class="dash-filter-badge" *ngIf="filtroDepartamento || filtroMunicipio">
+        Filtrado: {{ filtroDepartamento || 'Todos' }} · {{ filtroMunicipio || 'Todos' }}
+    </span>
+</div>
+
 <!-- STATS CARDS (admin/supervisor) -->
 <div class="stats-grid" *ngIf="(isAdmin() || isSupervisor()) && stats">
     <div class="stat-card" data-stat="via-tramos">
         <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">route</span></div>
         <div class="stat-info">
-            <div class="stat-value">{{ stats.totalTramos }}</div>
+            <div class="stat-value tab-figures">{{ stats.totalTramos }}</div>
             <div class="stat-label">Vía Tramos</div>
         </div>
     </div>
     <div class="stat-card" data-stat="sen-verticales">
         <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">vertical_align_top</span></div>
         <div class="stat-info">
-            <div class="stat-value">{{ stats.totalSenVert }}</div>
+            <div class="stat-value tab-figures">{{ stats.totalSenVert }}</div>
             <div class="stat-label">Señales Verticales</div>
         </div>
     </div>
     <div class="stat-card" data-stat="sen-horizontales">
         <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">horizontal_rule</span></div>
         <div class="stat-info">
-            <div class="stat-value">{{ stats.totalSenHor }}</div>
+            <div class="stat-value tab-figures">{{ stats.totalSenHor }}</div>
             <div class="stat-label">Señales Horizontales</div>
         </div>
     </div>
     <div class="stat-card" data-stat="semaforos">
         <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">traffic</span></div>
         <div class="stat-info">
-            <div class="stat-value">{{ stats.totalSemaforos }}</div>
+            <div class="stat-value tab-figures">{{ stats.totalSemaforos }}</div>
             <div class="stat-label">Semáforos</div>
+        </div>
+    </div>
+    <div class="stat-card" data-stat="control-semaforo">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">settings_input_component</span></div>
+        <div class="stat-info">
+            <div class="stat-value tab-figures">{{ stats.totalControlSem ?? 0 }}</div>
+            <div class="stat-label">Control semafórico</div>
         </div>
     </div>
     <div class="stat-card" data-stat="cajas-inspeccion">
         <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">inventory_2</span></div>
         <div class="stat-info">
-            <div class="stat-value">{{ stats.totalCajasInsp ?? 0 }}</div>
+            <div class="stat-value tab-figures">{{ stats.totalCajasInsp ?? 0 }}</div>
             <div class="stat-label">Cajas inspección</div>
         </div>
     </div>
@@ -50,6 +73,10 @@
     <button type="button" class="quick-btn" data-quick="semaforos" (click)="navegarA('semaforos')">
         <span class="material-symbols-outlined quick-btn-ic">traffic</span> Semáforos
     </button>
+    <button type="button" class="quick-btn" data-quick="control-semaforo" (click)="navegarA('control-semaforo')"
+        *ngIf="isAdmin() || isSupervisor() || isEncuestador()">
+        <span class="material-symbols-outlined quick-btn-ic">settings_input_component</span> Control sem.
+    </button>
     <button type="button" class="quick-btn" data-quick="reportes" (click)="navegarA('reportes')" *ngIf="isAdmin() || isSupervisor()">
         <span class="material-symbols-outlined quick-btn-ic">analytics</span> Reportes
     </button>
@@ -63,39 +90,110 @@
 </section>
 
 <section class="dashboard-charts" *ngIf="stats" aria-label="Gráficos del inventario">
-    <h2 class="charts-section-title">Indicadores y distribución</h2>
-    <div class="charts-grid-main">
+    <h2 class="charts-section-title">Indicadores y totales</h2>
+    <div class="charts-grid-main charts-grid-bar-y-tablas">
         <div class="chart-card chart-card--tall">
             <canvas id="chart-inventario" role="img" aria-label="Gráfico de barras del inventario"></canvas>
         </div>
-        <div class="chart-card chart-card--tall" *ngIf="stats.tramosPorMes?.length">
-            <canvas id="chart-tramos-mes" role="img" aria-label="Tendencia de tramos por mes"></canvas>
-        </div>
-        <div class="chart-card chart-card--tall chart-card--placeholder" *ngIf="!stats.tramosPorMes?.length">
-            <span class="material-symbols-outlined placeholder-ic">show_chart</span>
-            <p>Aún no hay datos de tramos por mes en el rango reciente. Los registros nuevos aparecerán aquí.</p>
+        <div class="chart-card chart-card--tablas-estado" aria-label="Distribución por estado">
+            <div class="tablas-estado-head">
+                <h3 class="tablas-estado-title">Distribución por estado</h3>
+                <p class="tablas-estado-desc">Cantidad y porcentaje sobre el total de cada categoría.</p>
+            </div>
+            <div class="tablas-estado-grid">
+                <div class="estado-tabla-card" *ngFor="let b of estadoDistribucionBloques">
+                    <div class="estado-tabla-card-head">
+                        <span class="estado-tabla-card-title">{{ b.titulo }}</span>
+                        <span class="estado-tabla-card-sub">{{ b.subtitulo }}</span>
+                    </div>
+                    <ng-container *ngIf="estadoFilasPorBloque[b.statKey] as filas">
+                        <div class="estado-tabla-scroll" *ngIf="filas.length">
+                            <table class="estado-tabla">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Estado</th>
+                                        <th scope="col" class="col-num">Cant.</th>
+                                        <th scope="col" class="col-num">%</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let fila of filas; trackBy: trackByEstadoLabel">
+                                        <td class="estado-tabla-label">{{ fila.label }}</td>
+                                        <td class="col-num tab-figures">{{ fila.count }}</td>
+                                        <td class="col-num tab-figures col-pct">
+                                            <span class="estado-pct-bar-wrap" aria-hidden="true">
+                                                <span class="estado-pct-bar" [style.width.%]="fila.pct"></span>
+                                            </span>
+                                            {{ fila.pct }}%
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th scope="row">Total</th>
+                                        <td class="col-num tab-figures">{{ estadoFilasTotal(filas) }}</td>
+                                        <td class="col-num tab-figures">100%</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <p class="estado-tabla-sin-datos" *ngIf="!filas.length">Sin registros en esta categoría.</p>
+                    </ng-container>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="charts-grid-donuts">
-        <div class="chart-card chart-card--donut">
-            <canvas *ngIf="stats.senVertEstados?.length" id="chart-estado-sv" role="img" aria-label="Estados señales verticales"></canvas>
-            <div *ngIf="!stats.senVertEstados?.length" class="chart-fallback">
+</section>
+
+<section class="dashboard-charts dashboard-charts-dim" *ngIf="stats" aria-label="Distribución por estado, fase y acción">
+    <h2 class="charts-section-title">Inventario por estado, fase y acción</h2>
+    <div class="charts-dim-tabs" role="tablist" aria-label="Dimensión del gráfico">
+        <button type="button" role="tab" class="charts-dim-tab" [attr.aria-selected]="chartDimension === 'estado'"
+            [class.active]="chartDimension === 'estado'" (click)="setChartDimension('estado')">Estado</button>
+        <button type="button" role="tab" class="charts-dim-tab" [attr.aria-selected]="chartDimension === 'fase'"
+            [class.active]="chartDimension === 'fase'" (click)="setChartDimension('fase')">Fase</button>
+        <button type="button" role="tab" class="charts-dim-tab" [attr.aria-selected]="chartDimension === 'accion'"
+            [class.active]="chartDimension === 'accion'" (click)="setChartDimension('accion')">Acción</button>
+    </div>
+    <div class="charts-grid-donuts charts-grid-dim5">
+        <div class="chart-card chart-card--donut donut-3d">
+            <canvas id="chart-dim-tramos" role="img" [attr.aria-label]="dimTituloBloque('tramos')"
+                [class.chart-canvas-hidden]="!dimRows('tramos')?.length"></canvas>
+            <div *ngIf="!dimRows('tramos')?.length" class="chart-fallback">
+                <span class="material-symbols-outlined">route</span>
+                <p>Sin datos de vía tramos.</p>
+            </div>
+        </div>
+        <div class="chart-card chart-card--donut donut-3d">
+            <canvas id="chart-dim-sv" role="img" [attr.aria-label]="dimTituloBloque('sv')"
+                [class.chart-canvas-hidden]="!dimRows('sv')?.length"></canvas>
+            <div *ngIf="!dimRows('sv')?.length" class="chart-fallback">
                 <span class="material-symbols-outlined">vertical_align_top</span>
-                <p>Sin señales verticales registradas.</p>
+                <p>Sin señales verticales.</p>
             </div>
         </div>
-        <div class="chart-card chart-card--donut">
-            <canvas *ngIf="stats.senHorEstados?.length" id="chart-estado-sh" role="img" aria-label="Estados señales horizontales"></canvas>
-            <div *ngIf="!stats.senHorEstados?.length" class="chart-fallback">
+        <div class="chart-card chart-card--donut donut-3d">
+            <canvas id="chart-dim-sh" role="img" [attr.aria-label]="dimTituloBloque('sh')"
+                [class.chart-canvas-hidden]="!dimRows('sh')?.length"></canvas>
+            <div *ngIf="!dimRows('sh')?.length" class="chart-fallback">
                 <span class="material-symbols-outlined">horizontal_rule</span>
-                <p>Sin señales horizontales registradas.</p>
+                <p>Sin señales horizontales.</p>
             </div>
         </div>
-        <div class="chart-card chart-card--donut">
-            <canvas *ngIf="stats.semaforosEstados?.length" id="chart-estado-sem" role="img" aria-label="Estado pintura semáforos"></canvas>
-            <div *ngIf="!stats.semaforosEstados?.length" class="chart-fallback">
+        <div class="chart-card chart-card--donut donut-3d">
+            <canvas id="chart-dim-sem" role="img" [attr.aria-label]="dimTituloBloque('sem')"
+                [class.chart-canvas-hidden]="!dimRows('sem')?.length"></canvas>
+            <div *ngIf="!dimRows('sem')?.length" class="chart-fallback">
                 <span class="material-symbols-outlined">traffic</span>
-                <p>Sin semáforos registrados.</p>
+                <p>Sin semáforos.</p>
+            </div>
+        </div>
+        <div class="chart-card chart-card--donut donut-3d">
+            <canvas id="chart-dim-cs" role="img" [attr.aria-label]="dimTituloBloque('cs')"
+                [class.chart-canvas-hidden]="!dimRows('cs')?.length"></canvas>
+            <div *ngIf="!dimRows('cs')?.length" class="chart-fallback">
+                <span class="material-symbols-outlined">settings_input_component</span>
+                <p>Sin controles semafóricos.</p>
             </div>
         </div>
     </div>
@@ -118,4 +216,3 @@
         </div>
     </div>
 </div>
-
