@@ -10,6 +10,8 @@ import {
     geoMunicipios,
     geoZatOptions,
     matchesGeoFilters,
+    nomenclaturaSearchText,
+    textBlobMatchesQuery,
     rowDepartamento,
     rowMunicipio,
     rowZatLabel,
@@ -73,17 +75,20 @@ export class CajaInspListaComponent implements OnInit {
     }
 
     get registrosFiltrados() {
-        const q = this.busqueda.trim().toLowerCase();
+        const qRaw = this.busqueda.trim();
         return this.registros.filter(r => {
             if (!matchesGeoFilters(r, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
-            if (!q) return true;
-            return (
-                r.idViaTramo?.via?.toLowerCase().includes(q) ||
-                r.idViaTramo?.municipio?.toLowerCase().includes(q) ||
-                r.idViaTramo?.departamento?.toLowerCase().includes(q) ||
-                r.materialCaja?.toLowerCase().includes(q) ||
-                r.estadoCaja?.toLowerCase().includes(q)
-            );
+            const z = rowZatLabel(r);
+            const blob = [
+                r.idViaTramo?.via,
+                r.idViaTramo?.municipio,
+                r.idViaTramo?.departamento,
+                nomenclaturaSearchText(r),
+                r.materialCaja,
+                r.estadoCaja,
+                z !== '—' ? z : ''
+            ].join(' ');
+            return textBlobMatchesQuery(blob, qRaw);
         });
     }
 

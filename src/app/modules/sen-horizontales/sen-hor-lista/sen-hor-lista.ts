@@ -10,10 +10,12 @@ import {
     geoMunicipios,
     geoZatOptions,
     matchesGeoFilters,
+    nomenclaturaSearchText,
     rowDepartamento,
     rowMunicipio,
     rowZatLabel,
     rowZatValue,
+    textBlobMatchesQuery,
     badgeClassDepartamento,
     badgeClassMunicipio,
     badgeClassZat
@@ -83,19 +85,26 @@ export class SenHorListaComponent implements OnInit {
     }
 
     get registrosFiltrados() {
-        const q = this.busqueda.trim().toLowerCase();
+        const qRaw = this.busqueda.trim();
         const fc = this.filtroCodigo.trim();
         return this.registros.filter(r => {
             if (!matchesGeoFilters(r, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
             if (fc && (r.codSeHor || '').trim() !== fc) return false;
-            if (!q) return true;
-            return (
-                r.codSeHor?.toLowerCase().includes(q) ||
-                r.idViaTramo?.via?.toLowerCase().includes(q) ||
-                r.idViaTramo?.municipio?.toLowerCase().includes(q) ||
-                r.idViaTramo?.departamento?.toLowerCase().includes(q) ||
-                r.estadoDem?.toLowerCase().includes(q)
-            );
+            const z = rowZatLabel(r);
+            const blob = [
+                r.codSeHor,
+                r.tipoDem,
+                r.estadoDem,
+                r.color,
+                r.fase,
+                r.accion,
+                r.idViaTramo?.via,
+                r.idViaTramo?.municipio,
+                r.idViaTramo?.departamento,
+                nomenclaturaSearchText(r),
+                z !== '—' ? z : ''
+            ].join(' ');
+            return textBlobMatchesQuery(blob, qRaw);
         });
     }
 

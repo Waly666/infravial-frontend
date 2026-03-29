@@ -21,7 +21,7 @@
     </div>
 
     <div class="search-bar">
-        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="🔍 Buscar..." class="search-input">
+        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="Vía, nomenclatura, código, municipio…" class="search-input">
         <span class="total-badge">{{ registrosFiltrados.length }} registros</span>
         <div class="pagination-controls">
             <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">

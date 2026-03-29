@@ -14,7 +14,7 @@
     <div class="alert-success" *ngIf="jornada">🟢 Jornada activa: <strong>{{ jornada.municipio }}</strong></div>
 
     <div class="search-bar">
-        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="🔍 Buscar..." class="search-input">
+        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="Vía, nomenclatura, municipio, material…" class="search-input">
         <span class="total-badge">{{ registrosFiltrados.length }} registros</span>
         <div class="pagination-controls">
             <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">

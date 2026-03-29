@@ -10,10 +10,12 @@ import {
     geoMunicipios,
     geoZatOptions,
     matchesGeoFilters,
+    nomenclaturaSearchText,
     rowDepartamento,
     rowMunicipio,
     rowZatLabel,
     rowZatValue,
+    textBlobMatchesQuery,
     badgeClassDepartamento,
     badgeClassMunicipio,
     badgeClassZat
@@ -84,17 +86,25 @@ export class SemaforoListaComponent implements OnInit {
     }
 
     get registrosFiltrados() {
-        const q = this.busqueda.trim().toLowerCase();
+        const qRaw = this.busqueda.trim();
         return this.registros.filter(r => {
             if (!matchesGeoFilters(r, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
-            if (!q) return true;
-            return (
-                r.idViaTramo?.via?.toLowerCase().includes(q) ||
-                r.idViaTramo?.municipio?.toLowerCase().includes(q) ||
-                r.idViaTramo?.departamento?.toLowerCase().includes(q) ||
-                r.claseSem?.toLowerCase().includes(q) ||
-                r.fase?.toLowerCase().includes(q)
-            );
+            const z = rowZatLabel(r);
+            const ne = r.numExterno != null ? String(r.numExterno) : '';
+            const blob = [
+                ne,
+                r.sitio,
+                r.claseSem,
+                r.estadoGenPint,
+                r.fase,
+                r.accion,
+                r.idViaTramo?.via,
+                r.idViaTramo?.municipio,
+                r.idViaTramo?.departamento,
+                nomenclaturaSearchText(r),
+                z !== '—' ? z : ''
+            ].join(' ');
+            return textBlobMatchesQuery(blob, qRaw);
         });
     }
 

@@ -164,3 +164,52 @@ export function geoZatOptions(
             a.label.localeCompare(b.label, 'es', { numeric: true })
         );
 }
+
+/** Minúsculas, sin tildes y espacios colapsados (para comparar texto de búsqueda con datos guardados). */
+export function normalizeSearchText(s: string): string {
+    return (s || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/**
+ * Coincide si todas las palabras de la consulta aparecen en el texto combinado
+ * (orden indistinto; útil para “Calle 5” vs “5 … Calle”).
+ */
+export function textBlobMatchesQuery(blob: string, qRaw: string): boolean {
+    const q = normalizeSearchText(qRaw);
+    if (!q) return true;
+    const tokens = q.split(' ').filter((t) => t.length > 0);
+    if (!tokens.length) return true;
+    const h = normalizeSearchText(blob);
+    return tokens.every((t) => h.includes(t));
+}
+
+/**
+ * Texto de nomenclatura asociado al tramo (fila o `idViaTramo` poblado):
+ * usa `completa` o, si está vacío, concatena tipo/número/conector (como en el formulario).
+ */
+export function nomenclaturaSearchText(row: any): string {
+    const src = geoSource(row);
+    const n = src?.nomenclatura;
+    if (!n || typeof n !== 'object') return '';
+    const c = (n.completa ?? '').toString().trim();
+    if (c) return c;
+    const parts = [
+        n.tipoVia1,
+        n.numero1,
+        n.conector,
+        n.tipoVia2,
+        n.numero2,
+        n.conector2,
+        n.tipoVia3,
+        n.numero3
+    ];
+    return parts
+        .filter((x) => x != null && String(x).trim() !== '')
+        .map((x) => String(x).trim())
+        .join(' ');
+}

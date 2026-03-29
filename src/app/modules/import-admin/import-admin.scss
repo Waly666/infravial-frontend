@@ -218,3 +218,57 @@
     color: rgba(180, 200, 255, 0.55);
     font-family: var(--font-mono, ui-monospace, monospace);
 }
+
+:host-context(body.light-mode) {
+    .page-title {
+        color: var(--text-primary);
+    }
+    .page-sub {
+        color: var(--text-muted);
+    }
+    .actions-card,
+    .status-card {
+        background: var(--bg-card);
+        border-color: var(--border-color);
+    }
+    .file-label {
+        color: var(--text-secondary);
+        input[type='file'] {
+            color: var(--text-primary);
+        }
+    }
+    .file-name {
+        color: var(--accent);
+    }
+    .check-row {
+        color: var(--text-primary);
+    }
+    .btn-secondary {
+        color: var(--accent);
+        background: var(--accent-hover);
+        border-color: var(--border-input);
+    }
+    .status-title {
+        color: var(--text-primary);
+    }
+    .status-line {
+        color: var(--text-secondary);
+    }
+    .status-meta {
+        color: var(--text-secondary);
+        span {
+            color: var(--text-muted);
+        }
+    }
+    .progress-block {
+        background: var(--accent-hover);
+        border-color: var(--border-color);
+    }
+    .progress-head,
+    .progress-foot {
+        color: var(--text-muted);
+    }
+    .progress-bar {
+        background: rgba(37, 99, 235, 0.12);
+    }
+}

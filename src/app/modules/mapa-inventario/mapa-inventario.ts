@@ -21,7 +21,9 @@ import {
     geoMunicipios,
     geoZatOptions,
     matchesGeoFilters,
-    rowZatLabel
+    nomenclaturaSearchText,
+    rowZatLabel,
+    textBlobMatchesQuery
 } from '../../shared/utils/geo-list-filters';
 import { environment } from '../../../environments/environment';
 import {
@@ -441,50 +443,55 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         return inv <= c;
     }
 
-    private tramoMatchesSearch(t: any, q: string): boolean {
-        if (!q) return true;
+    private tramoMatchesSearch(t: any, qRaw: string): boolean {
         const z = rowZatLabel(t);
-        return (
-            !!t.via?.toLowerCase().includes(q) ||
-            !!t.municipio?.toLowerCase().includes(q) ||
-            !!t.departamento?.toLowerCase().includes(q) ||
-            !!t.nomenclatura?.completa?.toLowerCase().includes(q) ||
-            (z !== '—' && z.toLowerCase().includes(q))
-        );
+        const blob = [
+            t.via,
+            t.municipio,
+            t.departamento,
+            nomenclaturaSearchText(t),
+            z !== '—' ? z : ''
+        ].join(' ');
+        return textBlobMatchesQuery(blob, qRaw);
     }
 
-    private vertMatchesSearch(r: any, q: string): boolean {
-        if (!q) return true;
+    private vertMatchesSearch(r: any, qRaw: string): boolean {
         const z = rowZatLabel(r);
-        const via = r.idViaTramo?.via || '';
-        return (
-            !!r.codSe?.toLowerCase().includes(q) ||
-            !!r.estado?.toLowerCase().includes(q) ||
-            !!via.toLowerCase().includes(q) ||
-            !!r.idViaTramo?.municipio?.toLowerCase().includes(q) ||
-            !!r.idViaTramo?.departamento?.toLowerCase().includes(q) ||
-            (z !== '—' && z.toLowerCase().includes(q))
-        );
+        const blob = [
+            r.codSe,
+            r.estado,
+            r.fase,
+            r.accion,
+            r.matPlaca,
+            r.idViaTramo?.via,
+            r.idViaTramo?.municipio,
+            r.idViaTramo?.departamento,
+            nomenclaturaSearchText(r),
+            z !== '—' ? z : ''
+        ].join(' ');
+        return textBlobMatchesQuery(blob, qRaw);
     }
 
-    private horMatchesSearch(r: any, q: string): boolean {
-        if (!q) return true;
+    private horMatchesSearch(r: any, qRaw: string): boolean {
         const z = rowZatLabel(r);
-        const via = r.idViaTramo?.via || '';
-        return (
-            !!r.codSeHor?.toLowerCase().includes(q) ||
-            !!r.tipoDem?.toLowerCase().includes(q) ||
-            !!r.estadoDem?.toLowerCase().includes(q) ||
-            !!r.color?.toLowerCase().includes(q) ||
-            !!via.toLowerCase().includes(q) ||
-            !!r.idViaTramo?.municipio?.toLowerCase().includes(q) ||
-            !!r.idViaTramo?.departamento?.toLowerCase().includes(q) ||
-            (z !== '—' && z.toLowerCase().includes(q))
-        );
+        const blob = [
+            r.codSeHor,
+            r.tipoDem,
+            r.estadoDem,
+            r.color,
+            r.fase,
+            r.accion,
+            r.idViaTramo?.via,
+            r.idViaTramo?.municipio,
+            r.idViaTramo?.departamento,
+            nomenclaturaSearchText(r),
+            z !== '—' ? z : ''
+        ].join(' ');
+        return textBlobMatchesQuery(blob, qRaw);
     }
 
     private filteredTramos(): any[] {
-        const q = this.busqueda.trim().toLowerCase();
+        const qRaw = this.busqueda.trim();
         return this.tramos.filter(
             (t) =>
                 matchesGeoFilters(
@@ -493,13 +500,13 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
                     this.filtroMunicipio,
                     this.filtroZat
                 ) &&
-                this.tramoMatchesSearch(t, q) &&
+                this.tramoMatchesSearch(t, qRaw) &&
                 this.passesTimelapseTramo(t)
         );
     }
 
     private filteredVert(): any[] {
-        const q = this.busqueda.trim().toLowerCase();
+        const qRaw = this.busqueda.trim();
         const fc = this.filtroCodigoSv.trim();
         return this.senVert.filter((r) => {
             if (
@@ -514,13 +521,13 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
             }
             if (fc && (r.codSe || '').trim() !== fc) return false;
             return (
-                this.vertMatchesSearch(r, q) && this.passesTimelapseChild(r)
+                this.vertMatchesSearch(r, qRaw) && this.passesTimelapseChild(r)
             );
         });
     }
 
     private filteredHor(): any[] {
-        const q = this.busqueda.trim().toLowerCase();
+        const qRaw = this.busqueda.trim();
         const fc = this.filtroCodigoSh.trim();
         return this.senHor.filter((r) => {
             if (
@@ -535,28 +542,32 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
             }
             if (fc && (r.codSeHor || '').trim() !== fc) return false;
             return (
-                this.horMatchesSearch(r, q) && this.passesTimelapseChild(r)
+                this.horMatchesSearch(r, qRaw) && this.passesTimelapseChild(r)
             );
         });
     }
 
-    private semMatchesSearch(r: any, q: string): boolean {
-        if (!q) return true;
+    private semMatchesSearch(r: any, qRaw: string): boolean {
         const z = rowZatLabel(r);
-        const via = r.idViaTramo?.via || '';
         const ne = r.numExterno != null ? String(r.numExterno) : '';
-        return (
-            !!ne.toLowerCase().includes(q) ||
-            !!r.sitio?.toLowerCase().includes(q) ||
-            !!via.toLowerCase().includes(q) ||
-            !!r.idViaTramo?.municipio?.toLowerCase().includes(q) ||
-            !!r.idViaTramo?.departamento?.toLowerCase().includes(q) ||
-            (z !== '—' && z.toLowerCase().includes(q))
-        );
+        const blob = [
+            ne,
+            r.sitio,
+            r.claseSem,
+            r.estadoGenPint,
+            r.fase,
+            r.accion,
+            r.idViaTramo?.via,
+            r.idViaTramo?.municipio,
+            r.idViaTramo?.departamento,
+            nomenclaturaSearchText(r),
+            z !== '—' ? z : ''
+        ].join(' ');
+        return textBlobMatchesQuery(blob, qRaw);
     }
 
     private filteredSemaforos(): any[] {
-        const q = this.busqueda.trim().toLowerCase();
+        const qRaw = this.busqueda.trim();
         return this.semaforos.filter((r) => {
             if (
                 !matchesGeoFilters(
@@ -569,7 +580,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
                 return false;
             }
             return (
-                this.semMatchesSearch(r, q) && this.passesTimelapseChild(r)
+                this.semMatchesSearch(r, qRaw) && this.passesTimelapseChild(r)
             );
         });
     }
@@ -724,6 +735,62 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         setTimeout(() => this.map?.invalidateSize(), 280);
     }
 
+    /** Texto de coordenadas (WGS84); LineString usa punto medio de la polilínea. */
+    private coordsTexto(ubicacion: unknown): string {
+        const ll = latLngFromUbicacion(ubicacion as { coordinates?: unknown });
+        if (!ll) return '—';
+        return `${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}`;
+    }
+
+    private nomenclaturaDesdeTramo(vt: unknown): string {
+        if (!vt || typeof vt !== 'object') return '—';
+        const n = (vt as { nomenclatura?: { completa?: string } }).nomenclatura;
+        const c = n?.completa;
+        return c != null && String(c).trim() !== '' ? String(c) : '—';
+    }
+
+    /** Estado de vía: principal + lista secundaria (huecos, fisurada, etc.). */
+    private estadoViaTramoTexto(t: any): string {
+        const ev = (t?.estadoVia || '').toString().trim();
+        const e2 = Array.isArray(t?.estadoVia2)
+            ? t.estadoVia2.filter((x: unknown) => x != null && String(x).trim() !== '').map(String)
+            : [];
+        const parts: string[] = [];
+        if (ev) parts.push(ev);
+        if (e2.length) parts.push(e2.join(', '));
+        return parts.length ? parts.join(' · ') : '—';
+    }
+
+    private capaRodaduraEsAsfalto(t: any): boolean {
+        const c = (t?.capaRodadura || '').toString().trim().toLowerCase();
+        return c.includes('asfalto');
+    }
+
+    private medidaMetro(v: unknown): string {
+        if (v == null || v === '') return '—';
+        const n = Number(v);
+        if (!Number.isFinite(n)) return '—';
+        return `${n} m`;
+    }
+
+    /** Filas extra del listado cuando la capa de rodadura es asfalto (geometría de calzadas). */
+    private tramoGeometriaAsfaltoHtml(t: any): string {
+        if (!this.capaRodaduraEsAsfalto(t)) return '';
+        const row = (label: string, val: unknown, esTexto = false) =>
+            `<dt>${esc(label)}</dt><dd>${esc(esTexto ? (val != null && String(val).trim() !== '' ? String(val) : '—') : this.medidaMetro(val))}</dd>`;
+        return `
+        ${row('Calzadas (config.)', t.calzada, true)}
+        ${row('Ancho calzada izq.', t.calzadaIzq)}
+        ${row('Ancho calzada der.', t.calzadaDer)}
+        ${row('Berma izq.', t.bermaIzq)}
+        ${row('Berma der.', t.bermaDer)}
+        ${row('Cuneta izq.', t.cunetaIzq)}
+        ${row('Cuneta der.', t.cunetaDer)}
+        ${row('Andén izq.', t.andenIzq)}
+        ${row('Andén der.', t.andenDer)}
+        ${row('Ancho total perfil', t.anchoTotalPerfil)}`;
+    }
+
     private popupTramo(t: any): string {
         const foto =
             Array.isArray(t.fotos) && t.fotos[0]
@@ -736,17 +803,27 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         const fi = t.fechaInv
             ? new Date(t.fechaInv).toLocaleDateString('es-CO')
             : '—';
+        const coords = this.coordsTexto(t.ubicacion);
+        const nom = this.nomenclaturaDesdeTramo(t);
+        const fase = t.fase != null && String(t.fase).trim() !== '' ? String(t.fase) : '—';
+        const accion = t.accion != null && String(t.accion).trim() !== '' ? String(t.accion) : '—';
+        const geoAsp = this.tramoGeometriaAsfaltoHtml(t);
         return `<div class="map-popup">
       <div class="map-popup-tag">Tramo</div>
       <strong>${esc(t.via || '—')}</strong>
       <dl class="map-popup-dl">
         <dt>Fecha inventario</dt><dd>${esc(fi)}</dd>
-        <dt>Nomenclatura</dt><dd>${esc(t.nomenclatura?.completa || '—')}</dd>
+        <dt>Nomenclatura</dt><dd>${esc(nom)}</dd>
         <dt>Departamento</dt><dd>${esc(t.departamento || '—')}</dd>
         <dt>Municipio</dt><dd>${esc(t.municipio || '—')}</dd>
+        <dt>Coordenadas</dt><dd><code>${esc(coords)}</code> <span class="map-popup-coord-hint">(lat, lng)</span></dd>
         <dt>ZAT</dt><dd>${esc(z)}</dd>
         <dt>Tipo vía</dt><dd>${esc(t.tipoVia || '—')}</dd>
-        <dt>Estado</dt><dd>${esc(t.estadoVia || '—')}</dd>
+        <dt>Fase</dt><dd>${esc(fase)}</dd>
+        <dt>Acción</dt><dd>${esc(accion)}</dd>
+        <dt>Estado vía</dt><dd>${esc(this.estadoViaTramoTexto(t))}</dd>
+        <dt>Capa rodadura</dt><dd>${esc(t.capaRodadura || '—')}</dd>
+        ${geoAsp}
         <dt>Longitud</dt><dd>${esc(t.longitud_m != null ? t.longitud_m + ' m' : '—')}</dd>
       </dl>
       ${img}
@@ -759,16 +836,25 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         const img = foto
             ? `<div class="map-popup-imgwrap"><img src="${esc(foto)}" alt="" class="map-popup-img" /></div>`
             : '';
-        const via = r.idViaTramo?.via || '—';
-        const mun = r.idViaTramo?.municipio || '—';
+        const vt = r.idViaTramo;
+        const via = vt?.via || '—';
+        const dpto = vt?.departamento || '—';
+        const mun = vt?.municipio || '—';
+        const nom = this.nomenclaturaDesdeTramo(vt);
+        const coords = this.coordsTexto(r.ubicacion);
         const z = rowZatLabel(r);
         return `<div class="map-popup">
       <div class="map-popup-tag map-popup-tag-sv">Señal vertical</div>
       <strong>${esc(r.codSe || '—')}</strong>
       <dl class="map-popup-dl">
+        <dt>Fase</dt><dd>${esc(r.fase || '—')}</dd>
+        <dt>Acción</dt><dd>${esc(r.accion || '—')}</dd>
         <dt>Estado</dt><dd>${esc(r.estado || '—')}</dd>
         <dt>Vía / tramo</dt><dd>${esc(via)}</dd>
+        <dt>Nomenclatura</dt><dd>${esc(nom)}</dd>
+        <dt>Departamento</dt><dd>${esc(dpto)}</dd>
         <dt>Municipio</dt><dd>${esc(mun)}</dd>
+        <dt>Coordenadas</dt><dd><code>${esc(coords)}</code> <span class="map-popup-coord-hint">(lat, lng)</span></dd>
         <dt>ZAT</dt><dd>${esc(z)}</dd>
         <dt>Material placa</dt><dd>${esc(r.matPlaca || '—')}</dd>
         <dt>Orientación</dt><dd>${esc(r.orientacion || '—')}</dd>
@@ -783,18 +869,27 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         const img = foto
             ? `<div class="map-popup-imgwrap"><img src="${esc(foto)}" alt="" class="map-popup-img" /></div>`
             : '';
-        const via = r.idViaTramo?.via || '—';
-        const mun = r.idViaTramo?.municipio || '—';
+        const vt = r.idViaTramo;
+        const via = vt?.via || '—';
+        const dpto = vt?.departamento || '—';
+        const mun = vt?.municipio || '—';
+        const nom = this.nomenclaturaDesdeTramo(vt);
+        const coords = this.coordsTexto(r.ubicacion);
         const z = rowZatLabel(r);
         return `<div class="map-popup">
       <div class="map-popup-tag map-popup-tag-sh">Señal horizontal</div>
       <strong>${esc(r.codSeHor || '—')}</strong>
       <dl class="map-popup-dl">
+        <dt>Fase</dt><dd>${esc(r.fase || '—')}</dd>
+        <dt>Acción</dt><dd>${esc(r.accion || '—')}</dd>
         <dt>Tipo demarcación</dt><dd>${esc(r.tipoDem || '—')}</dd>
-        <dt>Estado</dt><dd>${esc(r.estadoDem || '—')}</dd>
+        <dt>Estado demarcación</dt><dd>${esc(r.estadoDem || '—')}</dd>
         <dt>Color</dt><dd>${esc(r.color || '—')}</dd>
         <dt>Vía / tramo</dt><dd>${esc(via)}</dd>
+        <dt>Nomenclatura</dt><dd>${esc(nom)}</dd>
+        <dt>Departamento</dt><dd>${esc(dpto)}</dd>
         <dt>Municipio</dt><dd>${esc(mun)}</dd>
+        <dt>Coordenadas</dt><dd><code>${esc(coords)}</code> <span class="map-popup-coord-hint">(lat, lng)</span></dd>
         <dt>ZAT</dt><dd>${esc(z)}</dd>
       </dl>
       ${img}
@@ -807,8 +902,12 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         const img = foto
             ? `<div class="map-popup-imgwrap"><img src="${esc(foto)}" alt="" class="map-popup-img" /></div>`
             : '';
-        const via = r.idViaTramo?.via || '—';
-        const mun = r.idViaTramo?.municipio || '—';
+        const vt = r.idViaTramo;
+        const via = vt?.via || '—';
+        const dpto = vt?.departamento || '—';
+        const mun = vt?.municipio || '—';
+        const nom = this.nomenclaturaDesdeTramo(vt);
+        const coords = this.coordsTexto(r.ubicacion);
         const z = rowZatLabel(r);
         return `<div class="map-popup">
       <div class="map-popup-tag map-popup-tag-sem">Semáforo</div>
@@ -816,7 +915,10 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
       <dl class="map-popup-dl">
         <dt>Estado pintura</dt><dd>${esc(r.estadoGenPint || '—')}</dd>
         <dt>Vía / tramo</dt><dd>${esc(via)}</dd>
+        <dt>Nomenclatura</dt><dd>${esc(nom)}</dd>
+        <dt>Departamento</dt><dd>${esc(dpto)}</dd>
         <dt>Municipio</dt><dd>${esc(mun)}</dd>
+        <dt>Coordenadas</dt><dd><code>${esc(coords)}</code> <span class="map-popup-coord-hint">(lat, lng)</span></dd>
         <dt>ZAT</dt><dd>${esc(z)}</dd>
         <dt>Sitio</dt><dd>${esc(r.sitio || '—')}</dd>
       </dl>

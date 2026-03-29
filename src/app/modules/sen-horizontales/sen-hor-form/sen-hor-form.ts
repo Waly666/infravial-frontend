@@ -9,6 +9,10 @@ import { CatalogoService } from '../../../core/services/catalogo.service';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
+import {
+    nomenclaturaSearchText,
+    textBlobMatchesQuery
+} from '../../../shared/utils/geo-list-filters';
 
 @Component({
     selector: 'app-sen-hor-form',
@@ -183,12 +187,17 @@ export class SenHorFormComponent implements OnInit {
 
     // ── TRAMO ─────────────────────────────────────
     get tramosFiltrados() {
-        if (!this.busquedaTramo) return this.tramos;
-        const q = this.busquedaTramo.toLowerCase();
-        return this.tramos.filter(t =>
-            t.via?.toLowerCase().includes(q) ||
-            t.nomenclatura?.completa?.toLowerCase().includes(q)
-        );
+        const qRaw = (this.busquedaTramo || '').trim();
+        if (!qRaw) return this.tramos;
+        return this.tramos.filter(t => {
+            const blob = [
+                t.via,
+                t.municipio,
+                t.departamento,
+                nomenclaturaSearchText(t)
+            ].join(' ');
+            return textBlobMatchesQuery(blob, qRaw);
+        });
     }
 
     seleccionarTramo(t: any) {

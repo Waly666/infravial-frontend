@@ -37,4 +37,8 @@ export class ApiService {
     uploadFile<T>(endpoint: string, formData: FormData): Observable<T> {
         return this.http.post<T>(`${this.apiUrl}${endpoint}`, formData);
     }
+
+    getBlob(endpoint: string): Observable<Blob> {
+        return this.http.get(`${this.apiUrl}${endpoint}`, { responseType: 'blob' });
+    }
 }

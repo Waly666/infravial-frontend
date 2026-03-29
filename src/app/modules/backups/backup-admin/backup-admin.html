@@ -2,19 +2,33 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">Respaldo y restauración</h1>
-            <p class="page-sub">Gestión profesional de copias de seguridad desde la aplicación</p>
+            <p class="page-sub">Copias de seguridad de la base de datos y restauración controlada</p>
         </div>
-        <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+        <button type="button" class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+    </div>
+
+    <div class="info-panel">
+        <strong>¿Qué incluye el backup actual?</strong>
+        <p>
+            Cada respaldo es un archivo <code>.zip</code> (<strong>infravial-full-backup-….zip</strong>) que contiene:
+            <code>manifest.json</code>, <code>database.json.gz</code> (volcado BSON de MongoDB) y la carpeta <code>uploads/</code>
+            con <strong>todas las fotos</strong> de inventario y de catálogos del servidor.
+        </p>
+        <p>
+            Al <strong>restaurar un .zip</strong>, la aplicación vuelca la base de datos y <strong>reemplaza por completo</strong> la carpeta
+            <code>uploads/</code> del servidor por la del archivo (como desempaquetar).
+            Los respaldos antiguos solo-BD (<code>.json.gz</code>) siguen funcionando: restauran MongoDB pero <strong>no tocan</strong> las fotos.
+        </p>
     </div>
 
     <div class="actions-card">
-        <button class="btn-primary" (click)="crearBackup()" [disabled]="creando || restaurando">
-            {{ creando ? 'Generando respaldo...' : 'Generar backup ahora' }}
+        <button type="button" class="btn-primary" (click)="crearBackup()" [disabled]="creando || restaurando || purgando">
+            {{ creando ? 'Generando ZIP (BD + fotos)...' : 'Generar backup ZIP (BD + uploads)' }}
         </button>
 
         <div class="file-stack">
-            <select [(ngModel)]="selectedArchivo" class="file-select" [disabled]="restaurando || creando">
-                <option value="">Seleccionar backup para restaurar (historial)</option>
+            <select [(ngModel)]="selectedArchivo" class="file-select" [disabled]="restaurando || creando || purgando">
+                <option value="">Restaurar desde servidor (historial)</option>
                 <option *ngFor="let l of logs" [value]="l.archivo" [disabled]="l.tipo !== 'backup' || l.estado !== 'success'">
                     {{ l.archivo }} ({{ l.fechaFin | date:'dd/MM/yyyy HH:mm' }})
                 </option>
@@ -24,14 +38,63 @@
                 type="text"
                 class="file-select"
                 [(ngModel)]="manualArchivo"
-                [disabled]="restaurando || creando"
-                placeholder="Nombre exacto del archivo (ej: infravial-backup-...json.gz)"
+                [disabled]="restaurando || creando || purgando"
+                placeholder="O nombre en servidor: infravial-full-backup-….zip o .json.gz antiguo"
                 spellcheck="false"
             />
         </div>
 
-        <button class="btn-danger" (click)="restaurarBackup()" [disabled]="!archivoParaRestaurar() || restaurando || creando">
-            {{ restaurando ? 'Restaurando...' : 'Restaurar backup seleccionado' }}
+        <button type="button" class="btn-danger" (click)="restaurarBackup()" [disabled]="!archivoParaRestaurar() || restaurando || creando || purgando">
+            {{ restaurando ? 'Restaurando...' : 'Restaurar (servidor)' }}
+        </button>
+    </div>
+
+    <div class="upload-card">
+        <h2 class="card-title">Restaurar desde tu PC (como importar Excel)</h2>
+        <p class="card-hint">Preferible un <code>.zip</code> completo. También acepta <code>.json.gz</code> heredado (solo base de datos, sin tocar fotos).</p>
+        <div class="upload-row">
+            <input
+                type="file"
+                class="file-input"
+                accept=".zip,application/zip,.gz,.json.gz,application/gzip"
+                [disabled]="restaurandoArchivo || creando || restaurando || purgando"
+                (change)="archivoLocal = $any($event.target).files?.[0] ?? null"
+            />
+            <button
+                type="button"
+                class="btn-danger btn-outline"
+                (click)="restaurarDesdeArchivoLocal()"
+                [disabled]="!archivoLocal || restaurandoArchivo || creando || restaurando || purgando"
+            >
+                {{ restaurandoArchivo ? 'Restaurando archivo...' : 'Restaurar archivo local' }}
+            </button>
+        </div>
+    </div>
+
+    <div class="purge-card">
+        <h2 class="card-title purge-title">Limpiar base de datos (irreversible)</h2>
+        <p class="card-hint">Marca solo lo que quieres borrar. Se recomienda un backup antes. Los usuarios: se eliminan <strong>todos excepto tu sesión actual</strong>.</p>
+        <div class="purge-grid">
+            <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.inventario" [disabled]="purgando" /> Inventario (tramos, señales, semáforos, cajas, control, encuesta vial, observaciones)</label>
+            <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.catalogos" [disabled]="purgando" /> Catálogos de señalización (SV, esquema perfil, ubic. SH, demarcaciones)</label>
+            <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.geograficos" [disabled]="purgando" /> ZAT, comunas y barrios</label>
+            <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.jornadas" [disabled]="purgando" /> Jornadas</label>
+            <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.divipol" [disabled]="purgando" /> Divipol</label>
+            <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.auditoria" [disabled]="purgando" /> Registros de auditoría</label>
+            <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.respaldos_log" [disabled]="purgando" /> Historial de eventos de backup / restore / purge</label>
+            <label class="purge-item purge-danger"><input type="checkbox" [(ngModel)]="purge.usuarios_otros" [disabled]="purgando" /> Usuarios (todos menos el usuario con el que iniciaste sesión)</label>
+        </div>
+        <div class="purge-confirm-row">
+            <label class="purge-label">Escribe <strong>BORRAR</strong> para confirmar:</label>
+            <input type="text" class="purge-input" [(ngModel)]="purgeConfirmText" [disabled]="purgando" autocomplete="off" />
+        </div>
+        <button
+            type="button"
+            class="btn-purge"
+            (click)="ejecutarPurge()"
+            [disabled]="!puedePurgar() || purgando || creando || restaurando || restaurandoArchivo"
+        >
+            {{ purgando ? 'Borrando...' : 'Ejecutar limpieza seleccionada' }}
         </button>
     </div>
 
@@ -56,13 +119,14 @@
                     <th>Colecciones</th>
                     <th>Registros</th>
                     <th>Actor</th>
+                    <th>Descarga</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let l of logs">
                     <td>{{ l.fechaFin || l.fechaInicio | date:'dd/MM/yy HH:mm:ss' }}</td>
                     <td>
-                        <span class="badge" [ngClass]="l.tipo === 'backup' ? 'badge-info' : 'badge-warn'">
+                        <span class="badge" [ngClass]="badgeClassTipo(l.tipo)">
                             {{ l.tipo }}
                         </span>
                     </td>
@@ -77,9 +141,21 @@
                     <td class="mono">{{ l.colecciones ?? '—' }}</td>
                     <td class="mono">{{ l.registros ?? '—' }}</td>
                     <td>{{ l.actor || l.user?.user || 'system' }}</td>
+                    <td>
+                        <button
+                            type="button"
+                            class="btn-dl"
+                            *ngIf="l.tipo === 'backup' && l.estado === 'success' && l.archivo"
+                            [disabled]="descargando === l.archivo"
+                            (click)="descargarBackup(l.archivo)"
+                        >
+                            {{ descargando === l.archivo ? '…' : 'Descargar' }}
+                        </button>
+                        <span *ngIf="l.tipo !== 'backup' || l.estado !== 'success'" class="td-dash">—</span>
+                    </td>
                 </tr>
                 <tr *ngIf="logs.length === 0">
-                    <td colspan="9" class="empty-state">Aún no hay respaldos registrados.</td>
+                    <td colspan="10" class="empty-state">Aún no hay respaldos registrados.</td>
                 </tr>
             </tbody>
         </table>

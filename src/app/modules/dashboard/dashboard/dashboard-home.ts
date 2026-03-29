@@ -21,6 +21,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     loading = true;
 
     private charts: Chart[] = [];
+    private themeObserver?: MutationObserver;
 
     constructor(
         private authService: AuthService,
@@ -31,9 +32,16 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.usuario = this.authService.getUsuario();
         this.loadData();
+        this.themeObserver = new MutationObserver(() => {
+            if (this.stats && !this.loading) {
+                requestAnimationFrame(() => this.refreshCharts());
+            }
+        });
+        this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
     }
 
     ngOnDestroy() {
+        this.themeObserver?.disconnect();
         this.destroyCharts();
     }
 

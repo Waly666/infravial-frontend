@@ -17,10 +17,26 @@ export class BackupAdminComponent implements OnInit {
     loading = true;
     creando = false;
     restaurando = false;
+    restaurandoArchivo = false;
+    purgando = false;
+    descargando = '';
     selectedArchivo = '';
     manualArchivo = '';
+    archivoLocal: File | null = null;
     mensaje = '';
     error = '';
+
+    purge = {
+        inventario: false,
+        catalogos: false,
+        geograficos: false,
+        jornadas: false,
+        divipol: false,
+        auditoria: false,
+        respaldos_log: false,
+        usuarios_otros: false
+    };
+    purgeConfirmText = '';
 
     constructor(
         private backupService: BackupService,
@@ -45,7 +61,8 @@ export class BackupAdminComponent implements OnInit {
                 this.loading = false;
             },
             error: (err) => {
-                this.error = err?.error?.message || 'No se pudo cargar el historial de respaldos.';
+                this.error =
+                    err?.error?.message || 'No se pudo cargar el historial de respaldos.';
                 this.loading = false;
             }
         });
@@ -75,7 +92,9 @@ export class BackupAdminComponent implements OnInit {
     restaurarBackup(): void {
         const archivo = this.archivoParaRestaurar();
         if (!archivo) return;
-        const ok = confirm(`Vas a restaurar el backup "${archivo}". Esta accion reemplaza los datos actuales. Deseas continuar?`);
+        const ok = confirm(
+            `Vas a restaurar "${archivo}". Si es .zip se reemplaza la base de datos y la carpeta uploads/ (fotos) del servidor. Si es .json.gz antiguo, solo la base de datos. ¿Continuar?`
+        );
         if (!ok) return;
 
         this.restaurando = true;
@@ -92,6 +111,130 @@ export class BackupAdminComponent implements OnInit {
                 this.restaurando = false;
             }
         });
+    }
+
+    restaurarDesdeArchivoLocal(): void {
+        if (!this.archivoLocal) return;
+        const ok = confirm(
+            `Restaurar desde "${this.archivoLocal.name}". Un .zip reemplaza BD + uploads/. Un .json.gz solo la BD. ¿Continuar?`
+        );
+        if (!ok) return;
+
+        this.restaurandoArchivo = true;
+        this.error = '';
+        this.mensaje = '';
+        this.backupService.restoreFromUploadedFile(this.archivoLocal).subscribe({
+            next: (res: any) => {
+                this.mensaje = `Restore desde archivo: ${res?.restore?.archivo || 'ok'}`;
+                this.restaurandoArchivo = false;
+                this.archivoLocal = null;
+                this.loadLogs();
+            },
+            error: (err) => {
+                this.error =
+                    err?.error?.message || 'No se pudo restaurar desde el archivo.';
+                this.restaurandoArchivo = false;
+            }
+        });
+    }
+
+    descargarBackup(archivo: string): void {
+        if (!archivo) return;
+        this.descargando = archivo;
+        this.error = '';
+        this.backupService.downloadBackup(archivo).subscribe({
+            next: (blob) => {
+                this.descargando = '';
+                if (blob.type && blob.type.includes('json') && !blob.type.includes('zip')) {
+                    blob.text().then((t) => {
+                        try {
+                            const j = JSON.parse(t);
+                            this.error = j.message || 'Error al descargar';
+                        } catch {
+                            this.error = 'Error al descargar';
+                        }
+                    });
+                    return;
+                }
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = archivo;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.mensaje = `Descarga iniciada: ${archivo}`;
+            },
+            error: (err: any) => {
+                this.descargando = '';
+                const blob = err?.error;
+                if (blob instanceof Blob) {
+                    blob.text().then((t) => {
+                        try {
+                            const j = JSON.parse(t);
+                            this.error = j.message || 'No se pudo descargar el archivo.';
+                        } catch {
+                            this.error = 'No se pudo descargar el archivo.';
+                        }
+                    });
+                } else {
+                    this.error =
+                        err?.error?.message || 'No se pudo descargar el archivo.';
+                }
+            }
+        });
+    }
+
+    gruposPurgeSeleccionados(): string[] {
+        const g: string[] = [];
+        if (this.purge.inventario) g.push('inventario');
+        if (this.purge.catalogos) g.push('catalogos');
+        if (this.purge.geograficos) g.push('geograficos');
+        if (this.purge.jornadas) g.push('jornadas');
+        if (this.purge.divipol) g.push('divipol');
+        if (this.purge.auditoria) g.push('auditoria');
+        if (this.purge.respaldos_log) g.push('respaldos_log');
+        if (this.purge.usuarios_otros) g.push('usuarios_otros');
+        return g;
+    }
+
+    puedePurgar(): boolean {
+        return (
+            this.gruposPurgeSeleccionados().length > 0 &&
+            this.purgeConfirmText === 'BORRAR'
+        );
+    }
+
+    ejecutarPurge(): void {
+        if (!this.puedePurgar()) return;
+        const grupos = this.gruposPurgeSeleccionados();
+        const ok = confirm(
+            `Se eliminarán datos de: ${grupos.join(', ')}. Esta acción no se puede deshacer. ¿Seguro?`
+        );
+        if (!ok) return;
+
+        this.purgando = true;
+        this.error = '';
+        this.mensaje = '';
+        this.backupService.purgeDatabase(grupos, 'BORRAR').subscribe({
+            next: (res: any) => {
+                const n = res?.purge?.totalRemoved ?? 0;
+                this.mensaje = `Limpieza aplicada. Documentos eliminados (aprox.): ${n}.`;
+                this.purgando = false;
+                this.purgeConfirmText = '';
+                this.loadLogs();
+            },
+            error: (err) => {
+                this.error = err?.error?.message || 'No se pudo ejecutar la limpieza.';
+                this.purgando = false;
+            }
+        });
+    }
+
+    badgeClassTipo(tipo: string): string {
+        if (tipo === 'backup') return 'badge-info';
+        if (tipo === 'restore') return 'badge-warn';
+        if (tipo === 'purge') return 'badge-purge';
+        return 'badge-info';
     }
 
     fmtSize(bytes: number): string {

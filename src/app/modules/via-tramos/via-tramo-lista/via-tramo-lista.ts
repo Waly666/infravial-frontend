@@ -10,8 +10,10 @@ import {
     geoMunicipios,
     geoZatOptions,
     matchesGeoFilters,
+    nomenclaturaSearchText,
     rowZatLabel,
     rowZatValue,
+    textBlobMatchesQuery,
     badgeClassMunicipio,
     badgeClassZat,
     badgeClassVia
@@ -78,20 +80,18 @@ export class ViaTramoListaComponent implements OnInit {
     }
 
     get tramosFiltrados() {
-        const q = this.busqueda.trim().toLowerCase();
-
+        const qRaw = this.busqueda.trim();
         return this.tramos.filter(t => {
             if (!matchesGeoFilters(t, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
-
-            if (!q) return true;
             const zatL = rowZatLabel(t);
-            return (
-                t.via?.toLowerCase().includes(q) ||
-                t.municipio?.toLowerCase().includes(q) ||
-                t.departamento?.toLowerCase().includes(q) ||
-                t.nomenclatura?.completa?.toLowerCase().includes(q) ||
-                (zatL !== '—' && zatL.toLowerCase().includes(q))
-            );
+            const blob = [
+                t.via,
+                t.municipio,
+                t.departamento,
+                nomenclaturaSearchText(t),
+                zatL !== '—' ? zatL : ''
+            ].join(' ');
+            return textBlobMatchesQuery(blob, qRaw);
         });
     }
 

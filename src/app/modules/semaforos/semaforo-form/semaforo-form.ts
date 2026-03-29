@@ -10,6 +10,10 @@ import { CatalogoService } from '../../../core/services/catalogo.service';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
+import {
+    nomenclaturaSearchText,
+    textBlobMatchesQuery
+} from '../../../shared/utils/geo-list-filters';
 
 @Component({
     selector: 'app-semaforo-form',
@@ -253,13 +257,18 @@ export class SemaforoFormComponent implements OnInit {
 
     // ── CONTROL ───────────────────────────────────
     get controlesFiltrados() {
-        if (!this.busquedaControl) return this.controles;
-        const q = this.busquedaControl.toLowerCase();
-        return this.controles.filter(c =>
-            c.idViaTramo?.via?.toLowerCase().includes(q) ||
-            c.idViaTramo?.nomenclatura?.completa?.toLowerCase().includes(q) ||
-            String(c.numExterno).includes(q)
-        );
+        const qRaw = (this.busquedaControl || '').trim();
+        if (!qRaw) return this.controles;
+        return this.controles.filter(c => {
+            const blob = [
+                c.idViaTramo?.via,
+                c.idViaTramo?.municipio,
+                c.idViaTramo?.departamento,
+                nomenclaturaSearchText(c),
+                String(c.numExterno ?? '')
+            ].join(' ');
+            return textBlobMatchesQuery(blob, qRaw);
+        });
     }
 
     seleccionarControl(c: any) {
