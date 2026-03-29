@@ -39,11 +39,20 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let j of jornadas">
-                    <td><strong>{{ j.municipio }}</strong></td>
-                    <td>{{ j.dpto }}</td>
-                    <td>{{ j.fechaJornada | date:'dd/MM/yyyy HH:mm' }}</td>
-                    <td>{{ j.supervisor }}</td>
+                <tr
+                    *ngFor="let j of jornadas; let ri = index"
+                    class="jornada-row"
+                    [style.animation-delay.ms]="ri * 42">
+                    <td>
+                        <span class="badge jorn-pill" [ngClass]="munClass(j)">{{ j.municipio || "—" }}</span>
+                    </td>
+                    <td>
+                        <span class="badge jorn-pill" [ngClass]="deptoClass(j)">{{ j.dpto || "—" }}</span>
+                    </td>
+                    <td class="td-fecha">{{ j.fechaJornada | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td>
+                        <span class="badge jorn-pill" [ngClass]="supClass(j)">{{ j.supervisor || "—" }}</span>
+                    </td>
                     <td>{{ j.localidad }}</td>
                     <td>
                         <span class="badge" [ngClass]="getEstadoClass(j.estado)">

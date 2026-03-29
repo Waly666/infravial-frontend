@@ -1,0 +1,39 @@
+/* Líneas de etiqueta al elegir tramo (depto/mun + vía/nomenclatura) */
+.tramo-line-geo {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgba(180, 200, 255, 0.58);
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+}
+
+.tramo-line-via {
+    display: block;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #e8f0ff;
+    line-height: 1.3;
+}
+
+.tramo-item {
+    .tramo-line-geo {
+        margin-bottom: 0.12rem;
+    }
+    .tramo-line-via {
+        font-size: 0.8rem;
+    }
+}
+
+.tramo-nomenclatura .nom-geo {
+    margin-bottom: 0.35rem;
+}
+
+:host-context(body.light-mode) .tramo-line-geo {
+    color: rgba(30, 41, 59, 0.55);
+}
+
+:host-context(body.light-mode) .tramo-line-via {
+    color: #1a2540;
+}

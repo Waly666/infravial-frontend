@@ -25,18 +25,62 @@
         </div>
 
         <!-- NAVEGACIÓN -->
-        <nav class="sidebar-nav">
-            <div
-                *ngFor="let item of getMenuItems()"
-                class="nav-item"
-                [attr.data-nav]="item.id"
-                [class.active]="seccionActiva === item.id"
-                (click)="navegarA(item.id)">
-                <span class="nav-icon-wrap" aria-hidden="true">
-                    <span class="material-symbols-outlined nav-icon">{{ item.icon }}</span>
-                </span>
-                <span class="nav-label">{{ item.label }}</span>
-            </div>
+        <nav class="sidebar-nav" aria-label="Menú principal">
+            <ng-container *ngFor="let entry of getMenuEntries()">
+                <div
+                    *ngIf="entry.kind === 'link'"
+                    class="nav-item"
+                    [attr.data-nav]="entry.id"
+                    [class.active]="seccionActiva === entry.id"
+                    (click)="navegarA(entry.id)"
+                    role="button"
+                    tabindex="0"
+                    (keydown.enter)="navegarA(entry.id)"
+                    (keydown.space)="$event.preventDefault(); navegarA(entry.id)">
+                    <span class="nav-icon-wrap" aria-hidden="true">
+                        <span class="material-symbols-outlined nav-icon">{{ entry.icon }}</span>
+                    </span>
+                    <span class="nav-label">{{ entry.label }}</span>
+                </div>
+
+                <div *ngIf="entry.kind === 'group'" class="nav-group">
+                    <div
+                        class="nav-item nav-group-header"
+                        [attr.data-nav]="entry.id"
+                        [class.active]="isUtilsSectionActive()"
+                        role="button"
+                        tabindex="0"
+                        [attr.aria-expanded]="utilsChildrenVisible"
+                        (click)="toggleUtilsMenu()"
+                        (keydown.enter)="toggleUtilsMenu()"
+                        (keydown.space)="$event.preventDefault(); toggleUtilsMenu()">
+                        <span class="nav-icon-wrap" aria-hidden="true">
+                            <span class="material-symbols-outlined nav-icon">{{ entry.icon }}</span>
+                        </span>
+                        <span class="nav-label">{{ entry.label }}</span>
+                        <span class="nav-chevron" aria-hidden="true">
+                            <span class="material-symbols-outlined">{{ utilsChevronIcon() }}</span>
+                        </span>
+                    </div>
+                    <div class="nav-group-children" *ngIf="utilsChildrenVisible">
+                        <div
+                            *ngFor="let child of entry.children"
+                            class="nav-item nav-subitem"
+                            [attr.data-nav]="child.id"
+                            [class.active]="seccionActiva === child.id"
+                            (click)="navegarA(child.id)"
+                            role="button"
+                            tabindex="0"
+                            (keydown.enter)="navegarA(child.id)"
+                            (keydown.space)="$event.preventDefault(); navegarA(child.id)">
+                            <span class="nav-icon-wrap nav-icon-wrap--sm" aria-hidden="true">
+                                <span class="material-symbols-outlined nav-icon nav-icon--sm">{{ child.icon }}</span>
+                            </span>
+                            <span class="nav-label">{{ child.label }}</span>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
         </nav>
 
         <div class="sidebar-footer">

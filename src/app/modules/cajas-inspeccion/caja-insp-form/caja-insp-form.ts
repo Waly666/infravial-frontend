@@ -12,13 +12,14 @@ import {
     nomenclaturaSearchText,
     textBlobMatchesQuery
 } from '../../../shared/utils/geo-list-filters';
+import { TramoGeoPipe, TramoViaNomPipe } from '../../../shared/pipes/tramo-display.pipe';
 
 @Component({
     selector: 'app-caja-insp-form',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoViaNomPipe],
     templateUrl: './caja-insp-form.html',
-    styleUrl: './caja-insp-form.scss'
+    styleUrls: ['./caja-insp-form.scss', '../../../shared/styles/tramo-picker-labels.scss']
 })
 export class CajaInspFormComponent implements OnInit {
 

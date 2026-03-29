@@ -164,6 +164,20 @@ export class SenHorListaComponent implements OnInit {
         return badgeClassZat(rowZatValue(r) || rowZatLabel(r) || '—');
     }
 
+    /**
+     * Demarcación en BD/import suele usar Bueno/Malo (como vía) o Buena/Mala (formulario).
+     * Sin clase reconocida el span .badge queda sin borde/fondo visible.
+     */
+    estadoDemBadgeClass(r: any): string {
+        const raw = (r?.estadoDem ?? '').toString().trim();
+        if (!raw) return 'badge-estado-neutral';
+        const n = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        if (n === 'buena' || n === 'bueno') return 'badge-bueno';
+        if (n === 'regular') return 'badge-regular';
+        if (n === 'mala' || n === 'malo') return 'badge-malo';
+        return 'badge-estado-neutral';
+    }
+
     get totalPages(): number {
         return Math.ceil(this.registrosFiltrados.length / this.pageSize) || 1;
     }

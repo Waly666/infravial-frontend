@@ -5,6 +5,14 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { JornadaService } from '../../../core/services/jornada.service';
 
+/** Rutas del submenú Utils (mismo orden que en el menú). */
+const UTILS_ROUTE_IDS = ['importacion', 'catalogos', 'usuarios', 'auditoria', 'respaldos'] as const;
+
+type MenuLink = { id: string; label: string; icon: string };
+type MenuEntry =
+    | { kind: 'link'; id: string; label: string; icon: string; roles: string[] }
+    | { kind: 'group'; id: string; label: string; icon: string; roles: string[]; children: MenuLink[] };
+
 @Component({
     selector: 'app-dashboard-layout',
     standalone: true,
@@ -18,23 +26,34 @@ export class DashboardLayoutComponent implements OnInit {
     jornada: any = null;
     seccionActiva = 'dashboard';
     modoClaro = false;
+    /** Submenú Utils desplegado (se abre solo al entrar a una de sus rutas). */
+    utilsOpen = false;
 
-    menuItems = [
-        { id: 'dashboard',        label: 'Dashboard',           icon: 'space_dashboard', roles: ['admin','supervisor','encuestador','invitado'] },
-        { id: 'jornadas',         label: 'Jornadas',           icon: 'calendar_month', roles: ['admin','supervisor'] },
-        { id: 'via-tramos',       label: 'Vía Tramos',         icon: 'route', roles: ['admin','supervisor','encuestador'] },
-        { id: 'sen-verticales',   label: 'Señales Verticales', icon: 'vertical_align_top', roles: ['admin','supervisor','encuestador'] },
-        { id: 'sen-horizontales', label: 'Señales Horizontales', icon: 'horizontal_rule', roles: ['admin','supervisor','encuestador'] },
-        { id: 'semaforos',        label: 'Semáforos',          icon: 'traffic', roles: ['admin','supervisor','encuestador'] },
-        { id: 'control-semaforo', label: 'Control Semáforo',   icon: 'tune', roles: ['admin','supervisor','encuestador'] },
-        { id: 'cajas-inspeccion', label: 'Cajas Inspección',   icon: 'inventory_2', roles: ['admin','supervisor','encuestador'] },
-        { id: 'catalogos',        label: 'Catálogos',          icon: 'menu_book', roles: ['admin'] },
-        { id: 'usuarios',         label: 'Usuarios',           icon: 'groups', roles: ['admin'] },
-        { id: 'auditoria',        label: 'Auditoría',          icon: 'fact_check', roles: ['admin'] },
-        { id: 'respaldos',        label: 'Respaldos',          icon: 'settings_backup_restore', roles: ['admin'] },
-        { id: 'importacion',      label: 'Importar Excel',     icon: 'upload_file', roles: ['admin'] },
-        { id: 'mapa-inventario',  label: 'Mapa inventario',    icon: 'map', roles: ['admin','supervisor','encuestador'] },
-        { id: 'reportes',         label: 'Reportes',           icon: 'analytics', roles: ['admin','supervisor'] },
+    private readonly menuEntries: MenuEntry[] = [
+        { kind: 'link', id: 'dashboard',        label: 'Dashboard',            icon: 'space_dashboard', roles: ['admin','supervisor','encuestador','invitado'] },
+        { kind: 'link', id: 'jornadas',         label: 'Jornadas',             icon: 'calendar_month', roles: ['admin','supervisor'] },
+        { kind: 'link', id: 'via-tramos',       label: 'Vía Tramos',           icon: 'route', roles: ['admin','supervisor','encuestador'] },
+        { kind: 'link', id: 'sen-verticales',   label: 'Señales Verticales',   icon: 'vertical_align_top', roles: ['admin','supervisor','encuestador'] },
+        { kind: 'link', id: 'sen-horizontales', label: 'Señales Horizontales', icon: 'horizontal_rule', roles: ['admin','supervisor','encuestador'] },
+        { kind: 'link', id: 'semaforos',        label: 'Semáforos',            icon: 'traffic', roles: ['admin','supervisor','encuestador'] },
+        { kind: 'link', id: 'control-semaforo', label: 'Control Semáforo',     icon: 'tune', roles: ['admin','supervisor','encuestador'] },
+        { kind: 'link', id: 'cajas-inspeccion', label: 'Cajas Inspección',     icon: 'inventory_2', roles: ['admin','supervisor','encuestador'] },
+        {
+            kind: 'group',
+            id: 'utils',
+            label: 'Utils',
+            icon: 'construction',
+            roles: ['admin'],
+            children: [
+                { id: 'importacion', label: 'Importar Excel', icon: 'upload_file' },
+                { id: 'catalogos',   label: 'Catálogos',      icon: 'menu_book' },
+                { id: 'usuarios',    label: 'Usuarios',       icon: 'groups' },
+                { id: 'auditoria',   label: 'Auditoría',      icon: 'fact_check' },
+                { id: 'respaldos',   label: 'Respaldos',      icon: 'settings_backup_restore' },
+            ],
+        },
+        { kind: 'link', id: 'mapa-inventario',  label: 'Mapa inventario',      icon: 'map', roles: ['admin','supervisor','encuestador'] },
+        { kind: 'link', id: 'reportes',         label: 'Reportes',             icon: 'analytics', roles: ['admin','supervisor'] },
     ];
 
     constructor(
@@ -64,6 +83,11 @@ export class DashboardLayoutComponent implements OnInit {
         const clean = (url || '').split('?')[0].split('#')[0];
         const seg = clean.replace(/^\//, '').split('/')[0] || 'dashboard';
         this.seccionActiva = seg === '' ? 'dashboard' : seg;
+        if ((UTILS_ROUTE_IDS as readonly string[]).includes(this.seccionActiva)) {
+            this.utilsOpen = true;
+        } else {
+            this.utilsOpen = false;
+        }
     }
 
     toggleModo() {
@@ -72,8 +96,27 @@ export class DashboardLayoutComponent implements OnInit {
         localStorage.setItem('modoClaro', this.modoClaro.toString());
     }
 
-    getMenuItems() {
-        return this.menuItems.filter(item => item.roles.includes(this.usuario?.rol));
+    getMenuEntries(): MenuEntry[] {
+        const rol = this.usuario?.rol;
+        return this.menuEntries.filter(e => e.roles.includes(rol));
+    }
+
+    toggleUtilsMenu(): void {
+        this.utilsOpen = !this.utilsOpen;
+    }
+
+    /** Cabecera Utils resaltada si estás en una de sus pantallas. */
+    isUtilsSectionActive(): boolean {
+        return (UTILS_ROUTE_IDS as readonly string[]).includes(this.seccionActiva);
+    }
+
+    /** Muestra el submenú si hay ruta Utils activa o el usuario abrió el grupo en el dashboard. */
+    get utilsChildrenVisible(): boolean {
+        return this.isUtilsSectionActive() || this.utilsOpen;
+    }
+
+    utilsChevronIcon(): string {
+        return this.utilsChildrenVisible ? 'expand_less' : 'expand_more';
     }
 
     navegarA(ruta: string) {

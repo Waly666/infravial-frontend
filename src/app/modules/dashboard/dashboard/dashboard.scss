@@ -201,6 +201,61 @@
 .nav-item[data-nav='respaldos']        .nav-icon-wrap { background: linear-gradient(145deg, #f59e0b 0%, #b45309 100%); }
 .nav-item[data-nav='importacion']      .nav-icon-wrap { background: linear-gradient(145deg, #22d3ee 0%, #0369a1 100%); }
 .nav-item[data-nav='reportes']         .nav-icon-wrap { background: linear-gradient(145deg, #fb923c 0%, #c2410c 100%); }
+.nav-item[data-nav='utils']            .nav-icon-wrap { background: linear-gradient(145deg, #f87171 0%, #b91c1c 100%); }
+
+.nav-group {
+    margin-bottom: 0.15rem;
+}
+
+.nav-group-header {
+    position: relative;
+    user-select: none;
+
+    .nav-chevron {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        opacity: 0.55;
+
+        .material-symbols-outlined {
+            font-size: 22px !important;
+            width: 22px;
+            height: 22px;
+            color: rgba(180, 200, 255, 0.85);
+            font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+        }
+    }
+
+    &.active .nav-chevron .material-symbols-outlined {
+        color: #b8d4ff;
+        opacity: 0.9;
+    }
+}
+
+.nav-group-children {
+    margin: 0.15rem 0 0.35rem 0.35rem;
+    padding: 0.15rem 0 0.25rem 0.5rem;
+    border-left: 2px solid rgba(74, 158, 255, 0.18);
+}
+
+.nav-subitem {
+    padding: 0.55rem 0.85rem 0.55rem 0.65rem;
+    margin: 0.1rem 0.35rem 0.1rem 0;
+    font-size: 0.8rem;
+    border-radius: 8px;
+
+    .nav-icon-wrap--sm {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+    }
+
+    .nav-icon--sm {
+        font-size: 18px !important;
+        width: 19px;
+        height: 19px;
+    }
+}
 
 .nav-label {
     font-family: var(--font-sans, 'Syne', system-ui, sans-serif);
@@ -459,9 +514,9 @@
 
 .stat-info { position: relative; z-index: 1; }
 
-/* Números y fechas: tipografía monoespaciada legible */
+/* Números y fechas en panel: Inter + tabular (misma familia que listas) */
 .tab-figures {
-    font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+    font-family: var(--font-list-data, 'Inter', system-ui, sans-serif);
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1, 'lnum' 1;
 }
@@ -475,7 +530,7 @@
     background-clip: text;
     color: transparent;
     line-height: 1;
-    font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+    font-family: var(--font-list-data, 'Inter', system-ui, sans-serif);
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1, 'lnum' 1;
 }
@@ -835,6 +890,18 @@
         color: #1e40af;
         box-shadow: inset 3px 0 0 #2563eb;
     }
+}
+
+:host-context(body.light-mode) .nav-group-header .nav-chevron .material-symbols-outlined {
+    color: rgba(30, 41, 59, 0.55);
+}
+
+:host-context(body.light-mode) .nav-group-header.active .nav-chevron .material-symbols-outlined {
+    color: #1e40af;
+}
+
+:host-context(body.light-mode) .nav-group-children {
+    border-left-color: rgba(37, 99, 235, 0.2);
 }
 
 :host-context(body.light-mode) .nav-icon-wrap {

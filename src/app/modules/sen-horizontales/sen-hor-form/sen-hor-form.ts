@@ -13,13 +13,14 @@ import {
     nomenclaturaSearchText,
     textBlobMatchesQuery
 } from '../../../shared/utils/geo-list-filters';
+import { TramoGeoPipe, TramoViaNomPipe } from '../../../shared/pipes/tramo-display.pipe';
 
 @Component({
     selector: 'app-sen-hor-form',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoViaNomPipe],
     templateUrl: './sen-hor-form.html',
-    styleUrl: './sen-hor-form.scss'
+    styleUrls: ['./sen-hor-form.scss', '../../../shared/styles/tramo-picker-labels.scss']
 })
 export class SenHorFormComponent implements OnInit {
 

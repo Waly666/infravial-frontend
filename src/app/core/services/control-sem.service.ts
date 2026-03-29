@@ -15,6 +15,11 @@ export class ControlSemService {
         return this.api.get(`/control-semaforo/${id}`);
     }
 
+    /** Un control por tramo (si existe). */
+    getByTramo(idViaTramo: string): Observable<any> {
+        return this.api.get(`/control-semaforo/tramo/${idViaTramo}`);
+    }
+
     create(data: any): Observable<any> {
         return this.api.post('/control-semaforo', data);
     }

@@ -959,3 +959,144 @@
         border-color: rgba(224, 92, 92, 0.8) !important;
     }
 }
+
+// ── Paso 11: inventario vinculado ─────────────────
+.rel-error {
+    padding: 0.65rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    background: rgba(224, 92, 92, 0.12);
+    border: 1px solid rgba(224, 92, 92, 0.35);
+    color: #ffb4b4;
+    font-size: 0.85rem;
+}
+
+.rel-loading {
+    padding: 1rem;
+    text-align: center;
+    color: rgba(180, 200, 255, 0.55);
+    font-size: 0.88rem;
+}
+
+.related-block {
+    margin-bottom: 1.75rem;
+    padding: 1rem 1.1rem;
+    background: rgba(74, 158, 255, 0.04);
+    border: 1px solid rgba(74, 158, 255, 0.12);
+    border-radius: 12px;
+}
+
+.related-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e8f0ff;
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(74, 158, 255, 0.15);
+}
+
+.related-subtitle {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgba(180, 200, 255, 0.75);
+    margin: 1rem 0 0.5rem;
+
+    &:first-of-type {
+        margin-top: 0;
+    }
+}
+
+.related-empty {
+    font-size: 0.8rem;
+    color: rgba(180, 200, 255, 0.4);
+    padding: 0.5rem 0 0.75rem;
+}
+
+.related-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    margin-bottom: 0.25rem;
+
+    th {
+        text-align: left;
+        padding: 0.45rem 0.5rem;
+        color: rgba(180, 200, 255, 0.45);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-bottom: 1px solid rgba(74, 158, 255, 0.12);
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 0.5rem 0.5rem;
+        color: #e8f0ff;
+        border-bottom: 1px solid rgba(74, 158, 255, 0.06);
+        vertical-align: middle;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+}
+
+.btn-linkish {
+    background: rgba(74, 158, 255, 0.1);
+    border: 1px solid rgba(74, 158, 255, 0.35);
+    border-radius: 6px;
+    color: #7eb8ff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.55rem;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover {
+        background: rgba(74, 158, 255, 0.2);
+        color: #fff;
+    }
+}
+
+:host-context(body.light-mode) .related-block {
+    background: rgba(37, 99, 235, 0.04);
+    border-color: rgba(37, 99, 235, 0.12);
+}
+
+:host-context(body.light-mode) .related-title {
+    color: #1a2540;
+    border-bottom-color: rgba(37, 99, 235, 0.15);
+}
+
+:host-context(body.light-mode) .related-subtitle {
+    color: rgba(26, 37, 64, 0.65);
+}
+
+:host-context(body.light-mode) .related-empty {
+    color: rgba(26, 37, 64, 0.45);
+}
+
+:host-context(body.light-mode) .related-table th {
+    color: rgba(30, 41, 59, 0.55);
+    border-bottom-color: #cbd5e1;
+}
+
+:host-context(body.light-mode) .related-table td {
+    color: #1a2540;
+    border-bottom-color: #e2e8f0;
+}
+
+:host-context(body.light-mode) .btn-linkish {
+    color: #2563eb;
+    border-color: rgba(37, 99, 235, 0.35);
+    background: rgba(37, 99, 235, 0.08);
+
+    &:hover {
+        background: rgba(37, 99, 235, 0.14);
+        color: #1d4ed8;
+    }
+}
+
+:host-context(body.light-mode) .rel-loading {
+    color: rgba(26, 37, 64, 0.5);
+}

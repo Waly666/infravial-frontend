@@ -19,7 +19,7 @@
     <!-- Pasos navegación -->
     <div class="steps-nav">
         <div
-            *ngFor="let paso of [1,2,3,4,5,6,7,8,9,10]"
+            *ngFor="let paso of pasoIndices"
             class="step-dot"
             [class.active]="pasoActual === paso"
             [class.done]="pasoActual > paso"
@@ -813,6 +813,157 @@
         </div>
     </div>
     </div>
+
+    <!-- ══════════════════════════════════════════════
+         PASO 11 — INVENTARIO VINCULADO (solo edición)
+    ══════════════════════════════════════════════ -->
+    <div class="step-content" *ngIf="pasoActual === 11 && modoEdicion">
+        <h2 class="step-title">🔗 Inventario vinculado al tramo</h2>
+        <p class="step-desc">
+            Registros en el sistema asociados a este tramo (solo consulta).
+            <span *ngIf="form.nomenclatura?.completa || form.via">
+                · Tramo: <strong>{{ form.nomenclatura?.completa || form.via }}</strong>
+            </span>
+        </p>
+
+        <div class="rel-error" *ngIf="relError">{{ relError }}</div>
+        <div class="rel-loading" *ngIf="relLoading">Cargando inventario relacionado…</div>
+
+        <ng-container *ngIf="!relLoading">
+            <!-- 1) Semáforos + control + cajas -->
+            <div class="related-block">
+                <h3 class="related-title">🚦 Semáforos y control</h3>
+
+                <h4 class="related-subtitle">Semáforos del tramo</h4>
+                <div class="related-empty" *ngIf="!semaforosRel.length">No hay semáforos registrados para este tramo.</div>
+                <table class="related-table" *ngIf="semaforosRel.length">
+                    <thead>
+                        <tr>
+                            <th>Nº control</th>
+                            <th>Clase</th>
+                            <th>Caras</th>
+                            <th>Funciona</th>
+                            <th>Fase</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let s of semaforosRel">
+                            <td>{{ s.idControSem?.numExterno ?? s.numExterno ?? "—" }}</td>
+                            <td>{{ s.claseSem || "—" }}</td>
+                            <td>{{ s.numCaras ?? "—" }}</td>
+                            <td>{{ s.semaforoFunciona ? "Sí" : "No" }}</td>
+                            <td>{{ s.fase || "—" }}</td>
+                            <td><button type="button" class="btn-linkish" (click)="irEditarSemaforo(s._id)">Editar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4 class="related-subtitle">Control semafórico del tramo</h4>
+                <div class="related-empty" *ngIf="!controlSemRel">No hay control semafórico asociado a este tramo.</div>
+                <table class="related-table" *ngIf="controlSemRel">
+                    <thead>
+                        <tr>
+                            <th>Nº externo</th>
+                            <th>Tipo controlador</th>
+                            <th>Estado</th>
+                            <th>Implementación</th>
+                            <th>UPS</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ controlSemRel.numExterno ?? "—" }}</td>
+                            <td>{{ controlSemRel.tipoControlador || "—" }}</td>
+                            <td>{{ controlSemRel.estadoControlador || "—" }}</td>
+                            <td>{{ controlSemRel.implementacion || "—" }}</td>
+                            <td>{{ controlSemRel.ups ? "Sí" : "No" }}</td>
+                            <td><button type="button" class="btn-linkish" (click)="irEditarControlSem(controlSemRel._id)">Editar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4 class="related-subtitle">Cajas de inspección</h4>
+                <div class="related-empty" *ngIf="!cajasRel.length">No hay cajas de inspección en este tramo.</div>
+                <table class="related-table" *ngIf="cajasRel.length">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Estado caja</th>
+                            <th>Tapa</th>
+                            <th>Estado tapa</th>
+                            <th>Fase</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let c of cajasRel">
+                            <td>{{ c.materialCaja || "—" }}</td>
+                            <td>{{ c.estadoCaja || "—" }}</td>
+                            <td>{{ c.tapa ? "Sí" : "No" }}</td>
+                            <td>{{ c.estadoTapa || "—" }}</td>
+                            <td>{{ c.fase || "—" }}</td>
+                            <td><button type="button" class="btn-linkish" (click)="irEditarCaja(c._id)">Editar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 2) Señales verticales -->
+            <div class="related-block">
+                <h3 class="related-title">↕️ Señales verticales</h3>
+                <div class="related-empty" *ngIf="!senVertRel.length">No hay señales verticales en este tramo.</div>
+                <table class="related-table" *ngIf="senVertRel.length">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Estado</th>
+                            <th>Soporte</th>
+                            <th>Fase</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let v of senVertRel">
+                            <td>{{ v.codSe || "—" }}</td>
+                            <td>{{ v.estado || "—" }}</td>
+                            <td>{{ v.tipoSoporte || "—" }}</td>
+                            <td>{{ v.fase || "—" }}</td>
+                            <td><button type="button" class="btn-linkish" (click)="irEditarSenVert(v._id)">Editar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 3) Señales horizontales -->
+            <div class="related-block">
+                <h3 class="related-title">➖ Señales horizontales</h3>
+                <div class="related-empty" *ngIf="!senHorRel.length">No hay señales horizontales en este tramo.</div>
+                <table class="related-table" *ngIf="senHorRel.length">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Estado demarcación</th>
+                            <th>Material</th>
+                            <th>Fase</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let h of senHorRel">
+                            <td>{{ h.codSeHor || "—" }}</td>
+                            <td>{{ h.estadoDem || "—" }}</td>
+                            <td>{{ h.material || "—" }}</td>
+                            <td>{{ h.fase || "—" }}</td>
+                            <td><button type="button" class="btn-linkish" (click)="irEditarSenHor(h._id)">Editar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </ng-container>
+    </div>
+
     <!-- ══ BOTONES NAVEGACIÓN ══ -->
     <div class="wizard-actions">
         <button class="btn-secondary" (click)="anterior()" [disabled]="pasoActual === 1">
@@ -826,7 +977,7 @@
             Siguiente →
         </button>
         <button
-            *ngIf="pasoActual === totalPasos"
+            *ngIf="pasoActual === 10"
             class="btn-success"
             (click)="guardar()"
             [disabled]="loading">

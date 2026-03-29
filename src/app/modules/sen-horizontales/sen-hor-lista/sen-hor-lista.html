@@ -83,12 +83,7 @@
                     <td><span class="badge" [ngClass]="zatBadge(r)">{{ zatTxt(r) }}</span></td>
                     <td>{{ r.idViaTramo?.nomenclatura?.completa || r.idViaTramo?.via || "—" }}</td>
                     <td>
-                        <span class="badge"
-                            [ngClass]="{
-                                'badge-bueno':   r.estadoDem === 'Buena',
-                                'badge-regular': r.estadoDem === 'Regular',
-                                'badge-malo':    r.estadoDem === 'Mala'
-                            }">
+                        <span class="badge" [ngClass]="estadoDemBadgeClass(r)">
                             {{ r.estadoDem || "—" }}
                         </span>
                     </td>

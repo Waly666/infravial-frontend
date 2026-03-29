@@ -225,6 +225,11 @@
         color: #e05c5c;
         border: 1px solid rgba(224, 92, 92, 0.25);
     }
+    &.badge-estado-neutral {
+        background: rgba(148, 163, 184, 0.14);
+        color: rgba(200, 215, 255, 0.88);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+    }
 }
 
 .actions-cell {

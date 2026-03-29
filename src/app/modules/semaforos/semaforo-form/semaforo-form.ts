@@ -14,13 +14,14 @@ import {
     nomenclaturaSearchText,
     textBlobMatchesQuery
 } from '../../../shared/utils/geo-list-filters';
+import { TramoGeoPipe, TramoViaNomPipe } from '../../../shared/pipes/tramo-display.pipe';
 
 @Component({
     selector: 'app-semaforo-form',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoViaNomPipe],
     templateUrl: './semaforo-form.html',
-    styleUrl: './semaforo-form.scss'
+    styleUrls: ['./semaforo-form.scss', '../../../shared/styles/tramo-picker-labels.scss']
 })
 export class SemaforoFormComponent implements OnInit {
 
@@ -240,12 +241,17 @@ export class SemaforoFormComponent implements OnInit {
 
     // ── TRAMO ─────────────────────────────────────
     get tramosFiltrados() {
-        if (!this.busquedaTramo) return this.tramos;
-        const q = this.busquedaTramo.toLowerCase();
-        return this.tramos.filter(t =>
-            t.via?.toLowerCase().includes(q) ||
-            t.nomenclatura?.completa?.toLowerCase().includes(q)
-        );
+        const qRaw = (this.busquedaTramo || '').trim();
+        if (!qRaw) return this.tramos;
+        return this.tramos.filter(t => {
+            const blob = [
+                t.via,
+                t.municipio,
+                t.departamento,
+                nomenclaturaSearchText(t)
+            ].join(' ');
+            return textBlobMatchesQuery(blob, qRaw);
+        });
     }
 
     seleccionarTramo(t: any) {

@@ -40,8 +40,8 @@
             <!-- Tramo seleccionado -->
             <div class="tramo-seleccionado" *ngIf="tramoSeleccionado">
                 <div class="tramo-info">
-                    <strong>{{ tramoSeleccionado.via || tramoSeleccionado.nomenclatura?.completa }}</strong>
-                    <span>{{ tramoSeleccionado.nomenclatura?.completa }} — {{ tramoSeleccionado.municipio }}</span>
+                    <span class="tramo-line-geo" *ngIf="(tramoSeleccionado | tramoGeo) as geo">{{ geo }}</span>
+                    <strong class="tramo-line-via">{{ tramoSeleccionado | tramoViaNom }}</strong>
                 </div>
                 <button class="btn-cambiar" (click)="tramoSeleccionado = null; form.idViaTramo = ''; busquedaTramo = ''">
                     Cambiar
@@ -55,7 +55,7 @@
                     [(ngModel)]="busquedaTramo"
                     (focus)="mostrarTramos = true"
                     (input)="mostrarTramos = true"
-                    placeholder="🔍 Buscar tramo por nombre o dirección..."
+                    placeholder="🔍 Buscar por depto, municipio, vía o nomenclatura..."
                     class="form-input">
 
                 <div class="tramos-dropdown" *ngIf="mostrarTramos && tramosFiltrados.length > 0">
@@ -63,8 +63,8 @@
                         class="tramo-item"
                         *ngFor="let t of tramosFiltrados"
                         (click)="seleccionarTramo(t)">
-                        <strong>{{ t.via || '—' }}</strong>
-                        <span>{{ t.nomenclatura?.completa }} — {{ t.municipio }}</span>
+                        <span class="tramo-line-geo" *ngIf="(t | tramoGeo) as g">{{ g }}</span>
+                        <strong class="tramo-line-via">{{ t | tramoViaNom }}</strong>
                     </div>
                 </div>
 
@@ -75,8 +75,9 @@
             </div>
             <!-- Nomenclatura del tramo seleccionado -->
             <div class="tramo-nomenclatura" *ngIf="tramoSeleccionado">
-                <span class="nom-label">📍 Dirección</span>
-                <span class="nom-valor">{{ tramoSeleccionado.nomenclatura?.completa || tramoSeleccionado.via || '—' }}</span>
+                <span class="nom-label">📍 Tramo seleccionado</span>
+                <span class="nom-geo tramo-line-geo" *ngIf="(tramoSeleccionado | tramoGeo) as g2">{{ g2 }}</span>
+                <span class="nom-valor tramo-line-via">{{ tramoSeleccionado | tramoViaNom }}</span>
             </div>
         </div>
     </div>

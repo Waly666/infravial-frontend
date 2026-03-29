@@ -12,13 +12,14 @@ import {
     nomenclaturaSearchText,
     textBlobMatchesQuery
 } from '../../../shared/utils/geo-list-filters';
+import { TramoGeoPipe, TramoViaNomPipe } from '../../../shared/pipes/tramo-display.pipe';
 
 @Component({
     selector: 'app-control-sem-form',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoViaNomPipe],
     templateUrl: './control-sem-form.html',
-    styleUrl: './control-sem-form.scss'
+    styleUrls: ['./control-sem-form.scss', '../../../shared/styles/tramo-picker-labels.scss']
 })
 export class ControlSemFormComponent implements OnInit {
 

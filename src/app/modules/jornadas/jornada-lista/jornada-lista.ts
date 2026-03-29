@@ -5,14 +5,18 @@ import { Router, RouterModule } from '@angular/router';
 import { JornadaService } from '../../../core/services/jornada.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CatalogoService } from '../../../core/services/catalogo.service';
+import {
+    badgeClassDepartamento,
+    badgeClassMunicipio,
+    badgeClassZat
+} from '../../../shared/utils/geo-list-filters';
 
 @Component({
-  
     selector: 'app-jornada-lista',
     standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule], // ← aquí
+    imports: [CommonModule, RouterModule, FormsModule],
     templateUrl: './jornada-lista.html',
-    styleUrl: './jornada-lista.scss'
+    styleUrls: ['./jornada-lista.scss', '../../../shared/styles/geo-badges.scss']
 })
 export class JornadaListaComponent implements OnInit {
 
@@ -63,6 +67,19 @@ export class JornadaListaComponent implements OnInit {
 
     getEstadoClass(estado: string): string {
         return estado === 'EN PROCESO' ? 'badge-activa' : 'badge-finalizada';
+    }
+
+    munClass(j: any): string {
+        return badgeClassMunicipio(j?.municipio);
+    }
+
+    deptoClass(j: any): string {
+        return badgeClassDepartamento(j?.dpto);
+    }
+
+    /** Paleta ZAT (tonos distintos a mun/depto) según nombre del supervisor. */
+    supClass(j: any): string {
+        return badgeClassZat(j?.supervisor || '—');
     }
     editar(j: any) {
         this.jornadaEdit         = { ...j };

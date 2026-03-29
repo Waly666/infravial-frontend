@@ -9,6 +9,8 @@
 :root {
     --font-sans:    'Syne', system-ui, sans-serif;
     --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+    /* Listas/tablas y cifras: dígitos claros y alineación estable (tabular nums) */
+    --font-list-data: 'Inter', 'Segoe UI', system-ui, sans-serif;
     --font-display: 'DM Serif Display', Georgia, serif;
     --bg-primary:     #070c1a;
     --bg-card:        rgba(10, 18, 40, 0.85);
@@ -80,8 +82,19 @@ code, kbd, pre, samp {
 }
 
 .badge-codigo {
-    font-family: var(--font-mono);
-    letter-spacing: 0.04em;
+    font-family: var(--font-list-data);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    letter-spacing: 0.02em;
+}
+
+/* Tablas de inventario / listas: números más legibles que con Syne */
+.data-table th,
+.data-table td {
+    font-family: var(--font-list-data);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 .mat-mdc-typography,
@@ -459,6 +472,12 @@ body.light-mode .badge.badge-malo {
     background: #fecaca !important;
     color: #7f1d1d !important;
     border: 1px solid #ef4444 !important;
+}
+
+body.light-mode .badge.badge-estado-neutral {
+    background: #e2e8f0 !important;
+    color: #334155 !important;
+    border: 1px solid #94a3b8 !important;
 }
 
 body.light-mode .badge-codigo {

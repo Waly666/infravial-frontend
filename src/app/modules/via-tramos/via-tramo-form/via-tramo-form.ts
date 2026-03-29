@@ -2,10 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import { ViaTramoService } from '../../../core/services/via-tramo.service';
 import { JornadaService } from '../../../core/services/jornada.service';
 import { CatalogoService } from '../../../core/services/catalogo.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { SemaforoService } from '../../../core/services/semaforo.service';
+import { SenVertService } from '../../../core/services/sen-vert.service';
+import { SenHorService } from '../../../core/services/sen-hor.service';
+import { CajaInspService } from '../../../core/services/caja-insp.service';
+import { ControlSemService } from '../../../core/services/control-sem.service';
 import { environment } from '../../../../environments/environment';
 import { ApiService } from '../../../core/services/api.service';
 
@@ -18,9 +25,8 @@ import { ApiService } from '../../../core/services/api.service';
 })
 export class ViaTramoFormComponent implements OnInit {
 
-    // Wizard
+    // Wizard (paso 11 = inventario vinculado, solo edición)
     pasoActual  = 1;
-    totalPasos  = 10;
     modoEdicion = false;
     idEdicion:  string | null = null;
     loading     = false;
@@ -45,6 +51,15 @@ export class ViaTramoFormComponent implements OnInit {
 
     // Jornada activa
     jornada: any = null;
+
+    /** Paso 11: registros del inventario ligados a este tramo (solo lectura). */
+    relLoading = false;
+    relError = '';
+    semaforosRel: any[] = [];
+    controlSemRel: any = null;
+    cajasRel: any[] = [];
+    senVertRel: any[] = [];
+    senHorRel: any[] = [];
 
     // Catálogos
     zats:      any[] = [];
@@ -164,6 +179,11 @@ export class ViaTramoFormComponent implements OnInit {
         private jornadaService:  JornadaService,
         private catalogoService: CatalogoService,
         private authService:     AuthService,
+        private semaforoService: SemaforoService,
+        private senVertService:  SenVertService,
+        private senHorService:   SenHorService,
+        private cajaInspService: CajaInspService,
+        private controlSemService: ControlSemService,
         private api:             ApiService,
         private route:           ActivatedRoute,
         public  router:          Router
@@ -279,15 +299,72 @@ export class ViaTramoFormComponent implements OnInit {
                         cargarRespuestas();
                     }
                 });
+
+                this.loadRelacionados();
             }
         });
     }
 
+    /** Carga semáforos, control del tramo, cajas, señales V/H para el paso 11. */
+    loadRelacionados() {
+        if (!this.idEdicion) return;
+        const id = this.idEdicion;
+        this.relLoading = true;
+        this.relError = '';
+        forkJoin({
+            semaforos: this.semaforoService.getAll({ idViaTramo: id }).pipe(catchError(() => of({ registros: [] }))),
+            controlSem: this.controlSemService.getByTramo(id).pipe(catchError(() => of({ registro: null }))),
+            cajas: this.cajaInspService.getAll({ idViaTramo: id }).pipe(catchError(() => of({ registros: [] }))),
+            senVert: this.senVertService.getAll({ idViaTramo: id }).pipe(catchError(() => of({ registros: [] }))),
+            senHor: this.senHorService.getAll({ idViaTramo: id }).pipe(catchError(() => of({ registros: [] })))
+        })
+            .pipe(finalize(() => (this.relLoading = false)))
+            .subscribe({
+                next: (r) => {
+                    this.semaforosRel = r.semaforos?.registros ?? [];
+                    this.controlSemRel = r.controlSem?.registro ?? null;
+                    this.cajasRel = r.cajas?.registros ?? [];
+                    this.senVertRel = r.senVert?.registros ?? [];
+                    this.senHorRel = r.senHor?.registros ?? [];
+                },
+                error: () => {
+                    this.relError = 'No se pudo cargar el inventario vinculado.';
+                }
+            });
+    }
+
     // ── WIZARD ────────────────────────────────────
+    get totalPasos(): number {
+        return this.modoEdicion ? 11 : 10;
+    }
+
+    get pasoIndices(): number[] {
+        return Array.from({ length: this.totalPasos }, (_, i) => i + 1);
+    }
+
     get progreso(): number { return (this.pasoActual / this.totalPasos) * 100; }
     siguiente() { if (this.pasoActual < this.totalPasos) this.pasoActual++; }
     anterior()  { if (this.pasoActual > 1) this.pasoActual--; }
-    irAPaso(n: number) { this.pasoActual = n; }
+    irAPaso(n: number) {
+        if (n === 11 && !this.modoEdicion) return;
+        this.pasoActual = n;
+    }
+
+    irEditarSemaforo(id: string) {
+        this.router.navigate(['/semaforos/editar', id]);
+    }
+    irEditarControlSem(id: string) {
+        this.router.navigate(['/control-semaforo/editar', id]);
+    }
+    irEditarCaja(id: string) {
+        this.router.navigate(['/cajas-inspeccion/editar', id]);
+    }
+    irEditarSenVert(id: string) {
+        this.router.navigate(['/sen-verticales/editar', id]);
+    }
+    irEditarSenHor(id: string) {
+        this.router.navigate(['/sen-horizontales/editar', id]);
+    }
 
     // ── NOMENCLATURA ──────────────────────────────
     actualizarNomenclatura() {
