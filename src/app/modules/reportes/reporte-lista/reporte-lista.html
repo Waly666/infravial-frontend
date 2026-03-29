@@ -1,1 +1,17 @@
-<p>reporte-lista works!</p>
+<div class="rep-page">
+    <h1 class="rep-title">Reportes y análisis</h1>
+    <p class="rep-lead">Accesos a informes agregados y exportación de datos.</p>
+
+    <ul class="rep-cards">
+        <li class="rep-card">
+            <a [routerLink]="['/via-tramos/estadisticas']" class="rep-card-link">
+                <span class="material-symbols-outlined rep-ic" aria-hidden="true">bar_chart</span>
+                <span class="rep-card-body">
+                    <span class="rep-card-title">Estadísticas · Vía tramos</span>
+                    <span class="rep-card-desc">Tablas de frecuencia y porcentajes, gráficos de barras, columnas y distribución circular. Filtros y exportación a Excel; gráficos como PNG.</span>
+                </span>
+                <span class="material-symbols-outlined rep-arrow" aria-hidden="true">chevron_right</span>
+            </a>
+        </li>
+    </ul>
+</div>

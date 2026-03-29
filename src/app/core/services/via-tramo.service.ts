@@ -26,4 +26,8 @@ export class ViaTramoService {
     delete(id: string): Observable<any> {
         return this.api.delete(`/via-tramos/${id}`);
     }
+
+    getEstadisticas(params?: Record<string, string | undefined>): Observable<any> {
+        return this.api.get('/via-tramos/estadisticas', params);
+    }
 }

@@ -44,6 +44,15 @@ export const routes: Routes = [
                         loadComponent: () => import('./modules/via-tramos/via-tramo-lista/via-tramo-lista').then(m => m.ViaTramoListaComponent)
                     },
                     {
+                        path: 'via-tramos/estadisticas',
+                        canActivate: [roleGuard],
+                        data: { roles: ['admin', 'supervisor'] },
+                        loadComponent: () =>
+                            import('./modules/via-tramos/via-tramo-estadisticas/via-tramo-estadisticas').then(
+                                m => m.ViaTramoEstadisticasComponent
+                            )
+                    },
+                    {
                         path: 'via-tramos/nuevo',
                         loadComponent: () => import('./modules/via-tramos/via-tramo-form/via-tramo-form').then(m => m.ViaTramoFormComponent)
                     },
@@ -161,6 +170,8 @@ export const routes: Routes = [
                     },
                     {
                         path: 'reportes',
+                        canActivate: [roleGuard],
+                        data: { roles: ['admin', 'supervisor'] },
                         loadComponent: () => import('./modules/reportes/reporte-lista/reporte-lista').then(m => m.ReporteListaComponent)
                     },
                     {

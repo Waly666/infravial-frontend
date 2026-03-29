@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ViaTramoService } from '../../../core/services/via-tramo.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { JornadaService } from '../../../core/services/jornada.service';
@@ -26,7 +26,7 @@ import {
 @Component({
     selector: 'app-via-tramo-lista',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './via-tramo-lista.html',
     styleUrls: [
         './via-tramo-lista.scss',
@@ -214,6 +214,9 @@ export class ViaTramoListaComponent implements OnInit {
     editar(id: string) { this.router.navigate(['/via-tramos/editar', id]); }
     isAdmin():    boolean { return this.authService.isAdmin(); }
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
+    puedeVerEstadisticas(): boolean {
+        return this.authService.isAdmin() || this.authService.isSupervisor();
+    }
 
     eliminar(id: string, via: string) {
         if (!confirm(`¿Eliminar el tramo "${via}"?`)) return;

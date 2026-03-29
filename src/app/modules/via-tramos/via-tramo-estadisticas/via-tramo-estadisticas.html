@@ -1,0 +1,137 @@
+<div class="vt-page">
+    <header class="vt-header">
+        <div class="vt-header-text">
+            <h1 class="vt-title">Estadísticas · Vía tramos</h1>
+            <p class="vt-sub">
+                Distribución por variables de inventario, con tablas frecuencia–porcentaje y gráficos para análisis.
+                Los porcentajes son sobre el <strong>total de registros que cumplen los filtros</strong> ({{ totalRegistros | number }}).
+            </p>
+        </div>
+        <div class="vt-header-actions">
+            <button type="button" class="btn-secondary" [routerLink]="['/via-tramos']">← Lista de tramos</button>
+            <button type="button" class="btn-secondary" [routerLink]="['/reportes']">Reportes</button>
+            <button type="button" class="btn-primary" (click)="exportarExcel()" [disabled]="loading || !secciones.length">
+                Exportar Excel
+            </button>
+        </div>
+    </header>
+
+    <section class="vt-filters" aria-label="Filtros">
+        <h2 class="vt-filters-title">Filtros</h2>
+        <div class="vt-filters-grid">
+            <label class="vt-field">
+                <span>Departamento</span>
+                <select [(ngModel)]="filtroDepartamento" (ngModelChange)="onDepartamentoChange()">
+                    <option value="">Todos</option>
+                    <option *ngFor="let d of catalogos.departamentos" [value]="d">{{ d }}</option>
+                </select>
+            </label>
+            <label class="vt-field">
+                <span>Municipio</span>
+                <select [(ngModel)]="filtroMunicipio">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of catalogos.municipios" [value]="m">{{ m }}</option>
+                </select>
+            </label>
+            <label class="vt-field">
+                <span>Tipo de localidad</span>
+                <select [(ngModel)]="filtroTipoLocalidad">
+                    <option value="">Todos</option>
+                    <option *ngFor="let tl of catalogos.tiposLocalidad" [value]="tl">{{ tl }}</option>
+                </select>
+            </label>
+            <label class="vt-field">
+                <span>Jornada</span>
+                <select [(ngModel)]="filtroIdJornada">
+                    <option value="">Todas</option>
+                    <option *ngFor="let j of catalogos.jornadas" [value]="j._id">{{ j.etiqueta }}</option>
+                </select>
+            </label>
+            <label class="vt-field">
+                <span>Fecha creación desde</span>
+                <input type="date" [(ngModel)]="fechaDesde" />
+            </label>
+            <label class="vt-field">
+                <span>Fecha creación hasta</span>
+                <input type="date" [(ngModel)]="fechaHasta" />
+            </label>
+        </div>
+        <div class="vt-filters-bar">
+            <button type="button" class="btn-primary" (click)="aplicarFiltros()">Aplicar filtros</button>
+            <button type="button" class="btn-secondary" (click)="limpiarFiltros()">Limpiar</button>
+        </div>
+    </section>
+
+    <div class="vt-loading" *ngIf="loading">Cargando estadísticas…</div>
+    <p class="vt-error" *ngIf="error">{{ error }}</p>
+
+    <ng-container *ngIf="!loading && !error">
+        <details class="vt-section" *ngFor="let sec of secciones; trackBy: trackSec" open>
+            <summary class="vt-section-summary">
+                <span class="vt-section-title">{{ sec.titulo }}</span>
+                <span class="material-symbols-outlined vt-chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <p class="vt-section-desc">{{ sec.descripcion }}</p>
+
+            <article class="vt-bloque" *ngFor="let b of sec.bloques; trackBy: trackBloque">
+                <div class="vt-bloque-head">
+                    <div>
+                        <h3 class="vt-bloque-title">{{ b.tituloHumano }}</h3>
+                        <code class="vt-var">{{ b.tituloVariable }}</code>
+                    </div>
+                    <div class="vt-bloque-actions" *ngIf="b.filas.length">
+                        <button type="button" class="btn-tiny" (click)="descargarGrafico(sec.id, b.id, 'h')" title="PNG barras horizontales">PNG ↔</button>
+                        <button type="button" class="btn-tiny" (click)="descargarGrafico(sec.id, b.id, 'v')" title="PNG columnas">PNG ↕</button>
+                        <button type="button" class="btn-tiny" (click)="descargarGrafico(sec.id, b.id, 'd')" title="PNG circular">PNG ○</button>
+                    </div>
+                </div>
+
+                <div class="vt-bloque-body" *ngIf="b.filas.length; else sinDatosBloque">
+                    <div class="vt-table-wrap">
+                        <table class="vt-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Categoría</th>
+                                    <th scope="col" class="col-num">Cantidad</th>
+                                    <th scope="col" class="col-num">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let f of b.filas">
+                                    <td>{{ f.categoria }}</td>
+                                    <td class="col-num tab-figures">{{ f.cantidad | number }}</td>
+                                    <td class="col-num tab-figures">
+                                        <span class="vt-pct-bar" aria-hidden="true"><span class="vt-pct-fill" [style.width.%]="f.porcentaje"></span></span>
+                                        {{ f.porcentaje | number : '1.1-1' }}%
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th scope="row">Total</th>
+                                    <td class="col-num tab-figures">{{ sumaCantidades(b.filas) | number }}</td>
+                                    <td class="col-num tab-figures">100%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="vt-charts-grid">
+                        <div class="vt-chart-card">
+                            <canvas [id]="canvasId(sec.id, b.id, 'h')" role="img" [attr.aria-label]="'Barras ' + b.tituloHumano"></canvas>
+                        </div>
+                        <div class="vt-chart-card">
+                            <canvas [id]="canvasId(sec.id, b.id, 'v')" role="img" [attr.aria-label]="'Columnas ' + b.tituloHumano"></canvas>
+                        </div>
+                        <div class="vt-chart-card vt-chart-card--donut">
+                            <canvas [id]="canvasId(sec.id, b.id, 'd')" role="img" [attr.aria-label]="'Circular ' + b.tituloHumano"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <ng-template #sinDatosBloque>
+                    <p class="vt-sin-datos">Sin registros para esta variable con el filtro actual.</p>
+                </ng-template>
+            </article>
+        </details>
+    </ng-container>
+</div>
