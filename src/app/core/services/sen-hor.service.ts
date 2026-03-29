@@ -26,4 +26,8 @@ export class SenHorService {
     delete(id: string): Observable<any> {
         return this.api.delete(`/sen-hor/${id}`);
     }
+
+    getEstadisticas(params?: Record<string, string | undefined>): Observable<any> {
+        return this.api.get('/sen-hor/estadisticas', params);
+    }
 }

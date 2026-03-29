@@ -26,4 +26,8 @@ export class SenVertService {
     delete(id: string): Observable<any> {
         return this.api.delete(`/sen-vert/${id}`);
     }
+
+    getEstadisticas(params?: Record<string, string | undefined>): Observable<any> {
+        return this.api.get('/sen-vert/estadisticas', params);
+    }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { Router } from "@angular/router";
+import { Router, RouterModule } from "@angular/router";
 import { SenVertService } from "../../../core/services/sen-vert.service";
 import { AuthService } from "../../../core/services/auth.service";
 import { JornadaService } from "../../../core/services/jornada.service";
@@ -28,7 +28,7 @@ import {
 @Component({
     selector: "app-sen-vert-lista",
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: "./sen-vert-lista.html",
     styleUrls: [
         "./sen-vert-lista.scss",
@@ -194,6 +194,9 @@ export class SenVertListaComponent implements OnInit {
     verReporte(id: string) { this.router.navigate(["/sen-verticales/reporte", id]); }
     isAdmin():      boolean { return this.authService.isAdmin(); }
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
+    puedeVerEstadisticas(): boolean {
+        return this.authService.isAdmin() || this.authService.isSupervisor();
+    }
 
     eliminar(id: string) {
         if (!confirm("Eliminar esta señal vertical?")) return;

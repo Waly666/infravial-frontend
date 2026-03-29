@@ -71,6 +71,15 @@ export const routes: Routes = [
                         loadComponent: () => import('./modules/sen-verticales/sen-vert-lista/sen-vert-lista').then(m => m.SenVertListaComponent)
                     },
                     {
+                        path: 'sen-verticales/estadisticas',
+                        canActivate: [roleGuard],
+                        data: { roles: ['admin', 'supervisor'] },
+                        loadComponent: () =>
+                            import('./modules/sen-verticales/sen-vert-estadisticas/sen-vert-estadisticas').then(
+                                m => m.SenVertEstadisticasComponent
+                            )
+                    },
+                    {
                         path: 'sen-verticales/nuevo',
                         loadComponent: () => import('./modules/sen-verticales/sen-vert-form/sen-vert-form').then(m => m.SenVertFormComponent)
                     },
@@ -85,6 +94,15 @@ export const routes: Routes = [
                     {
                         path: 'sen-horizontales',
                         loadComponent: () => import('./modules/sen-horizontales/sen-hor-lista/sen-hor-lista').then(m => m.SenHorListaComponent)
+                    },
+                    {
+                        path: 'sen-horizontales/estadisticas',
+                        canActivate: [roleGuard],
+                        data: { roles: ['admin', 'supervisor'] },
+                        loadComponent: () =>
+                            import('./modules/sen-horizontales/sen-hor-estadisticas/sen-hor-estadisticas').then(
+                                m => m.SenHorEstadisticasComponent
+                            )
                     },
                     {
                         path: 'sen-horizontales/nuevo',

@@ -5,8 +5,11 @@
             <h1 class="page-title">Señales Verticales</h1>
             <p class="page-sub">Inventario de señales verticales existentes</p>
         </div>
-        <div style="display:flex; gap:0.75rem; align-items:center;">
+        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
             <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+            <button type="button" class="btn-secondary" *ngIf="puedeVerEstadisticas()" [routerLink]="['/sen-verticales/estadisticas']">
+                Estadísticas
+            </button>
             <button class="btn-primary" (click)="nuevo()" [disabled]="!jornada">
                 ➕ Nueva Señal
             </button>
