@@ -34,7 +34,7 @@ export class JornadaListaComponent implements OnInit {
     constructor(
     private jornadaService:  JornadaService,
     private catalogoService: CatalogoService,  // ← agregar
-    private authService:     AuthService,
+    public  authService:     AuthService,
     public router:          Router
 ) {}
 

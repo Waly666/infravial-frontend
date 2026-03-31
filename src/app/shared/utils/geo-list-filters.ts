@@ -241,3 +241,103 @@ export function nomenclaturaSearchText(row: any): string {
         .map((x) => String(x).trim())
         .join(' ');
 }
+
+/** Tramos del mismo municipio que la jornada activa (sin jornada → todos). */
+export function filtrarTramosPorMunicipioJornada(
+    tramos: any[],
+    jornada: { municipio?: string } | null | undefined
+): any[] {
+    if (!tramos?.length) return [];
+    const jm = normalizeSearchText(String(jornada?.municipio ?? ''));
+    if (!jm) return tramos;
+    return tramos.filter(
+        (t) => normalizeSearchText(String(t?.municipio ?? '')) === jm
+    );
+}
+
+/**
+ * La consulta debe coincidir con el **inicio** de la nomenclatura normalizada
+ * (búsqueda incremental al escribir), no con texto en medio de la cadena.
+ */
+export function nomenclaturaStartsWithQuery(nom: string, qRaw: string): boolean {
+    const q = normalizeSearchText(qRaw);
+    if (!q) return true;
+    const h = normalizeSearchText(nom);
+    return h.length > 0 && h.startsWith(q);
+}
+
+function isLikelyObjectIdPrefix(raw: string): string | null {
+    const s = String(raw ?? '')
+        .trim()
+        .replace(/\s/g, '')
+        .toLowerCase();
+    if (/^[a-f0-9]{4,23}$/.test(s)) return s;
+    return null;
+}
+
+/**
+ * Picker de tramo en formularios: nomenclatura por **prefijo desde el inicio**;
+ * ObjectId: prefijo hexadecimal (4–24 chars) o formato pegado completo.
+ */
+export function filtrarTramosPickerPorBusqueda(tramos: any[], qRaw: string): any[] {
+    const q = String(qRaw ?? '').trim();
+    if (!q) return tramos;
+
+    const idFull = extractMongoObjectId(q);
+    if (idFull) {
+        return tramos.filter((t) =>
+            String(t._id ?? '').toLowerCase().startsWith(idFull)
+        );
+    }
+    const idPrefix = isLikelyObjectIdPrefix(q);
+    if (idPrefix) {
+        return tramos.filter((t) =>
+            String(t._id ?? '').toLowerCase().startsWith(idPrefix)
+        );
+    }
+
+    return tramos.filter((t) => {
+        const nom = nomenclaturaSearchText(t);
+        return nom ? nomenclaturaStartsWithQuery(nom, q) : false;
+    });
+}
+
+/**
+ * Picker de control semafórico: prefijo sobre nomenclatura del tramo vinculado o número externo.
+ */
+export function controlSemPickerMatches(c: any, qRaw: string): boolean {
+    const q = String(qRaw ?? '').trim();
+    if (!q) return true;
+    const qn = normalizeSearchText(q);
+
+    const idFull = extractMongoObjectId(q);
+    if (idFull) {
+        return String(c._id ?? '').toLowerCase().startsWith(idFull);
+    }
+    const idPrefix = isLikelyObjectIdPrefix(q);
+    if (idPrefix) {
+        return String(c._id ?? '').toLowerCase().startsWith(idPrefix);
+    }
+
+    const nom = nomenclaturaSearchText(c);
+    if (nom && normalizeSearchText(nom).startsWith(qn)) return true;
+
+    const ne = String(c.numExterno ?? '').trim();
+    if (ne && normalizeSearchText(ne).startsWith(qn)) return true;
+
+    return false;
+}
+
+/** Controles cuyo tramo vinculado está en el municipio de la jornada. */
+export function filtrarControlesPorMunicipioJornada(
+    controles: any[],
+    jornada: { municipio?: string } | null | undefined
+): any[] {
+    if (!controles?.length) return [];
+    const jm = normalizeSearchText(String(jornada?.municipio ?? ''));
+    if (!jm) return controles;
+    return controles.filter((c) => {
+        const m = normalizeSearchText(String(c?.idViaTramo?.municipio ?? ''));
+        return m === jm;
+    });
+}

@@ -16,16 +16,21 @@
         <div class="progress-fill" [style.width.%]="progreso"></div>
     </div>
 
-    <!-- Pasos navegación -->
-    <div class="steps-nav">
-        <div
-            *ngFor="let paso of pasoIndices"
-            class="step-dot"
-            [class.active]="pasoActual === paso"
-            [class.done]="pasoActual > paso"
-            (click)="irAPaso(paso)">
-            {{ paso }}
-        </div>
+    <!-- Pasos del wizard (botones circulares) -->
+    <div class="wizard-steps" role="tablist" aria-label="Secciones del formulario">
+        <button
+            type="button"
+            *ngFor="let p of pasosWizard"
+            class="wizard-step"
+            role="tab"
+            [attr.aria-label]="p.n + '. ' + p.label"
+            [attr.aria-selected]="pasoActual === p.n"
+            [attr.aria-current]="pasoActual === p.n ? 'step' : null"
+            [class.active]="pasoActual === p.n"
+            [class.done]="pasoActual > p.n"
+            (click)="irAPaso(p.n)">
+            <span class="wizard-step-circle">{{ p.n }}</span>
+        </button>
     </div>
 
     <!-- Error -->
@@ -76,7 +81,6 @@
     <h2 class="step-title">📍 Georreferenciación</h2>
     <p class="step-desc">Haz click en el mapa para marcar el inicio (🟢) y fin (🔴) del tramo</p>
 
-        <!-- Coordenadas actuales -->
         <div class="coords-display">
             <div class="coord-item" [class.set]="form.lat_inicio">
                 <span class="coord-label">🟢 Inicio</span>
@@ -108,7 +112,7 @@
             🗺️ {{ form.lat_inicio && form.lat_fin ? 'Ver / Editar en Mapa' : 'Abrir Mapa' }}
         </button>
 
-        <p class="map-hint">
+        <p class="map-hint map-hint-ficha">
             • Primer click → marca el inicio del tramo<br>
             • Segundo click → marca el fin y calcula la distancia<br>
             • Tercer click → reinicia la selección
@@ -188,7 +192,7 @@
             <input type="text" [(ngModel)]="form.via" class="form-input input-required" placeholder="Ej: Calle 10">
         </div>
         <div class="form-group">
-            <label>Tipo Ubicación</label>
+            <label>Diseño</label>
             <select [(ngModel)]="form.tipoUbic" class="form-select">
                 <option value="">Seleccionar...</option>
                 <option *ngFor="let t of tiposUbic" [value]="t">{{ t }}</option>
@@ -208,6 +212,20 @@
             <select [(ngModel)]="form.tipoVia" class="form-select" (change)="calcularClasificacion()">
                 <option value="">Seleccionar...</option>
                 <option *ngFor="let t of tiposVia" [value]="t">{{ t }}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Sector</label>
+            <select [(ngModel)]="form.sector" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let s of sectoresVia" [value]="s">{{ s }}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Zona</label>
+            <select [(ngModel)]="form.zona" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let z of zonasVia" [value]="z">{{ z }}</option>
             </select>
         </div>
         <div class="form-group form-full">
@@ -272,19 +290,30 @@
             </div>
             <div class="form-group form-full">
                 <label>Esquema Perfil</label>
-                <select [(ngModel)]="form.perfilEsquema" class="form-select" (change)="onEsquemaChange()">
-                    <option value="">Seleccionar esquema...</option>
-                    <option *ngFor="let e of esquemasFiltrados" [value]="e._id">
-                        {{ e.codEsquema }} — {{ e.calzada }}
-                    </option>
-                </select>
-
-                <!-- Preview imagen esquema -->
+                <div class="esquema-toolbar">
+                    <select [(ngModel)]="form.perfilEsquema" class="form-select esquema-select" (change)="onEsquemaChange()">
+                        <option value="">Seleccionar esquema...</option>
+                        <option *ngFor="let e of esquemasFiltrados" [value]="e._id">
+                            {{ e.codEsquema }} — {{ e.calzada }}
+                        </option>
+                    </select>
+                    <button type="button" class="btn-esquema-galeria" (click)="mostrarGaleriaEsquema = true">
+                        🔍 Buscar por imagen
+                    </button>
+                </div>
+                <p class="esquema-galeria-hint" *ngIf="!form.calzada">
+                    Tip: define la calzada en el paso 3 para acotar esquemas en la lista y en la galería.
+                </p>
                 <div class="esquema-preview" *ngIf="esquemaSeleccionado">
                     <img [src]="getEsquemaImgUrl()" [alt]="esquemaSeleccionado.codEsquema" class="esquema-img">
-                    <div class="esquema-info">
-                        <strong>{{ esquemaSeleccionado.codEsquema }}</strong>
-                        <span>{{ esquemaSeleccionado.calzada }}</span>
+                    <div class="esquema-preview-foot">
+                        <div class="esquema-info">
+                            <strong>{{ esquemaSeleccionado.codEsquema }}</strong>
+                            <span>{{ esquemaSeleccionado.calzada }}</span>
+                        </div>
+                        <button type="button" class="btn-cambiar-esquema" (click)="mostrarGaleriaEsquema = true">
+                            Cambiar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -566,17 +595,17 @@
     <div class="step-content" *ngIf="pasoActual === 6">
         <h2 class="step-title">🏷️ Clasificación Vial</h2>
 
-        <div class="clasificacion-auto">
-            <div class="clas-item">
-                <span class="clas-label">Clasificación Nacional</span>
-                <span class="clas-value">{{ form.clasNacional || '—' }}</span>
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label>Clasificación nacional (automática)</label>
+                <input type="text" class="form-input" readonly [value]="form.clasNacional || '—'">
             </div>
-            <div class="clas-item">
-                <span class="clas-label">Clasificación por Prelación</span>
-                <span class="clas-value">{{ form.clasPrelacion || '—' }}</span>
+            <div class="form-group">
+                <label>Clasificación por prelación (automática)</label>
+                <input type="text" class="form-input" readonly [value]="form.clasPrelacion || '—'">
             </div>
-            <p class="clas-hint">* Calculados automáticamente según ancho total ({{ form.anchoTotalPerfil }}m) y tipo de vía ({{ form.tipoVia || 'no definido' }})</p>
         </div>
+        <p class="clas-hint">* Calculados según ancho total ({{ form.anchoTotalPerfil }}m) y tipo de vía ({{ form.tipoVia || 'no definido' }})</p>
 
         <div class="form-grid-2">
             <div class="form-group">
@@ -593,7 +622,7 @@
                     <option *ngFor="let c of clasPorFuncionalidades" [value]="c">{{ c }}</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="form-group form-full">
                 <label>Clasificación PBOT Municipal</label>
                 <input type="text" [(ngModel)]="form.clasMunPbot" class="form-input" placeholder="Según PBOT">
             </div>
@@ -627,9 +656,13 @@
                 <label>Sentido Vial</label>
                 <select [(ngModel)]="form.sentidoVial" class="form-select">
                     <option value="">Seleccionar...</option>
-                    <option value="Unidireccional">Unidireccional</option>
-                    <option value="Bidireccional">Bidireccional</option>
-                    <option value="Sin_Definir">Sin Definir</option>
+                    <option *ngIf="sentidoVialFueraLista()" [value]="form.sentidoVial">{{ form.sentidoVial }} (valor guardado)</option>
+                    <optgroup label="Valores estándar">
+                        <option *ngFor="let s of sentidosVialNuevos" [value]="s">{{ s }}</option>
+                    </optgroup>
+                    <optgroup label="Valores en registros anteriores">
+                        <option *ngFor="let s of sentidosVialLegado" [value]="s">{{ s === 'Sin_Definir' ? 'Sin definir' : s }}</option>
+                    </optgroup>
                 </select>
             </div>
             <div class="form-group">
@@ -767,12 +800,14 @@
         <!-- Observaciones apiladas -->
         <div class="section-divider"><span>Observaciones</span></div>
 
-        <div class="form-group" *ngFor="let i of [1,2,3,4,5,6]">
-            <label>Observación {{ i }}</label>
-            <select [(ngModel)]="form['obs' + i]" class="form-select">
-                <option value="">Seleccionar...</option>
-                <option *ngFor="let o of obsVias" [value]="o._id">{{ o.txtObs }}</option>
-            </select>
+        <div class="form-grid-2">
+            <div class="form-group" *ngFor="let i of [1,2,3,4,5,6]">
+                <label>Observación {{ i }}</label>
+                <select [(ngModel)]="form['obs' + i]" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let o of obsVias" [value]="o._id">{{ o.txtObs }}</option>
+                </select>
+            </div>
         </div>
 
         <!-- Notas -->
@@ -984,6 +1019,44 @@
             <span *ngIf="!loading">💾 Guardar Tramo</span>
             <span *ngIf="loading">Guardando...</span>
         </button>
+    </div>
+
+    <!-- Galería esquema perfil (mismo patrón que señales verticales / horizontales) -->
+    <div class="galeria-overlay" *ngIf="mostrarGaleriaEsquema" (click)="mostrarGaleriaEsquema = false">
+        <div class="galeria-modal" (click)="$event.stopPropagation()">
+            <div class="galeria-header">
+                <span>📐 Seleccionar esquema de perfil</span>
+                <button type="button" class="modal-close" (click)="mostrarGaleriaEsquema = false">✕</button>
+            </div>
+            <div class="galeria-search">
+                <input
+                    type="text"
+                    [(ngModel)]="filtroEsquemaGaleria"
+                    placeholder="🔍 Buscar por código de esquema o calzada…"
+                    class="search-input"
+                />
+            </div>
+            <div class="galeria-grid" *ngIf="esquemasGaleriaFiltrados.length">
+                <div
+                    class="galeria-item"
+                    *ngFor="let e of esquemasGaleriaFiltrados"
+                    (click)="seleccionarEsquemaDesdeGaleria(e)"
+                    [class.selected]="esquemaGaleriaSeleccionId(e)"
+                >
+                    <ng-container *ngIf="getEsquemaImgUrlItem(e) as imgUrl">
+                        <img [src]="imgUrl" [alt]="e.codEsquema" class="galeria-img" />
+                    </ng-container>
+                    <div *ngIf="!getEsquemaImgUrlItem(e)" class="galeria-sin-img" aria-hidden="true">Sin imagen</div>
+                    <div class="galeria-info">
+                        <strong>{{ e.codEsquema }}</strong>
+                        <span>{{ e.calzada }}</span>
+                    </div>
+                </div>
+            </div>
+            <p class="galeria-vacia" *ngIf="!esquemasGaleriaFiltrados.length">
+                No hay esquemas con ese criterio. Prueba otro texto o revisa la calzada en el paso 3.
+            </p>
+        </div>
     </div>
 
 </div>

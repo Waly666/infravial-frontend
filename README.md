@@ -14,7 +14,8 @@ Generada con **Angular CLI 21** y **TypeScript 5.9**.
 | **RxJS 7** | Programación reactiva y llamadas HTTP |
 | **Angular Forms** | Formularios template-driven y reactivos donde aplica |
 | **Angular Material + CDK** | Componentes UI (diálogos, selects, etc.) |
-| **Chart.js 4** | Gráficos del dashboard |
+| **Chart.js 4** + **chartjs-plugin-datalabels** | Dashboard y páginas de estadísticas agregadas |
+| **SheetJS (xlsx)** | Exportación a Excel en estadísticas y flujos que lo requieran |
 | **Leaflet 1.9** | Mapa de inventario (tramos, señales, semáforos, time-lapse) |
 | **QRCode** | Generación de códigos en reportes/flujos que lo requieran |
 | **HttpClient + interceptor JWT** | API autenticada (`core/interceptors/jwt.interceptor.ts`) |
@@ -56,7 +57,7 @@ El `HttpClient` concatena `apiUrl` + ruta (`/auth/login`, `/via-tramos`, etc.).
 
 | Comando | Descripción |
 |---------|-------------|
-| `npm start` / `ng serve` | Servidor de desarrollo (por defecto `http://localhost:4200`) |
+| `npm start` / `npm run dev` / `ng serve` | Servidor de desarrollo (por defecto `http://localhost:4200`) |
 | `npm run build` | Build producción → `dist/` |
 | `npm run watch` | Build desarrollo en modo watch |
 | `npm test` | Pruebas unitarias (configuración del proyecto) |
@@ -70,9 +71,9 @@ app/
 ├── core/              # Servicios singleton (auth, api, backup, servicios de dominio)
 ├── modules/           # Funcionalidad por área (lazy loading)
 │   ├── dashboard/
-│   ├── via-tramos/
-│   ├── sen-verticales/
-│   ├── sen-horizontales/
+│   ├── via-tramos/          # incl. via-tramo-estadisticas (agregados, gráficos, Excel/PNG)
+│   ├── sen-verticales/      # incl. sen-vert-estadisticas
+│   ├── sen-horizontales/    # incl. sen-hor-estadisticas
 │   ├── semaforos/
 │   ├── control-semaforo/
 │   ├── cajas-inspeccion/
@@ -80,7 +81,7 @@ app/
 │   ├── mapa-inventario/
 │   ├── backups/
 │   ├── importacion/   # Import Excel (admin)
-│   ├── reportes/
+│   ├── reportes/            # Accesos a estadísticas y análisis (tarjetas con routerLink)
 │   └── ...
 ├── shared/            # Utilidades, estilos compartidos (badges, street-view, etc.)
 ├── app.routes.ts      # Rutas principales y lazy loads
@@ -94,6 +95,20 @@ app/
 - Tras el login se guardan tokens; el **JWT interceptor** adjunta `Authorization: Bearer …`.
 - **Guards** por ruta (`roleGuard`, etc.) según `admin`, `supervisor`, `encuestador`, `invitado`.
 - El menú lateral (`dashboard-layout`) filtra ítems por rol.
+
+---
+
+## Estadísticas agregadas (admin y supervisor)
+
+Pantallas dedicadas con filtros (jornada, rango de fechas de creación del registro, departamento, municipio, tipo de localidad cuando aplica), tablas de frecuencia con porcentajes, gráficos (barras, columnas, circular) y **descarga Excel** + **PNG** por gráfico. Los datos salen de la API (`getEstadisticas` en los servicios de dominio).
+
+| Ruta SPA | Recurso |
+|----------|---------|
+| `/via-tramos/estadisticas` | Vía tramos |
+| `/sen-horizontales/estadisticas` | ExistSenHor (señales horizontales) |
+| `/sen-verticales/estadisticas` | ExistSenVert (señales verticales) |
+
+Acceso también desde **Reportes** (`/reportes`) y, en los listados de vía tramos / SH / SV, botón **Estadísticas** cuando el rol lo permite.
 
 ---
 

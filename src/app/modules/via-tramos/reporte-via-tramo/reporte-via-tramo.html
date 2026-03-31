@@ -53,7 +53,7 @@
                 </div>
             </div>
 
-            <div class="reporte-row-4">
+            <div class="reporte-row-3-equal">
                 <div class="campo-reporte">
                     <div class="campo-label">Comuna</div>
                     <div class="campo-valor">{{ tramo.comuna?.comunaNumero || "—" }}</div>
@@ -66,9 +66,20 @@
                     <div class="campo-label">Sentido Cardinal</div>
                     <div class="campo-valor">{{ tramo.sentidoCardinal || "—" }}</div>
                 </div>
+            </div>
+
+            <div class="reporte-row-3-equal">
                 <div class="campo-reporte">
                     <div class="campo-label">Area</div>
                     <div class="campo-valor">{{ tramo.tipoVia || "—" }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Sector</div>
+                    <div class="campo-valor">{{ tramo.sector || "—" }}</div>
+                </div>
+                <div class="campo-reporte">
+                    <div class="campo-label">Zona</div>
+                    <div class="campo-valor">{{ tramo.zona || "—" }}</div>
                 </div>
             </div>
 
@@ -93,7 +104,7 @@
 
             <div class="reporte-row-4 reporte-subheader">
                 <div class="campo-reporte">
-                    <div class="campo-label">Tipo de Ubicacion</div>
+                    <div class="campo-label">Diseño</div>
                     <div class="campo-valor">{{ tramo.tipoUbic || "—" }}</div>
                 </div>
                 <div class="campo-reporte">

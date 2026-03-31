@@ -1,0 +1,29 @@
+/* Cabeceras de tabla ordenables (listas inventario) */
+.data-table th.th-sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition: color 0.15s ease;
+
+    &:hover {
+        color: #7eb8ff;
+    }
+
+    &.th-sort-active {
+        color: #4a9eff;
+    }
+
+    .sort-ind {
+        font-size: 0.72em;
+        font-weight: 800;
+        opacity: 0.95;
+    }
+}
+
+body.light-mode .data-table th.th-sortable:hover {
+    color: #2563eb !important;
+}
+
+body.light-mode .data-table th.th-sort-active {
+    color: #1d4ed8 !important;
+}

@@ -15,6 +15,11 @@
         </div>
     </div>
 
+    <div class="alert-lista-usuario" *ngIf="authService.getNombreCompleto()">
+        <span class="alert-lista-usuario-label">Usuario en sesión</span>
+        <strong>{{ authService.getNombreCompleto() }}</strong>
+    </div>
+
     <!-- Loading -->
     <div class="loading-state" *ngIf="loading">
         <div class="spinner"></div>

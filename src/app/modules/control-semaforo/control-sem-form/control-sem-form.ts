@@ -9,8 +9,9 @@ import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
 import {
-    nomenclaturaSearchText,
-    textBlobMatchesQuery
+    filtrarTramosPickerPorBusqueda,
+    filtrarTramosPorMunicipioJornada,
+    nomenclaturaSearchText
 } from '../../../shared/utils/geo-list-filters';
 import {
     TramoGeoPipe,
@@ -177,23 +178,14 @@ export class ControlSemFormComponent implements OnInit {
 
     // ── TRAMO ─────────────────────────────────────
     get tramosFiltrados() {
-        const qRaw = (this.busquedaTramo || '').trim();
-        if (!qRaw) return this.tramos;
-        return this.tramos.filter(t => {
-            const blob = [
-                t.via,
-                t.municipio,
-                t.departamento,
-                nomenclaturaSearchText(t)
-            ].join(' ');
-            return textBlobMatchesQuery(blob, qRaw);
-        });
+        const base = filtrarTramosPorMunicipioJornada(this.tramos, this.jornada);
+        return filtrarTramosPickerPorBusqueda(base, this.busquedaTramo || '');
     }
 
     seleccionarTramo(t: any) {
         this.form.idViaTramo   = t._id;
         this.tramoSeleccionado = t;
-        this.busquedaTramo     = t.via || t.nomenclatura?.completa || '';
+        this.busquedaTramo     = nomenclaturaSearchText(t) || '';
         this.mostrarTramos     = false;
     }
 

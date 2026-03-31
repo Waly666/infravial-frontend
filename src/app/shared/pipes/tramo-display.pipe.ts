@@ -1,4 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { nomenclaturaSearchText } from '../utils/geo-list-filters';
 
 function asRecord(t: unknown): Record<string, unknown> | null {
     if (t && typeof t === 'object') return t as Record<string, unknown>;
@@ -32,15 +33,12 @@ export class TramoViaNomPipe implements PipeTransform {
     }
 }
 
-/** Solo nomenclatura completa (sin vía). */
+/** Nomenclatura como en búsqueda: `completa` o partes tipo/número/conector. */
 @Pipe({ name: 'tramoNomenclatura', standalone: true })
 export class TramoNomenclaturaPipe implements PipeTransform {
     transform(t: unknown): string {
-        const o = asRecord(t);
-        if (!o) return '—';
-        const nomObj = o['nomenclatura'] as Record<string, unknown> | undefined;
-        const n = String(nomObj?.['completa'] ?? '').trim();
-        return n || '—';
+        const s = nomenclaturaSearchText(t);
+        return s || '—';
     }
 }
 

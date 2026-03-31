@@ -14,14 +14,20 @@
         <div class="progress-fill" [style.width.%]="progreso"></div>
     </div>
 
-    <div class="steps-nav">
-        <div *ngFor="let paso of [1,2,3]"
-            class="step-dot"
+    <div class="wizard-steps" role="tablist" aria-label="Pasos del formulario">
+        <button
+            type="button"
+            *ngFor="let paso of [1,2,3]"
+            class="wizard-step"
+            role="tab"
+            [attr.aria-label]="'Paso ' + paso"
+            [attr.aria-selected]="pasoActual === paso"
+            [attr.aria-current]="pasoActual === paso ? 'step' : null"
             [class.active]="pasoActual === paso"
             [class.done]="pasoActual > paso"
             (click)="irAPaso(paso)">
-            {{ paso }}
-        </div>
+            <span class="wizard-step-circle">{{ paso }}</span>
+        </button>
     </div>
 
     <div class="error-msg" *ngIf="error">⚠️ {{ error }}</div>
@@ -59,7 +65,7 @@
                     <input type="text" [(ngModel)]="busquedaTramo"
                         (focus)="mostrarTramos = true"
                         (input)="mostrarTramos = true"
-                        placeholder="🔍 Depto, municipio, nomenclatura o ID…"
+                        placeholder="🔍 Escribe desde el inicio de la nomenclatura (o ID MongoDB)…"
                         class="form-input">
                     <div class="tramos-dropdown" *ngIf="mostrarTramos && tramosFiltrados.length > 0">
                         <div class="tramo-item tramo-item--pick" *ngFor="let t of tramosFiltrados" (click)="seleccionarTramo(t)">

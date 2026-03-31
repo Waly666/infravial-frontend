@@ -192,6 +192,26 @@
 
     tbody tr:hover { background: rgba(74, 158, 255, 0.04); }
     tbody tr:last-child td { border-bottom: none; }
+
+    /* Columna Código: ancho moderado (legible sin monopolizar la tabla) */
+    th.col-codigo,
+    td.col-codigo {
+        width: 8.75rem;
+        max-width: 8.75rem;
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+        vertical-align: middle;
+    }
+
+    td.col-codigo .badge-codigo {
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0.24rem 0.62rem;
+        font-size: 0.76rem;
+        letter-spacing: 0.07em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 .td-muted { color: rgba(180, 200, 255, 0.45) !important; }

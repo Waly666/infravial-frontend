@@ -283,15 +283,16 @@ export class ViaTramoEstadisticasComponent implements OnInit, OnDestroy {
         for (const sec of this.secciones) {
             for (const bloque of sec.bloques) {
                 if (!bloque.filas?.length) continue;
-                this.drawBar(sec.id, bloque, 'h', t, font);
-                this.drawBar(sec.id, bloque, 'v', t, font);
-                this.drawDoughnut(sec.id, bloque, t, font);
+                this.drawBar(sec.id, sec.titulo, bloque, 'h', t, font);
+                this.drawBar(sec.id, sec.titulo, bloque, 'v', t, font);
+                this.drawDoughnut(sec.id, sec.titulo, bloque, t, font);
             }
         }
     }
 
     private drawBar(
         secId: string,
+        tituloSeccion: string,
         bloque: BloqueEstadistica,
         orient: 'h' | 'v',
         t: { light: boolean; text: string; muted: string; grid: string },
@@ -332,7 +333,7 @@ export class ViaTramoEstadisticasComponent implements OnInit, OnDestroy {
                     legend: { display: false },
                     title: {
                         display: true,
-                        text: horizontal ? 'Barras horizontales' : 'Columnas (barras verticales)',
+                        text: tituloSeccion,
                         color: t.text,
                         font: { family: font, size: 12, weight: 'bold' }
                     },
@@ -376,6 +377,7 @@ export class ViaTramoEstadisticasComponent implements OnInit, OnDestroy {
 
     private drawDoughnut(
         secId: string,
+        tituloSeccion: string,
         bloque: BloqueEstadistica,
         t: { text: string; muted: string; light: boolean },
         font: string
@@ -419,7 +421,7 @@ export class ViaTramoEstadisticasComponent implements OnInit, OnDestroy {
                     },
                     title: {
                         display: true,
-                        text: 'Distribución proporcional',
+                        text: tituloSeccion,
                         color: t.text,
                         font: { family: font, size: 12, weight: 'bold' }
                     },

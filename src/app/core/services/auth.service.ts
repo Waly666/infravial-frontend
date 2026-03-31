@@ -46,6 +46,16 @@ export class AuthService {
         return u ? JSON.parse(u) : null;
     }
 
+    /** Nombres y apellidos del usuario en sesión (listas, cabeceras). */
+    getNombreCompleto(): string {
+        const u = this.getUsuario();
+        if (!u) return '';
+        const p = [u.nombres, u.apellidos]
+            .map((x: unknown) => (x != null ? String(x).trim() : ''))
+            .filter(Boolean);
+        return p.join(' ').trim();
+    }
+
     getRol(): string {
         return this.getUsuario()?.rol || '';
     }

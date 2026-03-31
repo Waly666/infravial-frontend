@@ -33,6 +33,9 @@ export class ViaTramoFormComponent implements OnInit {
     error       = '';
     apiUrl      = environment.apiUrl;
     esquemaSeleccionado: any = null;
+    /** Galería de esquemas (mismo patrón que señales V/H) */
+    mostrarGaleriaEsquema = false;
+    filtroEsquemaGaleria  = '';
 
     // Mapa
     mapaAbierto = false;
@@ -91,6 +94,8 @@ export class ViaTramoFormComponent implements OnInit {
         tipoUbic:     '',
         calzada:      '',
         tipoVia:      '',
+        sector:       '',
+        zona:         '',
         claseVia:     '',
         nomenclatura: {
             tipoVia1: '', numero1: '', conector: '',
@@ -157,9 +162,35 @@ export class ViaTramoFormComponent implements OnInit {
 
     // Enumeraciones
     tiposLocalidad         = ['Cabecera Municipal', 'Corregimiento', 'Inspección', 'Centro Poblado'];
-    tiposUbic              = ['Tramo', 'Puente vehicular', 'Puente peatonal', 'Deprimido', 'Elevado', 'Túnel'];
+    /** Campo BD: tipoUbic — etiqueta en formulario: "Diseño" */
+    tiposUbic = [
+        'Glorieta',
+        'Interseccion',
+        'Paso A Nivel',
+        'Ponton',
+        'Cicloruta',
+        'Paso elevado',
+        'Paso Inferior',
+        'Peatonal',
+        'Puente',
+        'Tramo de Via',
+        'Tunel'
+    ];
     tiposVia               = ['Urbana', 'Rural'];
+    sectoresVia            = ['Residencial', 'Industrial', 'Comercial'];
+    zonasVia               = ['Escolar', 'Deportiva', 'Turística', 'Privada', 'Militar', 'Hospitalaria'];
+    /** Valores nuevos; legado para tramos ya guardados */
+    sentidosVialNuevos     = ['Un sentido', 'Doble Sentido', 'Reversible', 'Contraflujo', 'Ciclo vía'];
+    sentidosVialLegado     = ['Unidireccional', 'Bidireccional', 'Sin_Definir'];
     clasesVia              = ['Autopista', 'Via rural sin separador', 'Via rural con separador', 'Via convencional urbana sin separador', 'Via convencional urbana con separador', 'Via Urbana peatonal', 'Fuera de clasificacion'];
+
+    /** Tramos con sentido vial distinto a listas (histórico / texto libre) */
+    sentidoVialFueraLista(): boolean {
+        const v = this.form?.sentidoVial;
+        if (v == null || v === '') return false;
+        const all = [...this.sentidosVialNuevos, ...this.sentidosVialLegado];
+        return !all.includes(v);
+    }
     tiposNomenclatura      = ['Calle', 'Carrera', 'Diagonal', 'Transversal', 'Avenida', 'Manzana', 'Sin_Nomenclatura'];
     conectores             = ['con', 'entre'];
     ubiCicloRutas          = ['En el separador', 'En la calzada', 'Al lado del Anden', 'N/A'];
@@ -338,8 +369,24 @@ export class ViaTramoFormComponent implements OnInit {
         return this.modoEdicion ? 11 : 10;
     }
 
-    get pasoIndices(): number[] {
-        return Array.from({ length: this.totalPasos }, (_, i) => i + 1);
+    /** Texto corto por paso; en la barra se muestra como «1. Datos jornada», etc. */
+    get pasosWizard(): { n: number; label: string }[] {
+        const pasos: { n: number; label: string }[] = [
+            { n: 1, label: 'Datos jornada' },
+            { n: 2, label: 'Georreferenciación' },
+            { n: 3, label: 'Identificación vía' },
+            { n: 4, label: 'Datos generales' },
+            { n: 5, label: 'Medidas perfil' },
+            { n: 6, label: 'Clasificación vial' },
+            { n: 7, label: 'Características vía' },
+            { n: 8, label: 'Daños rodadura' },
+            { n: 9, label: 'Encuesta seguridad vial' },
+            { n: 10, label: 'Fotos y observaciones' }
+        ];
+        if (this.modoEdicion) {
+            pasos.push({ n: 11, label: 'Inventario vinculado' });
+        }
+        return pasos;
     }
 
     get progreso(): number { return (this.pasoActual / this.totalPasos) * 100; }
@@ -600,9 +647,40 @@ export class ViaTramoFormComponent implements OnInit {
         this.esquemaSeleccionado = this.esquemas.find(e => e._id === this.form.perfilEsquema) || null;
     }
 
+    get esquemasGaleriaFiltrados(): any[] {
+        const base = this.esquemasFiltrados;
+        const q = (this.filtroEsquemaGaleria || '').trim().toLowerCase();
+        if (!q) return base;
+        return base.filter(
+            (e) =>
+                String(e.codEsquema ?? '')
+                    .toLowerCase()
+                    .includes(q) ||
+                String(e.calzada ?? '')
+                    .toLowerCase()
+                    .includes(q)
+        );
+    }
+
+    seleccionarEsquemaDesdeGaleria(e: any) {
+        this.form.perfilEsquema = e._id;
+        this.esquemaSeleccionado = e;
+        this.mostrarGaleriaEsquema = false;
+        this.filtroEsquemaGaleria = '';
+    }
+
+    esquemaGaleriaSeleccionId(e: any): boolean {
+        return e && String(this.form.perfilEsquema || '') === String(e._id || '');
+    }
+
     getEsquemaImgUrl(): string {
         if (!this.esquemaSeleccionado?.urlImgEsq) return '';
         return `${this.apiUrl}${this.esquemaSeleccionado.urlImgEsq}`;
+    }
+
+    getEsquemaImgUrlItem(e: any): string {
+        if (!e?.urlImgEsq) return '';
+        return `${this.apiUrl}${e.urlImgEsq}`;
     }
 
     // ── MAPA ──────────────────────────────────────

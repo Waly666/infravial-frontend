@@ -11,7 +11,10 @@
     </div>
 
     <div class="alert-warning" *ngIf="!jornada">⚠️ No hay jornada activa.</div>
-    <div class="alert-success" *ngIf="jornada">🟢 Jornada activa: <strong>{{ jornada.municipio }}</strong></div>
+    <div class="alert-lista-usuario" *ngIf="authService.getNombreCompleto()">
+        <span class="alert-lista-usuario-label">Usuario en sesión</span>
+        <strong>{{ authService.getNombreCompleto() }}</strong>
+    </div>
 
     <div class="search-bar">
         <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="Vía, nomenclatura, sitio, Nº, municipio…" class="search-input">
@@ -51,15 +54,17 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Departamento</th>
-                    <th>Municipio</th>
-                    <th>ZAT</th>
-                    <th>Vía Tramo</th>
-                    <th>Control</th>
-                    <th>Clase</th>
-                    <th>Caras</th>
-                    <th>Funciona</th>
-                    <th>Fase</th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'departamento'" (click)="ordenarPor('departamento')" title="Ordenar">Departamento<span class="sort-ind">{{ sortIndicador('departamento') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'municipio'" (click)="ordenarPor('municipio')" title="Ordenar">Municipio<span class="sort-ind">{{ sortIndicador('municipio') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'zat'" (click)="ordenarPor('zat')" title="Ordenar">ZAT<span class="sort-ind">{{ sortIndicador('zat') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'viaTramo'" (click)="ordenarPor('viaTramo')" title="Ordenar">Vía Tramo<span class="sort-ind">{{ sortIndicador('viaTramo') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'diseno'" (click)="ordenarPor('diseno')" title="Ordenar">Diseño<span class="sort-ind">{{ sortIndicador('diseno') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'control'" (click)="ordenarPor('control')" title="Ordenar">Control<span class="sort-ind">{{ sortIndicador('control') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'clase'" (click)="ordenarPor('clase')" title="Ordenar">Clase<span class="sort-ind">{{ sortIndicador('clase') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'caras'" (click)="ordenarPor('caras')" title="Ordenar">Caras<span class="sort-ind">{{ sortIndicador('caras') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'funciona'" (click)="ordenarPor('funciona')" title="Ordenar">Funciona<span class="sort-ind">{{ sortIndicador('funciona') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'fase'" (click)="ordenarPor('fase')" title="Ordenar">Fase<span class="sort-ind">{{ sortIndicador('fase') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'accion'" (click)="ordenarPor('accion')" title="Ordenar">Acción<span class="sort-ind">{{ sortIndicador('accion') }}</span></th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -69,6 +74,7 @@
                     <td><span class="badge" [ngClass]="munBadge(r)">{{ munTxt(r) }}</span></td>
                     <td><span class="badge" [ngClass]="zatBadge(r)">{{ zatTxt(r) }}</span></td>
                     <td>{{ r.idViaTramo?.nomenclatura?.completa || r.idViaTramo?.via || "—" }}</td>
+                    <td class="td-muted">{{ r.idViaTramo?.tipoUbic || "—" }}</td>
                     <td><span class="badge-codigo">{{ r.idControSem?.numExterno || "—" }}</span></td>
                     <td class="td-muted">{{ r.claseSem || "—" }}</td>
                     <td class="td-muted">{{ r.numCaras || "—" }}</td>
@@ -77,7 +83,12 @@
                             {{ r.semaforoFunciona ? "Sí" : "No" }}
                         </span>
                     </td>
-                    <td class="td-muted">{{ r.fase || "—" }}</td>
+                    <td>
+                        <span class="badge badge-tag" [ngClass]="r.fase | listaValorBadgeClass">{{ r.fase || "—" }}</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-tag" [ngClass]="r.accion | listaValorBadgeClass">{{ r.accion || "—" }}</span>
+                    </td>
                     <td>
                         <div class="actions-cell">
                             <button type="button" class="btn-streetview-sm" *ngIf="tieneStreetView(r)" (click)="abrirStreetView(r)" title="Street View (Google Maps)">🧭</button>
@@ -89,7 +100,7 @@
                     </td>
                 </tr>
                 <tr *ngIf="registrosFiltrados.length === 0">
-                    <td colspan="10" class="empty-state">No hay semáforos registrados</td>
+                    <td colspan="12" class="empty-state">No hay semáforos registrados</td>
                 </tr>
             </tbody>
         </table>

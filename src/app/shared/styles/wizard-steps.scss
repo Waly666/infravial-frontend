@@ -1,0 +1,95 @@
+// Pasos wizard circulares (vía tramo, señales V/H, semáforos, cajas, control semafórico)
+.wizard-steps {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.45rem 0.35rem;
+    margin-bottom: 1.15rem;
+    padding: 0.35rem 0;
+}
+
+.wizard-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 0.15rem;
+    min-width: 2.6rem;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    color: inherit;
+    transition: transform 0.15s ease;
+
+    &:hover:not(.active) .wizard-step-circle {
+        border-color: rgba(74, 158, 255, 0.5);
+        background: rgba(74, 158, 255, 0.12);
+        color: #e8f0ff;
+    }
+
+    &:active {
+        transform: scale(0.96);
+    }
+}
+
+.wizard-step-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: 50%;
+    font-size: 0.82rem;
+    font-weight: 800;
+    line-height: 1;
+    border: 2px solid rgba(74, 158, 255, 0.28);
+    background: rgba(74, 158, 255, 0.06);
+    color: rgba(180, 200, 255, 0.72);
+    transition: border-color 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.wizard-step.active .wizard-step-circle {
+    border-color: #4a9eff;
+    background: linear-gradient(145deg, #1a5fcc, #4a9eff);
+    color: #fff;
+    box-shadow:
+        0 0 0 3px rgba(74, 158, 255, 0.25),
+        0 6px 16px rgba(26, 95, 204, 0.35);
+}
+
+.wizard-step.done:not(.active) .wizard-step-circle {
+    border-color: rgba(74, 222, 128, 0.45);
+    background: rgba(74, 222, 128, 0.1);
+    color: #86efac;
+}
+
+body.light-mode .wizard-step-circle {
+    border-color: rgba(37, 99, 235, 0.25);
+    background: rgba(37, 99, 235, 0.06);
+    color: rgba(30, 41, 59, 0.55);
+}
+
+body.light-mode .wizard-step:hover:not(.active) .wizard-step-circle {
+    border-color: rgba(37, 99, 235, 0.45);
+    background: rgba(37, 99, 235, 0.1);
+    color: #1e293b;
+}
+
+body.light-mode .wizard-step.active .wizard-step-circle {
+    border-color: #2563eb;
+    background: linear-gradient(145deg, #2563eb, #3b82f6);
+    color: #fff;
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.2),
+        0 6px 14px rgba(37, 99, 235, 0.25);
+}
+
+body.light-mode .wizard-step.done:not(.active) .wizard-step-circle {
+    border-color: rgba(5, 150, 105, 0.4);
+    background: rgba(5, 150, 105, 0.08);
+    color: #047857;
+}

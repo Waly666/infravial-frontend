@@ -16,13 +16,12 @@
         </div>
     </div>
 
-    <!-- Alerta jornada -->
     <div class="alert-warning" *ngIf="!jornada">
         ⚠️ No hay jornada activa. Debe existir una jornada en proceso para registrar tramos.
     </div>
-    <div class="alert-success" *ngIf="jornada">
-        🟢 Jornada activa: <strong>{{ jornada.municipio }}</strong> —
-        Supervisor: {{ jornada.supervisor }}
+    <div class="alert-lista-usuario" *ngIf="authService.getNombreCompleto()">
+        <span class="alert-lista-usuario-label">Usuario en sesión</span>
+        <strong>{{ authService.getNombreCompleto() }}</strong>
     </div>
 
     <!-- Buscador + Paginación -->
@@ -85,16 +84,17 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>ID tramo</th>
-                    <th>Vía</th>
-                    <th>Nomenclatura</th>
-                    <th>Municipio</th>
-                    <th>ZAT</th>
-                    <th>Calzada</th>
-                    <th>Tipo Vía</th>
-                    <th>Estado</th>
-                    <th>Longitud</th>
-                    <th>Fecha</th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'id'" (click)="ordenarPor('id')" title="Ordenar por ID">ID tramo<span class="sort-ind">{{ sortIndicador('id') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'via'" (click)="ordenarPor('via')" title="Ordenar por vía">Vía<span class="sort-ind">{{ sortIndicador('via') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'nomenclatura'" (click)="ordenarPor('nomenclatura')" title="Ordenar por nomenclatura">Nomenclatura<span class="sort-ind">{{ sortIndicador('nomenclatura') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'municipio'" (click)="ordenarPor('municipio')" title="Ordenar por municipio">Municipio<span class="sort-ind">{{ sortIndicador('municipio') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'zat'" (click)="ordenarPor('zat')" title="Ordenar por ZAT">ZAT<span class="sort-ind">{{ sortIndicador('zat') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'calzada'" (click)="ordenarPor('calzada')" title="Ordenar por calzada">Calzada<span class="sort-ind">{{ sortIndicador('calzada') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'diseno'" (click)="ordenarPor('diseno')" title="Ordenar por diseño">Diseño<span class="sort-ind">{{ sortIndicador('diseno') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'tipoVia'" (click)="ordenarPor('tipoVia')" title="Ordenar por tipo vía">Tipo Vía<span class="sort-ind">{{ sortIndicador('tipoVia') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'estado'" (click)="ordenarPor('estado')" title="Ordenar por estado">Estado<span class="sort-ind">{{ sortIndicador('estado') }}</span></th>
+                    <th class="th-sortable col-cn" [class.th-sort-active]="sortColumn === 'clasNacional'" (click)="ordenarPor('clasNacional')" title="Ordenar por clasificación nacional">CLASIFICACION<br>NACIONAL<span class="sort-ind">{{ sortIndicador('clasNacional') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'fecha'" (click)="ordenarPor('fecha')" title="Ordenar por fecha">Fecha<span class="sort-ind">{{ sortIndicador('fecha') }}</span></th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -106,7 +106,7 @@
                     <td>
                         <span class="badge" [ngClass]="viaBadge(t)">{{ t.via || '—' }}</span>
                     </td>
-                    <td class="td-muted">{{ t.nomenclatura?.completa || '—' }}</td>
+                    <td class="td-nomenclatura">{{ t.nomenclatura?.completa || '—' }}</td>
                     <td>
                         <span class="badge" [ngClass]="munBadge(t)">{{ t.municipio || '—' }}</span>
                     </td>
@@ -116,6 +116,7 @@
                     <td>
                         <span class="badge badge-calzada">{{ t.calzada || '—' }}</span>
                     </td>
+                    <td class="td-muted">{{ t.tipoUbic || '—' }}</td>
                     <td>{{ t.tipoVia || '—' }}</td>
                     <td>
                         <span class="badge"
@@ -127,7 +128,9 @@
                             {{ t.estadoVia || '—' }}
                         </span>
                     </td>
-                    <td class="td-muted">{{ t.longitud_m ? (t.longitud_m + ' m') : '—' }}</td>
+                    <td class="col-cn">
+                        <span class="badge badge-cn" [ngClass]="badgeClasNacionalClass(t)">{{ t.clasNacional || '—' }}</span>
+                    </td>
                     <td class="td-muted">{{ t.fechaCreacion | date:'dd/MM/yyyy' }}</td>
                     <td>
                         <div class="actions-cell">
@@ -142,7 +145,7 @@
                     </td>
                 </tr>
                 <tr *ngIf="tramosFiltrados.length === 0">
-                    <td colspan="11" class="empty-state">No hay tramos registrados</td>
+                    <td colspan="12" class="empty-state">No hay tramos registrados</td>
                 </tr>
             </tbody>
         </table>

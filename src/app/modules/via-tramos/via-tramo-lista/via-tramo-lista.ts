@@ -23,6 +23,10 @@ import {
     hasStreetViewCoords,
     openGoogleStreetView
 } from '../../../shared/utils/street-view';
+import {
+    applyTableSort,
+    type TableSortDirection
+} from '../../../shared/utils/table-sort';
 @Component({
     selector: 'app-via-tramo-lista',
     standalone: true,
@@ -49,10 +53,14 @@ export class ViaTramoListaComponent implements OnInit {
     pageSize: number  = 30;
     currentPage: number = 1;
 
+    /** Ordenación por cabecera (null = orden por defecto del filtro). */
+    sortColumn: string | null = null;
+    sortDir: TableSortDirection = 'asc';
+
     constructor(
         private viaTramoService: ViaTramoService,
         private jornadaService:  JornadaService,
-        private authService:     AuthService,
+        public  authService:     AuthService,
         public  router:          Router
     ) {}
 
@@ -106,6 +114,11 @@ export class ViaTramoListaComponent implements OnInit {
                 t.via,
                 t.municipio,
                 t.departamento,
+                t.tipoVia,
+                t.sector,
+                t.zona,
+                t.tipoUbic,
+                t.sentidoVial,
                 nomenclaturaSearchText(t),
                 zatL !== '—' ? zatL : '',
                 (t._id ?? '').toString()
@@ -140,9 +153,62 @@ export class ViaTramoListaComponent implements OnInit {
         return Math.ceil(this.tramosFiltrados.length / this.pageSize) || 1;
     }
 
+    get tramosOrdenados(): any[] {
+        return applyTableSort(
+            this.tramosFiltrados,
+            this.sortColumn,
+            this.sortDir,
+            (t, c) => this.valorOrdenTramo(t, c)
+        );
+    }
+
     get tramosPaginados() {
         const start = (this.currentPage - 1) * this.pageSize;
-        return this.tramosFiltrados.slice(start, start + this.pageSize);
+        return this.tramosOrdenados.slice(start, start + this.pageSize);
+    }
+
+    ordenarPor(col: string) {
+        if (this.sortColumn === col) {
+            this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortColumn = col;
+            this.sortDir = 'asc';
+        }
+        this.currentPage = 1;
+    }
+
+    sortIndicador(col: string): string {
+        if (this.sortColumn !== col) return '';
+        return this.sortDir === 'asc' ? ' ↑' : ' ↓';
+    }
+
+    private valorOrdenTramo(t: any, c: string): unknown {
+        switch (c) {
+            case 'id':
+                return (t._id ?? '').toString();
+            case 'via':
+                return t.via ?? '';
+            case 'nomenclatura':
+                return t.nomenclatura?.completa ?? '';
+            case 'municipio':
+                return t.municipio ?? '';
+            case 'zat':
+                return this.zatTxt(t);
+            case 'calzada':
+                return t.calzada ?? '';
+            case 'diseno':
+                return t.tipoUbic ?? '';
+            case 'tipoVia':
+                return t.tipoVia ?? '';
+            case 'estado':
+                return t.estadoVia ?? '';
+            case 'clasNacional':
+                return t.clasNacional ?? '';
+            case 'fecha':
+                return t.fechaCreacion ?? '';
+            default:
+                return '';
+        }
     }
 
     cambiarPageSize(size: number) {
@@ -208,6 +274,15 @@ export class ViaTramoListaComponent implements OnInit {
 
     zatBadge(t: any): string {
         return badgeClassZat(rowZatValue(t) || rowZatLabel(t) || '—');
+    }
+
+    /** Pill de clasificación nacional: color por V1…V9. */
+    badgeClasNacionalClass(t: any): string {
+        const raw = (t?.clasNacional ?? '').toString().trim();
+        if (!raw) return 'badge-cn-empty';
+        const m = /^V\s*([1-9])$/i.exec(raw.replace(/\s+/g, ''));
+        if (m) return `badge-cn-v${m[1]}`;
+        return 'badge-cn-unknown';
     }
 
     nuevo()          { this.router.navigate(['/via-tramos/nuevo']); }

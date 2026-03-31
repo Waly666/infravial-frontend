@@ -818,7 +818,10 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         <dt>Municipio</dt><dd>${esc(t.municipio || '—')}</dd>
         <dt>Coordenadas</dt><dd><code>${esc(coords)}</code> <span class="map-popup-coord-hint">(lat, lng)</span></dd>
         <dt>ZAT</dt><dd>${esc(z)}</dd>
+        <dt>Diseño</dt><dd>${esc(t.tipoUbic || '—')}</dd>
         <dt>Tipo vía</dt><dd>${esc(t.tipoVia || '—')}</dd>
+        <dt>Sector</dt><dd>${esc(t.sector || '—')}</dd>
+        <dt>Zona</dt><dd>${esc(t.zona || '—')}</dd>
         <dt>Fase</dt><dd>${esc(fase)}</dd>
         <dt>Acción</dt><dd>${esc(accion)}</dd>
         <dt>Estado vía</dt><dd>${esc(this.estadoViaTramoTexto(t))}</dd>

@@ -6,6 +6,7 @@
     background: #050d1a;
     position: relative;
     overflow: hidden;
+    color-scheme: dark;
 }
 
 .bg-overlay {
@@ -118,29 +119,43 @@
     position: relative;
     display: flex;
     align-items: center;
-    background: rgba(74, 158, 255, 0.05);
-    border: 1px solid rgba(74, 158, 255, 0.2);
-    border-radius: 6px;
+    background: rgba(4, 12, 28, 0.65);
+    border: 1px solid rgba(74, 158, 255, 0.28);
+    border-radius: 8px;
     padding: 0 1rem;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 
     &:focus-within {
-        border-color: rgba(74, 158, 255, 0.6);
-        background: rgba(74, 158, 255, 0.08);
+        border-color: rgba(74, 158, 255, 0.65);
+        box-shadow: 0 0 0 1px rgba(74, 158, 255, 0.2);
     }
 
     svg { color: rgba(74, 158, 255, 0.5); flex-shrink: 0; }
 
     input {
         flex: 1;
-        background: transparent;
+        min-width: 0;
+        background: rgba(6, 14, 32, 0.92);
         border: none;
         outline: none;
         padding: 0.75rem 0.75rem;
         color: #e8f0ff;
+        caret-color: #a8c8ff;
         font-size: 0.9rem;
 
-        &::placeholder { color: rgba(180, 200, 255, 0.3); }
+        &::placeholder {
+            color: rgba(180, 200, 255, 0.42);
+            opacity: 1;
+        }
+
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px rgba(6, 14, 32, 0.98) inset;
+            -webkit-text-fill-color: #e8f0ff;
+            caret-color: #a8c8ff;
+            transition: background-color 99999s ease-out;
+        }
     }
 
     .toggle-pass {

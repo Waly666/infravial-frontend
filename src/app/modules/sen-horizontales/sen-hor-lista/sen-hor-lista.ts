@@ -24,11 +24,16 @@ import {
     hasStreetViewCoords,
     openGoogleStreetView
 } from '../../../shared/utils/street-view';
+import {
+    applyTableSort,
+    type TableSortDirection
+} from '../../../shared/utils/table-sort';
+import { ListaValorBadgeClassPipe } from '../../../shared/pipes/lista-valor-badge-class.pipe';
 
 @Component({
     selector: 'app-sen-hor-lista',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule],
+    imports: [CommonModule, FormsModule, RouterModule, ListaValorBadgeClassPipe],
     templateUrl: './sen-hor-lista.html',
     styleUrls: [
         './sen-hor-lista.scss',
@@ -51,10 +56,13 @@ export class SenHorListaComponent implements OnInit {
     pageSize:  number  = 30;
     currentPage: number = 1;
 
+    sortColumn: string | null = null;
+    sortDir: TableSortDirection = 'asc';
+
     constructor(
         private senHorService:  SenHorService,
         private jornadaService: JornadaService,
-        private authService:    AuthService,
+        public  authService:    AuthService,
         public  router:         Router
     ) {}
 
@@ -99,6 +107,7 @@ export class SenHorListaComponent implements OnInit {
                 r.fase,
                 r.accion,
                 r.idViaTramo?.via,
+                r.idViaTramo?.tipoUbic,
                 r.idViaTramo?.municipio,
                 r.idViaTramo?.departamento,
                 nomenclaturaSearchText(r),
@@ -182,9 +191,60 @@ export class SenHorListaComponent implements OnInit {
         return Math.ceil(this.registrosFiltrados.length / this.pageSize) || 1;
     }
 
+    get registrosOrdenados() {
+        return applyTableSort(
+            this.registrosFiltrados,
+            this.sortColumn,
+            this.sortDir,
+            (r, c) => this.valorOrden(r, c)
+        );
+    }
+
     get registrosPaginados() {
         const start = (this.currentPage - 1) * this.pageSize;
-        return this.registrosFiltrados.slice(start, start + this.pageSize);
+        return this.registrosOrdenados.slice(start, start + this.pageSize);
+    }
+
+    ordenarPor(col: string) {
+        if (this.sortColumn === col) {
+            this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortColumn = col;
+            this.sortDir = 'asc';
+        }
+        this.currentPage = 1;
+    }
+
+    sortIndicador(col: string): string {
+        if (this.sortColumn !== col) return '';
+        return this.sortDir === 'asc' ? ' ↑' : ' ↓';
+    }
+
+    private valorOrden(r: any, c: string): unknown {
+        switch (c) {
+            case 'codigo':
+                return r.codSeHor ?? '';
+            case 'departamento':
+                return this.depTxt(r);
+            case 'municipio':
+                return this.munTxt(r);
+            case 'zat':
+                return this.zatTxt(r);
+            case 'viaTramo':
+                return r.idViaTramo?.nomenclatura?.completa || r.idViaTramo?.via || '';
+            case 'diseno':
+                return r.idViaTramo?.tipoUbic ?? '';
+            case 'estado':
+                return r.estadoDem ?? '';
+            case 'material':
+                return r.material ?? '';
+            case 'fase':
+                return r.fase ?? '';
+            case 'accion':
+                return r.accion ?? '';
+            default:
+                return '';
+        }
     }
 
     cambiarPageSize(size: number) {

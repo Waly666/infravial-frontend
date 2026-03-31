@@ -81,6 +81,10 @@ code, kbd, pre, samp {
     font-family: var(--font-mono);
 }
 
+@import './app/shared/styles/wizard-steps.scss';
+@import './app/shared/styles/table-sort-headers.scss';
+@import './app/shared/styles/lista-valor-badges.scss';
+
 .badge-codigo {
     font-family: var(--font-list-data);
     font-weight: 600;
@@ -246,8 +250,6 @@ body.light-mode .total-badge {
 
 /* Wizards / formularios largos: contraste en modo claro (componentes usan tonos oscuros para tema nocturno) */
 body.light-mode .wizard-title { color: #1a2540 !important; }
-body.light-mode .step-dot:not(.active):not(.done) { color: #5a6b8c !important; }
-body.light-mode .step-dot:hover:not(.active) { color: #1a2540 !important; }
 body.light-mode .ancho-total { color: #3d4f72 !important; }
 body.light-mode .ancho-total strong { color: var(--accent) !important; }
 body.light-mode .clas-label { color: #4a5a80 !important; }
@@ -661,6 +663,49 @@ body.light-mode .alert-success {
     background: #ecfdf5 !important;
     border-color: #34d399 !important;
     color: #065f46 !important;
+}
+
+/* Usuario activo en listas de inventario (tono distinto al verde de jornada) */
+.alert-lista-usuario {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(129, 140, 248, 0.35);
+    color: #c7d2fe;
+}
+
+.alert-lista-usuario strong {
+    color: #e0e7ff;
+    font-weight: 700;
+}
+
+.alert-lista-usuario-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+    color: rgba(199, 210, 254, 0.75);
+}
+
+body.light-mode .alert-lista-usuario {
+    background: #eef2ff !important;
+    border-color: #a5b4fc !important;
+    color: #3730a3 !important;
+}
+
+body.light-mode .alert-lista-usuario strong {
+    color: #312e81 !important;
+}
+
+body.light-mode .alert-lista-usuario-label {
+    color: #4338ca !important;
+    opacity: 0.9;
 }
 
 body.light-mode .empty-state {

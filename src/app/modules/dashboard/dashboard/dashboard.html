@@ -194,6 +194,10 @@
                             <div class="recent-name">{{ t.via || 'Sin nombre' }}</div>
                             <div class="recent-meta">
                                 <span class="recent-meta-place">{{ t.municipio }}</span>
+                                <ng-container *ngIf="t.tipoUbic">
+                                    <span class="recent-meta-sep"> · </span>
+                                    <span class="recent-meta-disen" title="Diseño (tipo tramo)">{{ t.tipoUbic }}</span>
+                                </ng-container>
                                 <span class="recent-meta-sep"> — </span>
                                 <span class="recent-meta-date tab-figures">{{ t.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</span>
                             </div>

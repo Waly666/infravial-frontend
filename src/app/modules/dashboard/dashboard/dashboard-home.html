@@ -91,54 +91,108 @@
 
 <section class="dashboard-charts" *ngIf="stats" aria-label="Gráficos del inventario">
     <h2 class="charts-section-title">Indicadores y totales</h2>
-    <div class="charts-grid-main charts-grid-bar-y-tablas">
-        <div class="chart-card chart-card--tall">
-            <canvas id="chart-inventario" role="img" aria-label="Gráfico de barras del inventario"></canvas>
-        </div>
-        <div class="chart-card chart-card--tablas-estado" aria-label="Distribución por estado">
-            <div class="tablas-estado-head">
-                <h3 class="tablas-estado-title">Distribución por estado</h3>
-                <p class="tablas-estado-desc">Cantidad y porcentaje sobre el total de cada categoría.</p>
+    <div class="charts-indicadores-wrap">
+        <div class="charts-inventario-pair" aria-label="Inventario total por categoría">
+            <div class="chart-card chart-card--tall">
+                <canvas id="chart-inventario" role="img" aria-label="Gráfico de barras del inventario"></canvas>
             </div>
-            <div class="tablas-estado-grid">
-                <div class="estado-tabla-card" *ngFor="let b of estadoDistribucionBloques">
-                    <div class="estado-tabla-card-head">
-                        <span class="estado-tabla-card-title">{{ b.titulo }}</span>
-                        <span class="estado-tabla-card-sub">{{ b.subtitulo }}</span>
-                    </div>
-                    <ng-container *ngIf="estadoFilasPorBloque[b.statKey] as filas">
-                        <div class="estado-tabla-scroll" *ngIf="filas.length">
-                            <table class="estado-tabla">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Estado</th>
-                                        <th scope="col" class="col-num">Cant.</th>
-                                        <th scope="col" class="col-num">%</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let fila of filas; trackBy: trackByEstadoLabel">
-                                        <td class="estado-tabla-label">{{ fila.label }}</td>
-                                        <td class="col-num tab-figures">{{ fila.count }}</td>
-                                        <td class="col-num tab-figures col-pct">
-                                            <span class="estado-pct-bar-wrap" aria-hidden="true">
-                                                <span class="estado-pct-bar" [style.width.%]="fila.pct"></span>
-                                            </span>
-                                            {{ fila.pct }}%
-                                        </td>
-                                    </tr>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th scope="row">Total</th>
-                                        <td class="col-num tab-figures">{{ estadoFilasTotal(filas) }}</td>
-                                        <td class="col-num tab-figures">100%</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+            <div class="chart-card chart-card--tall">
+                <canvas id="chart-inventario-pie" role="img" aria-label="Gráfico circular del inventario"></canvas>
+            </div>
+        </div>
+        <div class="tablas-estado-pair-row" aria-label="Distribución por estado">
+            <div class="chart-card chart-card--tablas-estado tablas-estado-group">
+                <div class="tablas-estado-head">
+                    <h3 class="tablas-estado-title">Vía tramos y señales</h3>
+                    <p class="tablas-estado-desc">Estado de vía, señales verticales y horizontales. Cantidad y % sobre el total de cada categoría.</p>
+                </div>
+                <div class="tablas-estado-grid">
+                    <div class="estado-tabla-card" *ngFor="let b of estadoDistribucionBloquesVial">
+                        <div class="estado-tabla-card-head">
+                            <span class="estado-tabla-card-title">{{ b.titulo }}</span>
+                            <span class="estado-tabla-card-sub">{{ b.subtitulo }}</span>
                         </div>
-                        <p class="estado-tabla-sin-datos" *ngIf="!filas.length">Sin registros en esta categoría.</p>
-                    </ng-container>
+                        <ng-container *ngIf="estadoFilasPorBloque[b.statKey] as filas">
+                            <div class="estado-tabla-scroll" *ngIf="filas.length">
+                                <table class="estado-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Estado</th>
+                                            <th scope="col" class="col-num">Cant.</th>
+                                            <th scope="col" class="col-num">%</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let fila of filas; trackBy: trackByEstadoLabel">
+                                            <td class="estado-tabla-label">{{ fila.label }}</td>
+                                            <td class="col-num tab-figures">{{ fila.count }}</td>
+                                            <td class="col-num tab-figures col-pct">
+                                                <span class="estado-pct-bar-wrap" aria-hidden="true">
+                                                    <span class="estado-pct-bar" [style.width.%]="fila.pct"></span>
+                                                </span>
+                                                {{ fila.pct }}%
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th scope="row">Total</th>
+                                            <td class="col-num tab-figures">{{ estadoFilasTotal(filas) }}</td>
+                                            <td class="col-num tab-figures">100%</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <p class="estado-tabla-sin-datos" *ngIf="!filas.length">Sin registros en esta categoría.</p>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-card chart-card--tablas-estado tablas-estado-group">
+                <div class="tablas-estado-head">
+                    <h3 class="tablas-estado-title">Semáforos y control</h3>
+                    <p class="tablas-estado-desc">Pintura general de semáforos y estado del controlador. Cantidad y % sobre el total de cada categoría.</p>
+                </div>
+                <div class="tablas-estado-grid tablas-estado-grid--compact">
+                    <div class="estado-tabla-card" *ngFor="let b of estadoDistribucionBloquesSem">
+                        <div class="estado-tabla-card-head">
+                            <span class="estado-tabla-card-title">{{ b.titulo }}</span>
+                            <span class="estado-tabla-card-sub">{{ b.subtitulo }}</span>
+                        </div>
+                        <ng-container *ngIf="estadoFilasPorBloque[b.statKey] as filas">
+                            <div class="estado-tabla-scroll" *ngIf="filas.length">
+                                <table class="estado-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Estado</th>
+                                            <th scope="col" class="col-num">Cant.</th>
+                                            <th scope="col" class="col-num">%</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let fila of filas; trackBy: trackByEstadoLabel">
+                                            <td class="estado-tabla-label">{{ fila.label }}</td>
+                                            <td class="col-num tab-figures">{{ fila.count }}</td>
+                                            <td class="col-num tab-figures col-pct">
+                                                <span class="estado-pct-bar-wrap" aria-hidden="true">
+                                                    <span class="estado-pct-bar" [style.width.%]="fila.pct"></span>
+                                                </span>
+                                                {{ fila.pct }}%
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th scope="row">Total</th>
+                                            <td class="col-num tab-figures">{{ estadoFilasTotal(filas) }}</td>
+                                            <td class="col-num tab-figures">100%</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <p class="estado-tabla-sin-datos" *ngIf="!filas.length">Sin registros en esta categoría.</p>
+                        </ng-container>
+                    </div>
                 </div>
             </div>
         </div>
@@ -209,6 +263,10 @@
                 <div class="recent-name">{{ t.via || 'Sin nombre' }}</div>
                 <div class="recent-meta">
                     <span class="recent-meta-place">{{ t.municipio }}</span>
+                    <ng-container *ngIf="t.tipoUbic">
+                        <span class="recent-meta-sep"> · </span>
+                        <span class="recent-meta-disen" title="Diseño (tipo tramo)">{{ t.tipoUbic }}</span>
+                    </ng-container>
                     <span class="recent-meta-sep"> — </span>
                     <span class="recent-meta-date tab-figures">{{ t.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</span>
                 </div>

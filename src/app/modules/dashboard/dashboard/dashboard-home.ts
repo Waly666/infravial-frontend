@@ -36,14 +36,23 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     filtroDepartamento = '';
     filtroMunicipio = '';
 
-    readonly estadoDistribucionBloques: ReadonlyArray<{
+    /** Vía tramos + señales V/H (una tarjeta de tablas) */
+    readonly estadoDistribucionBloquesVial: ReadonlyArray<{
         statKey: string;
         titulo: string;
         subtitulo: string;
     }> = [
         { statKey: 'tramosPorEstadoVia', titulo: 'Vía tramos', subtitulo: 'Estado de vía' },
         { statKey: 'senVertEstados', titulo: 'Señales verticales', subtitulo: 'Estado' },
-        { statKey: 'senHorEstados', titulo: 'Señales horizontales', subtitulo: 'Estado demarcación' },
+        { statKey: 'senHorEstados', titulo: 'Señales horizontales', subtitulo: 'Estado demarcación' }
+    ];
+
+    /** Semáforos + control (otra tarjeta, misma fila que la anterior) */
+    readonly estadoDistribucionBloquesSem: ReadonlyArray<{
+        statKey: string;
+        titulo: string;
+        subtitulo: string;
+    }> = [
         { statKey: 'semaforosEstados', titulo: 'Semáforos', subtitulo: 'Pintura general' },
         { statKey: 'controlSemPorEstadoCtrl', titulo: 'Control semafórico', subtitulo: 'Estado del controlador' }
     ];
@@ -161,7 +170,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
     private rebuildEstadoFilasTablas() {
         const next: Record<string, EstadoDistribFila[]> = {};
-        for (const b of this.estadoDistribucionBloques) {
+        const todos = [...this.estadoDistribucionBloquesVial, ...this.estadoDistribucionBloquesSem];
+        for (const b of todos) {
             next[b.statKey] = this.buildEstadoFilasDesdeRaw(this.stats?.[b.statKey]);
         }
         this.estadoFilasPorBloque = next;
@@ -202,8 +212,9 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     private scheduleChartRefresh(attempt = 0) {
         const delay = attempt === 0 ? 50 : 100;
         setTimeout(() => {
-            const el = document.getElementById('chart-inventario');
-            if (el) {
+            const bar = document.getElementById('chart-inventario');
+            const pie = document.getElementById('chart-inventario-pie');
+            if (bar && pie) {
                 this.refreshCharts();
             } else if (attempt < 8) {
                 this.scheduleChartRefresh(attempt + 1);
@@ -239,30 +250,40 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         const font = getComputedStyle(document.body).fontFamily || "'Syne', sans-serif";
         const fontNum = this.fontNumeric();
 
+        const invLabels = ['Vía tramos', 'Señ. V.', 'Señ. H.', 'Semáforos', 'Ctrl sem.', 'Cajas'];
+        const invData = [
+            this.stats.totalTramos || 0,
+            this.stats.totalSenVert || 0,
+            this.stats.totalSenHor || 0,
+            this.stats.totalSemaforos || 0,
+            this.stats.totalControlSem ?? 0,
+            this.stats.totalCajasInsp ?? 0
+        ];
+        const invBarBg = [
+            'rgba(91,143,255,0.75)', 'rgba(124,92,255,0.75)', 'rgba(0,229,192,0.55)',
+            'rgba(255,107,107,0.65)', 'rgba(244,114,182,0.65)', 'rgba(251,191,36,0.7)'
+        ];
+        const invPieBg = [
+            'rgba(91,143,255,0.88)', 'rgba(124,92,255,0.88)', 'rgba(0,229,192,0.75)',
+            'rgba(255,107,107,0.82)', 'rgba(244,114,182,0.82)', 'rgba(251,191,36,0.85)'
+        ];
+        const invBorder = [
+            'rgb(91,143,255)', 'rgb(124,92,255)', 'rgb(0,200,170)',
+            'rgb(255,90,90)', 'rgb(236,72,153)', 'rgb(245,180,50)'
+        ];
+        const invTotal = invData.reduce((a, b) => a + b, 0);
+
         const barEl = document.getElementById('chart-inventario') as HTMLCanvasElement | null;
         if (barEl) {
             const bar: ChartConfiguration = {
                 type: 'bar',
                 data: {
-                    labels: ['Vía tramos', 'Señ. V.', 'Señ. H.', 'Semáforos', 'Ctrl sem.', 'Cajas'],
+                    labels: invLabels,
                     datasets: [{
                         label: 'Registros',
-                        data: [
-                            this.stats.totalTramos || 0,
-                            this.stats.totalSenVert || 0,
-                            this.stats.totalSenHor || 0,
-                            this.stats.totalSemaforos || 0,
-                            this.stats.totalControlSem ?? 0,
-                            this.stats.totalCajasInsp ?? 0
-                        ],
-                        backgroundColor: [
-                            'rgba(91,143,255,0.75)', 'rgba(124,92,255,0.75)', 'rgba(0,229,192,0.55)',
-                            'rgba(255,107,107,0.65)', 'rgba(244,114,182,0.65)', 'rgba(251,191,36,0.7)'
-                        ],
-                        borderColor: [
-                            'rgb(91,143,255)', 'rgb(124,92,255)', 'rgb(0,200,170)',
-                            'rgb(255,90,90)', 'rgb(236,72,153)', 'rgb(245,180,50)'
-                        ],
+                        data: invData,
+                        backgroundColor: invBarBg,
+                        borderColor: invBorder,
                         borderWidth: 1,
                         borderRadius: 8
                     }]
@@ -275,7 +296,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
                         legend: { display: false },
                         title: {
                             display: true,
-                            text: 'Inventario total por categoría',
+                            text: 'Inventario total por categoría (barras)',
                             color: t.text,
                             font: { family: font, size: 14, weight: 'bold' }
                         },
@@ -301,6 +322,73 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
                 }
             };
             this.charts.push(new Chart(barEl, bar));
+        }
+
+        const pieEl = document.getElementById('chart-inventario-pie') as HTMLCanvasElement | null;
+        if (pieEl) {
+            const pie: ChartConfiguration = {
+                type: 'pie',
+                data: {
+                    labels: invLabels,
+                    datasets: [{
+                        data: invData,
+                        backgroundColor: invPieBg,
+                        borderColor: t.light ? '#fff' : 'rgba(15,20,40,0.92)',
+                        borderWidth: 2,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 0 },
+                    layout: { padding: { top: 4, bottom: 8 } },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Inventario total por categoría (distribución)',
+                            color: t.text,
+                            font: { family: font, size: 14, weight: 'bold' },
+                            padding: { bottom: 8 }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: t.text,
+                                font: { family: font, size: 10 },
+                                padding: 12,
+                                usePointStyle: true,
+                                boxWidth: 8
+                            }
+                        },
+                        tooltip: {
+                            bodyFont: { family: fontNum, size: 12 },
+                            titleFont: { family: font, size: 12 },
+                            callbacks: {
+                                label: (ctx) => {
+                                    const v = Number(ctx.raw) || 0;
+                                    const pct = invTotal > 0 ? ((v / invTotal) * 100).toFixed(1) : '0';
+                                    return ` ${ctx.label}: ${v} (${pct}%)`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: { family: fontNum, size: 11, weight: 'bold' },
+                            textShadowColor: 'rgba(0,0,0,0.55)',
+                            textShadowBlur: 3,
+                            formatter: (value: number) => {
+                                const v = Number(value) || 0;
+                                if (v <= 0) return '';
+                                const pct = invTotal > 0 ? (v / invTotal) * 100 : 0;
+                                if (pct < 4) return '';
+                                return `${v}\n${pct.toFixed(1)}%`;
+                            }
+                        }
+                    }
+                }
+            };
+            this.charts.push(new Chart(pieEl, pie));
         }
 
         const bloques: Array<{ id: string; key: 'tramos' | 'sv' | 'sh' | 'sem' | 'cs' }> = [

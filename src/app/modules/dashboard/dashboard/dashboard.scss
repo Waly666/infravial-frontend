@@ -678,13 +678,46 @@
     margin-bottom: 1rem;
 }
 
-.charts-grid-bar-y-tablas {
-    grid-template-columns: minmax(min(100%, 300px), 1fr) minmax(min(100%, 320px), 1.4fr);
-    align-items: start;
+/* Indicadores: barras + torta (misma fila), luego dos tarjetas de tablas en una fila */
+.charts-indicadores-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
 
-    @media (max-width: 1100px) {
+.charts-inventario-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: stretch;
+
+    @media (max-width: 900px) {
         grid-template-columns: 1fr;
     }
+
+    .chart-card--tall {
+        min-height: 300px;
+    }
+}
+
+.tablas-estado-pair-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+
+    @media (max-width: 960px) {
+        grid-template-columns: 1fr;
+    }
+
+    .tablas-estado-group {
+        min-height: 100%;
+    }
+}
+
+.tablas-estado-grid--compact {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
 }
 
 .tablas-estado-head {
@@ -1101,6 +1134,14 @@
     font-size: 0.72rem;
     color: rgba(180, 200, 255, 0.42);
     font-family: var(--font-sans, 'Syne', system-ui, sans-serif);
+}
+
+.recent-meta-disen {
+    color: rgba(200, 215, 255, 0.62);
+}
+
+:host-context(body.light-mode) .recent-meta-disen {
+    color: rgba(37, 99, 235, 0.65);
 }
 
 .recent-meta-date {
