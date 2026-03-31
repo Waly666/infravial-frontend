@@ -393,6 +393,20 @@
     color: #fecaca;
 }
 
+:host ::ng-deep .map-popup-mongo-id {
+    margin: 0 0 0.3rem;
+
+    code {
+        display: block;
+        font-size: 0.68rem;
+        font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+        font-variant-numeric: tabular-nums;
+        word-break: break-all;
+        color: rgba(226, 232, 255, 0.92);
+        line-height: 1.3;
+    }
+}
+
 :host ::ng-deep .map-popup-dl {
     margin: 0.35rem 0 0;
     display: grid;
@@ -571,6 +585,12 @@
     }
     ::ng-deep .map-popup strong {
         color: var(--text-primary);
+    }
+    ::ng-deep .map-popup-mongo-id code {
+        color: var(--text-primary);
+        background: var(--accent-hover);
+        padding: 0.1rem 0.35rem;
+        border-radius: 4px;
     }
     ::ng-deep .map-popup-dl dt {
         color: var(--text-muted);

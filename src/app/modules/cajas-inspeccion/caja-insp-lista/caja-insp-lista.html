@@ -17,7 +17,8 @@
     </div>
 
     <div class="search-bar">
-        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="Vía, nomenclatura, municipio, material…" class="search-input">
+        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="🔍 Texto o pegar ObjectId completo (24 hex)…" class="search-input">
+        <input type="text" [(ngModel)]="filtroId" (ngModelChange)="onFiltroIdChange()" placeholder="🆔 ID exacto / prefijo 4+ hex (prioridad)" class="search-input search-input-id" spellcheck="false" autocomplete="off">
         <span class="total-badge">{{ registrosFiltrados.length }} registros</span>
         <div class="pagination-controls">
             <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
@@ -54,6 +55,7 @@
         <table class="data-table">
             <thead>
                 <tr>
+                    <th class="th-sortable col-object-id" [class.th-sort-active]="sortColumn === 'id'" (click)="ordenarPor('id')" title="ObjectId MongoDB">ObjectId<span class="sort-ind">{{ sortIndicador('id') }}</span></th>
                     <th class="th-sortable" [class.th-sort-active]="sortColumn === 'departamento'" (click)="ordenarPor('departamento')" title="Ordenar">Departamento<span class="sort-ind">{{ sortIndicador('departamento') }}</span></th>
                     <th class="th-sortable" [class.th-sort-active]="sortColumn === 'municipio'" (click)="ordenarPor('municipio')" title="Ordenar">Municipio<span class="sort-ind">{{ sortIndicador('municipio') }}</span></th>
                     <th class="th-sortable" [class.th-sort-active]="sortColumn === 'zat'" (click)="ordenarPor('zat')" title="Ordenar">ZAT<span class="sort-ind">{{ sortIndicador('zat') }}</span></th>
@@ -69,6 +71,7 @@
             </thead>
             <tbody>
                 <tr *ngFor="let r of registrosPaginados">
+                    <td class="td-id"><code class="cell-id">{{ r._id || "—" }}</code></td>
                     <td><span class="badge" [ngClass]="depBadge(r)">{{ depTxt(r) }}</span></td>
                     <td><span class="badge" [ngClass]="munBadge(r)">{{ munTxt(r) }}</span></td>
                     <td><span class="badge" [ngClass]="zatBadge(r)">{{ zatTxt(r) }}</span></td>
@@ -96,7 +99,7 @@
                     </td>
                 </tr>
                 <tr *ngIf="registrosFiltrados.length === 0">
-                    <td colspan="11" class="empty-state">No hay cajas de inspección registradas</td>
+                    <td colspan="12" class="empty-state">No hay cajas de inspección registradas</td>
                 </tr>
             </tbody>
         </table>

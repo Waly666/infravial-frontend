@@ -1,0 +1,54 @@
+/* Columna ObjectId y campo de filtro por ID (listas de inventario). */
+
+.col-object-id {
+    min-width: 6.5rem;
+}
+
+.search-input-id {
+    flex: 0 1 280px;
+    min-width: 200px;
+    font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+}
+
+.td-id {
+    vertical-align: middle;
+    white-space: normal;
+    max-width: 26rem;
+}
+
+.cell-id {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0.28rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    line-height: 1.25;
+    background: linear-gradient(
+        135deg,
+        rgba(245, 158, 11, 0.28) 0%,
+        rgba(251, 191, 36, 0.14) 100%
+    );
+    border: 1px solid rgba(251, 191, 36, 0.6);
+    color: #fde68a;
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.12),
+        0 1px 10px rgba(245, 158, 11, 0.2);
+}
+
+:host-context(body.light-mode) .cell-id {
+    background: linear-gradient(
+        135deg,
+        rgba(217, 119, 6, 0.14) 0%,
+        rgba(251, 191, 36, 0.22) 100%
+    );
+    border-color: rgba(180, 83, 9, 0.5);
+    color: #92400e;
+    box-shadow: none;
+}

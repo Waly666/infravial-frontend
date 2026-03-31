@@ -16,6 +16,9 @@ import {
     rowZatLabel,
     rowZatValue,
     textBlobMatchesQuery,
+    filterListByExactMongoId,
+    rowMongoIdString,
+    sortListByMongoIdPrefix,
     badgeClassDepartamento,
     badgeClassMunicipio,
     badgeClassZat
@@ -36,6 +39,7 @@ import { ListaValorBadgeClassPipe } from '../../../shared/pipes/lista-valor-badg
     imports: [CommonModule, FormsModule, ListaValorBadgeClassPipe],
     templateUrl: './semaforo-lista.html',
     styleUrls: [
+        '../../../shared/styles/lista-object-id-column.scss',
         './semaforo-lista.scss',
         '../../../shared/styles/geo-badges.scss',
         '../../../shared/styles/street-view-list-btn.scss'
@@ -48,6 +52,7 @@ export class SemaforoListaComponent implements OnInit {
     error:     string  = '';
     jornada:   any     = null;
     busqueda:  string  = '';
+    filtroId = '';
     filtroDepartamento = '';
     filtroMunicipio = '';
     filtroZat = '';
@@ -94,12 +99,28 @@ export class SemaforoListaComponent implements OnInit {
     }
 
     get registrosFiltrados() {
+        const base = this.registros.filter((r) =>
+            matchesGeoFilters(
+                r,
+                this.filtroDepartamento,
+                this.filtroMunicipio,
+                this.filtroZat
+            )
+        );
+
+        const exact = filterListByExactMongoId(
+            base,
+            this.busqueda,
+            this.filtroId
+        );
+        if (exact) return exact;
+
         const qRaw = this.busqueda.trim();
-        return this.registros.filter(r => {
-            if (!matchesGeoFilters(r, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
+        const list = base.filter((r) => {
             const z = rowZatLabel(r);
             const ne = r.numExterno != null ? String(r.numExterno) : '';
             const blob = [
+                rowMongoIdString(r),
                 ne,
                 r.sitio,
                 r.claseSem,
@@ -115,6 +136,7 @@ export class SemaforoListaComponent implements OnInit {
             ].join(' ');
             return textBlobMatchesQuery(blob, qRaw);
         });
+        return sortListByMongoIdPrefix(list, this.filtroId);
     }
 
     get departamentosDisponibles(): string[] {
@@ -191,6 +213,8 @@ export class SemaforoListaComponent implements OnInit {
 
     private valorOrden(r: any, c: string): unknown {
         switch (c) {
+            case 'id':
+                return rowMongoIdString(r);
             case 'departamento':
                 return this.depTxt(r);
             case 'municipio':
@@ -232,6 +256,10 @@ export class SemaforoListaComponent implements OnInit {
     }
 
     onBusquedaChange() {
+        this.currentPage = 1;
+    }
+
+    onFiltroIdChange() {
         this.currentPage = 1;
     }
 

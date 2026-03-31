@@ -16,6 +16,9 @@ import {
     rowZatLabel,
     rowZatValue,
     textBlobMatchesQuery,
+    filterListByExactMongoId,
+    rowMongoIdString,
+    sortListByMongoIdPrefix,
     badgeClassDepartamento,
     badgeClassMunicipio,
     badgeClassZat
@@ -36,6 +39,7 @@ import { ListaValorBadgeClassPipe } from "../../../shared/pipes/lista-valor-badg
     imports: [CommonModule, FormsModule, RouterModule, ListaValorBadgeClassPipe],
     templateUrl: "./sen-vert-lista.html",
     styleUrls: [
+        "../../../shared/styles/lista-object-id-column.scss",
         "./sen-vert-lista.scss",
         "../../../shared/styles/geo-badges.scss",
         "../../../shared/styles/street-view-list-btn.scss"
@@ -48,6 +52,8 @@ export class SenVertListaComponent implements OnInit {
     error:     string  = "";
     jornada:   any     = null;
     busqueda:  string  = "";
+    /** ObjectId completo o prefijo 4+ hex (prioridad en orden). */
+    filtroId = "";
     filtroDepartamento = "";
     filtroMunicipio = "";
     filtroZat = "";
@@ -93,13 +99,34 @@ export class SenVertListaComponent implements OnInit {
     }
 
     get registrosFiltrados() {
-        const qRaw = this.busqueda.trim();
         const fc = this.filtroCodigo.trim();
-        return this.registros.filter(r => {
-            if (!matchesGeoFilters(r, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)) return false;
+        const base = this.registros.filter((r) => {
+            if (
+                !matchesGeoFilters(
+                    r,
+                    this.filtroDepartamento,
+                    this.filtroMunicipio,
+                    this.filtroZat
+                )
+            ) {
+                return false;
+            }
             if (fc && (r.codSe || "").trim() !== fc) return false;
+            return true;
+        });
+
+        const exact = filterListByExactMongoId(
+            base,
+            this.busqueda,
+            this.filtroId
+        );
+        if (exact) return exact;
+
+        const qRaw = this.busqueda.trim();
+        const list = base.filter((r) => {
             const z = rowZatLabel(r);
             const blob = [
+                rowMongoIdString(r),
                 r.codSe,
                 r.estado,
                 r.fase,
@@ -114,6 +141,7 @@ export class SenVertListaComponent implements OnInit {
             ].join(" ");
             return textBlobMatchesQuery(blob, qRaw);
         });
+        return sortListByMongoIdPrefix(list, this.filtroId);
     }
 
     get departamentosDisponibles(): string[] {
@@ -207,6 +235,8 @@ export class SenVertListaComponent implements OnInit {
 
     private valorOrden(r: any, c: string): unknown {
         switch (c) {
+            case "id":
+                return rowMongoIdString(r);
             case "senal":
                 return r.codSe ?? "";
             case "departamento":
@@ -246,6 +276,10 @@ export class SenVertListaComponent implements OnInit {
     }
 
     onBusquedaChange() {
+        this.currentPage = 1;
+    }
+
+    onFiltroIdChange() {
         this.currentPage = 1;
     }
 

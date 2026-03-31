@@ -84,7 +84,7 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'id'" (click)="ordenarPor('id')" title="Ordenar por ID">ID tramo<span class="sort-ind">{{ sortIndicador('id') }}</span></th>
+                    <th class="th-sortable col-object-id" [class.th-sort-active]="sortColumn === 'id'" (click)="ordenarPor('id')" title="ObjectId MongoDB">ObjectId<span class="sort-ind">{{ sortIndicador('id') }}</span></th>
                     <th class="th-sortable" [class.th-sort-active]="sortColumn === 'via'" (click)="ordenarPor('via')" title="Ordenar por vía">Vía<span class="sort-ind">{{ sortIndicador('via') }}</span></th>
                     <th class="th-sortable" [class.th-sort-active]="sortColumn === 'nomenclatura'" (click)="ordenarPor('nomenclatura')" title="Ordenar por nomenclatura">Nomenclatura<span class="sort-ind">{{ sortIndicador('nomenclatura') }}</span></th>
                     <th class="th-sortable" [class.th-sort-active]="sortColumn === 'municipio'" (click)="ordenarPor('municipio')" title="Ordenar por municipio">Municipio<span class="sort-ind">{{ sortIndicador('municipio') }}</span></th>

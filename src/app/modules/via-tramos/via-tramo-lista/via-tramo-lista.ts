@@ -14,7 +14,9 @@ import {
     rowZatLabel,
     rowZatValue,
     textBlobMatchesQuery,
-    extractMongoObjectId,
+    filterListByExactMongoId,
+    rowMongoIdString,
+    sortListByMongoIdPrefix,
     badgeClassMunicipio,
     badgeClassZat,
     badgeClassVia
@@ -33,6 +35,7 @@ import {
     imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './via-tramo-lista.html',
     styleUrls: [
+        '../../../shared/styles/lista-object-id-column.scss',
         './via-tramo-lista.scss',
         '../../../shared/styles/geo-badges.scss',
         '../../../shared/styles/street-view-list-btn.scss'
@@ -95,20 +98,15 @@ export class ViaTramoListaComponent implements OnInit {
             matchesGeoFilters(t, this.filtroDepartamento, this.filtroMunicipio, this.filtroZat)
         );
 
-        /** Prioridad: campo ID; si no, texto general (pegar ObjectId desde Compass). */
-        const idExact =
-            extractMongoObjectId(this.filtroIdTramo) ||
-            extractMongoObjectId(this.busqueda);
-
-        if (idExact) {
-            const hit = base.find(
-                t => (t._id ?? '').toString().toLowerCase() === idExact
-            );
-            return hit ? [hit] : [];
-        }
+        const exact = filterListByExactMongoId(
+            base,
+            this.busqueda,
+            this.filtroIdTramo
+        );
+        if (exact) return exact;
 
         const qRaw = this.busqueda.trim();
-        let list = base.filter(t => {
+        const list = base.filter((t) => {
             const zatL = rowZatLabel(t);
             const blob = [
                 t.via,
@@ -121,32 +119,12 @@ export class ViaTramoListaComponent implements OnInit {
                 t.sentidoVial,
                 nomenclaturaSearchText(t),
                 zatL !== '—' ? zatL : '',
-                (t._id ?? '').toString()
+                rowMongoIdString(t)
             ].join(' ');
             return textBlobMatchesQuery(blob, qRaw);
         });
 
-        const idQ = this.filtroIdTramo.trim().toLowerCase().replace(/[\s\r\n\u00a0]+/g, '');
-        if (idQ.length < 4) {
-            return list;
-        }
-
-        const matches = list.filter(t => (t._id ?? '').toString().toLowerCase().includes(idQ));
-        const others = list.filter(t => !(t._id ?? '').toString().toLowerCase().includes(idQ));
-
-        const rankId = (id: string | undefined): number => {
-            const x = (id ?? '').toString().toLowerCase();
-            if (x === idQ) return 0;
-            if (x.startsWith(idQ)) return 1;
-            return 2;
-        };
-        matches.sort(
-            (a, b) =>
-                rankId(a._id) - rankId(b._id) ||
-                (a._id ?? '').toString().localeCompare((b._id ?? '').toString())
-        );
-
-        return [...matches, ...others];
+        return sortListByMongoIdPrefix(list, this.filtroIdTramo);
     }
 
     get totalPages(): number {
@@ -185,7 +163,7 @@ export class ViaTramoListaComponent implements OnInit {
     private valorOrdenTramo(t: any, c: string): unknown {
         switch (c) {
             case 'id':
-                return (t._id ?? '').toString();
+                return rowMongoIdString(t);
             case 'via':
                 return t.via ?? '';
             case 'nomenclatura':

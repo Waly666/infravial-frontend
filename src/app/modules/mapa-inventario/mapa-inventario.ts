@@ -429,6 +429,21 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         return String(v);
     }
 
+    /** ObjectId del documento en API (string completa), no el resumen por código de catálogo. */
+    private mongoIdRegistro(r: any): string {
+        if (!r || r._id == null || r._id === '') return '—';
+        const id = r._id;
+        if (typeof id === 'string') return id;
+        if (typeof id === 'object' && id !== null) {
+            const o = id as { $oid?: string; toHexString?: () => string };
+            if (o.$oid != null) return String(o.$oid);
+            if (typeof o.toHexString === 'function') return o.toHexString();
+            const s = String(id);
+            if (s !== '[object Object]') return s;
+        }
+        return String(id);
+    }
+
     private passesTimelapseChild(r: any): boolean {
         const c = this.getTimelapseCutoffMs();
         if (c == null) return true;
@@ -810,6 +825,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         const geoAsp = this.tramoGeometriaAsfaltoHtml(t);
         return `<div class="map-popup">
       <div class="map-popup-tag">Tramo</div>
+      <div class="map-popup-mongo-id"><code>${esc(this.mongoIdRegistro(t))}</code></div>
       <strong>${esc(t.via || '—')}</strong>
       <dl class="map-popup-dl">
         <dt>Fecha inventario</dt><dd>${esc(fi)}</dd>
@@ -848,6 +864,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         const z = rowZatLabel(r);
         return `<div class="map-popup">
       <div class="map-popup-tag map-popup-tag-sv">Señal vertical</div>
+      <div class="map-popup-mongo-id"><code>${esc(this.mongoIdRegistro(r))}</code></div>
       <strong>${esc(r.codSe || '—')}</strong>
       <dl class="map-popup-dl">
         <dt>Fase</dt><dd>${esc(r.fase || '—')}</dd>
@@ -881,6 +898,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         const z = rowZatLabel(r);
         return `<div class="map-popup">
       <div class="map-popup-tag map-popup-tag-sh">Señal horizontal</div>
+      <div class="map-popup-mongo-id"><code>${esc(this.mongoIdRegistro(r))}</code></div>
       <strong>${esc(r.codSeHor || '—')}</strong>
       <dl class="map-popup-dl">
         <dt>Fase</dt><dd>${esc(r.fase || '—')}</dd>
@@ -914,6 +932,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         const z = rowZatLabel(r);
         return `<div class="map-popup">
       <div class="map-popup-tag map-popup-tag-sem">Semáforo</div>
+      <div class="map-popup-mongo-id"><code>${esc(this.mongoIdRegistro(r))}</code></div>
       <strong>${esc(r.numExterno != null ? 'Nº ' + r.numExterno : r.sitio || '—')}</strong>
       <dl class="map-popup-dl">
         <dt>Estado pintura</dt><dd>${esc(r.estadoGenPint || '—')}</dd>

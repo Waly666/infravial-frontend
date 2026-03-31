@@ -48,40 +48,6 @@
     flex-wrap: wrap;
 }
 
-.search-input-id {
-    flex: 0 1 280px;
-    min-width: 200px;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.78rem;
-    letter-spacing: 0.02em;
-}
-
-.td-id {
-    vertical-align: middle;
-    white-space: normal;
-    max-width: 26rem;
-}
-
-.cell-id {
-    display: inline-block;
-    max-width: 100%;
-    padding: 0.2rem 0.45rem;
-    border-radius: 6px;
-    background: rgba(74, 158, 255, 0.1);
-    border: 1px solid rgba(74, 158, 255, 0.22);
-    color: rgba(200, 220, 255, 0.92);
-    font-size: 0.72rem;
-    word-break: break-all;
-    overflow-wrap: anywhere;
-    line-height: 1.25;
-}
-
-:host-context(body.light-mode) .cell-id {
-    background: rgba(37, 99, 235, 0.08);
-    border-color: rgba(37, 99, 235, 0.2);
-    color: #1e3a5f;
-}
-
 :host-context(body.light-mode) .td-nomenclatura {
     color: #0f172a !important;
 }

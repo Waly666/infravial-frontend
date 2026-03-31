@@ -193,6 +193,62 @@ export function extractMongoObjectId(raw: string | null | undefined): string | n
     return null;
 }
 
+/** `_id` del documento como string (respuesta JSON o Extended JSON). */
+export function rowMongoIdString(row: any): string {
+    if (!row || row._id == null || row._id === '') return '';
+    const id = row._id;
+    if (typeof id === 'string') return id;
+    if (typeof id === 'object' && id !== null) {
+        const o = id as { $oid?: string; toHexString?: () => string };
+        if (o.$oid != null) return String(o.$oid);
+        if (typeof o.toHexString === 'function') return o.toHexString();
+        const s = String(id);
+        if (s !== '[object Object]') return s;
+    }
+    return String(id);
+}
+
+/**
+ * Si la búsqueda o `filtroIdExtra` es un ObjectId completo, devuelve `[fila]` o `[]`.
+ * Si no aplica, `null` (se sigue con filtro de texto).
+ */
+export function filterListByExactMongoId<T extends { _id?: unknown }>(
+    rows: T[],
+    qRaw: string,
+    filtroIdExtra?: string
+): T[] | null {
+    const idExact =
+        extractMongoObjectId((filtroIdExtra ?? '').trim()) ||
+        extractMongoObjectId((qRaw ?? '').trim());
+    if (!idExact) return null;
+    const hit = rows.find(
+        (r) => rowMongoIdString(r).toLowerCase() === idExact
+    );
+    return hit ? [hit] : [];
+}
+
+/** Con fragmento de 4+ caracteres hex en `filtroIdRaw`, prioriza filas cuyo `_id` lo contiene. */
+export function sortListByMongoIdPrefix<T extends { _id?: unknown }>(
+    list: T[],
+    filtroIdRaw: string
+): T[] {
+    const idQ = filtroIdRaw.trim().toLowerCase().replace(/[\s\r\n\u00a0]+/g, '');
+    if (idQ.length < 4) return list;
+    const sid = (r: T) => rowMongoIdString(r).toLowerCase();
+    const matches = list.filter((t) => sid(t).includes(idQ));
+    const others = list.filter((t) => !sid(t).includes(idQ));
+    const rankId = (id: string): number => {
+        if (id === idQ) return 0;
+        if (id.startsWith(idQ)) return 1;
+        return 2;
+    };
+    matches.sort(
+        (a, b) =>
+            rankId(sid(a)) - rankId(sid(b)) || sid(a).localeCompare(sid(b))
+    );
+    return [...matches, ...others];
+}
+
 /** Minúsculas, sin tildes y espacios colapsados (para comparar texto de búsqueda con datos guardados). */
 export function normalizeSearchText(s: string): string {
     return (s || '')
