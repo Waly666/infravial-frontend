@@ -20,7 +20,7 @@
     <div class="wizard-steps" role="tablist" aria-label="Secciones del formulario">
         <button
             type="button"
-            *ngFor="let p of pasosWizard"
+            *ngFor="let p of pasosWizard; trackBy: trackWizardPaso"
             class="wizard-step"
             role="tab"
             [attr.aria-label]="p.n + '. ' + p.label"

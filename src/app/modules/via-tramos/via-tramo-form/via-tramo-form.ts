@@ -393,6 +393,11 @@ export class ViaTramoFormComponent implements OnInit {
     get progreso(): number { return (this.pasoActual / this.totalPasos) * 100; }
     siguiente() { if (this.pasoActual < this.totalPasos) this.pasoActual++; }
     anterior()  { if (this.pasoActual > 1) this.pasoActual--; }
+    /** Evita que *ngFor destruya/recreé los botones en cada CD (el getter devuelve array nuevo). */
+    trackWizardPaso(_index: number, p: { n: number; label: string }): number {
+        return p.n;
+    }
+
     irAPaso(n: number) {
         if (n === 11 && !this.modoEdicion) return;
         this.pasoActual = n;

@@ -7,6 +7,8 @@
     gap: 0.45rem 0.35rem;
     margin-bottom: 1.15rem;
     padding: 0.35rem 0;
+    position: relative;
+    z-index: 2;
 }
 
 .wizard-step {
@@ -50,6 +52,9 @@
     background: rgba(74, 158, 255, 0.06);
     color: rgba(180, 200, 255, 0.72);
     transition: border-color 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s;
+    /* El clic lo recibe siempre el <button> padre (evita fallos si el span “roba” el hit-test). */
+    pointer-events: none;
+    user-select: none;
 }
 
 .wizard-step.active .wizard-step-circle {
