@@ -3,7 +3,7 @@
         <div class="mapa-title-row">
             <div>
                 <h1 class="page-title">Mapa del inventario</h1>
-                <p class="page-sub">Tramos, señales V./H. y semáforos enlazados al tramo. Time-lapse por <strong>fecha de inventario</strong> del tramo (<code>fechaInv</code>).</p>
+                <p class="page-sub">Tramos, señales V./H., semáforos y control semafórico enlazados al tramo. Exporte a GeoJSON para QGIS desde la barra superior.</p>
             </div>
             <button type="button" class="btn-back" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
         </div>
@@ -31,6 +31,7 @@
                 <label class="chk"><input type="checkbox" [(ngModel)]="showSenVert" (ngModelChange)="onLayerToggle()" /> Señales V.</label>
                 <label class="chk"><input type="checkbox" [(ngModel)]="showSenHor" (ngModelChange)="onLayerToggle()" /> Señales H.</label>
                 <label class="chk"><input type="checkbox" [(ngModel)]="showSemaforos" (ngModelChange)="onLayerToggle()" /> Semáforos</label>
+                <label class="chk"><input type="checkbox" [(ngModel)]="showControlSem" (ngModelChange)="onLayerToggle()" /> Control sem.</label>
             </div>
 
             <div class="toolbar-section toolbar-grow">
@@ -38,9 +39,24 @@
                 <input type="text" class="search-input" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()" placeholder="Vía, nomenclatura / dirección, código, municipio, ZAT…" />
             </div>
 
+            <div class="toolbar-section toolbar-export">
+                <span class="toolbar-label">Exportar GIS</span>
+                <select class="filter-select export-select" [(ngModel)]="exportCapa">
+                    <option value="">Capa…</option>
+                    <option value="via_tramos">Vías (tramos)</option>
+                    <option value="sen_vert">Señales verticales</option>
+                    <option value="sen_hor">Señales horizontales</option>
+                    <option value="semaforos">Semáforos</option>
+                    <option value="control_sem">Control semafórico</option>
+                    <option value="todo">Todo el mapa (una capa)</option>
+                </select>
+                <button type="button" class="btn-export" (click)="ejecutarExportGeoJson()" [disabled]="!exportCapa || loading">GeoJSON</button>
+                <button type="button" class="btn-fields" (click)="openGeoFieldsModal()" [disabled]="loading" title="Elegir qué columnas van en el GeoJSON">Campos…</button>
+            </div>
+
             <div class="toolbar-section">
                 <span class="counts" *ngIf="!loading">
-                    Visibles: {{ conteos().tr }} tramos · {{ conteos().sv }} SV · {{ conteos().sh }} SH · {{ conteos().sem }} sem.
+                    Visibles: {{ conteos().tr }} tramos · {{ conteos().sv }} SV · {{ conteos().sh }} SH · {{ conteos().sem }} sem. · {{ conteos().cs }} ctrl.
                 </span>
                 <button type="button" class="btn-reload" (click)="loadData()" [disabled]="loading">↻ Actualizar</button>
             </div>
@@ -68,30 +84,6 @@
                 <option *ngFor="let c of codigosShDisponibles" [value]="c">{{ c }}</option>
             </select>
         </div>
-
-        <div class="timelapse-bar" *ngIf="!loading && timelapseCutoffs.length">
-            <label class="timelapse-head chk">
-                <input type="checkbox" [(ngModel)]="timelapseActivo" (ngModelChange)="onTimelapseToggle()" />
-                Time-lapse por fecha inventario del tramo (acumulado hasta…)
-            </label>
-            <div class="timelapse-controls" *ngIf="timelapseActivo">
-                <input
-                    type="range"
-                    class="timelapse-range"
-                    min="0"
-                    [max]="timelapseCutoffs.length - 1"
-                    [(ngModel)]="timelapseIndex"
-                    (ngModelChange)="onTimelapseSliderChange()"
-                />
-                <span class="timelapse-date">{{ timelapseLabel() }}</span>
-                <button type="button" class="btn-play" (click)="toggleTimelapsePlay()">
-                    {{ timelapsePlaying ? 'Pausa' : 'Reproducir' }}
-                </button>
-            </div>
-            <p class="timelapse-hint" *ngIf="timelapseActivo">
-                Solo se muestran tramos y elementos cuyo tramo tiene inventario hasta la fecha indicada (según <code>fechaInv</code>, o <code>fechaCreación</code> si no hay inventario).
-            </p>
-        </div>
     </div>
 
     <div class="mapa-error" *ngIf="error">{{ error }}</div>
@@ -102,5 +94,51 @@
             <p>Cargando geometrías…</p>
         </div>
         <div #mapHost class="map-host" [class.dimmed]="loading"></div>
+    </div>
+
+    <!-- Configuración de campos GeoJSON -->
+    <div class="geo-fields-overlay" *ngIf="showGeoFieldsModal" (click)="closeGeoFieldsModal()"></div>
+    <div class="geo-fields-modal" *ngIf="showGeoFieldsModal" role="dialog" aria-labelledby="geo-fields-title" (click)="$event.stopPropagation()">
+        <div class="geo-fields-head">
+            <h2 id="geo-fields-title">Campos del GeoJSON</h2>
+            <button type="button" class="geo-fields-close" (click)="closeGeoFieldsModal()" aria-label="Cerrar">✕</button>
+        </div>
+        <p class="geo-fields-intro">
+            Marque los atributos que desea en cada descarga. El <strong>ID</strong> siempre se incluye. La opción «foto_1, foto_2…» aplica a tramos y semáforos con varias fotos.
+        </p>
+        <div class="geo-fields-tabs">
+            <button
+                type="button"
+                class="geo-tab"
+                *ngFor="let tab of geoExportTabs"
+                [class.active]="geoFieldsTabActivo === tab.id"
+                (click)="geoFieldsTabActivo = tab.id"
+            >{{ tab.title }}</button>
+        </div>
+        <div class="geo-fields-toolbar">
+            <button type="button" class="geo-mini-btn" (click)="selectAllGeoDraft(geoFieldsTabActivo)">Todos</button>
+            <button type="button" class="geo-mini-btn" (click)="selectMinimalGeoDraft(geoFieldsTabActivo)">Solo ID</button>
+        </div>
+        <ul class="geo-fields-list">
+            <li *ngFor="let row of geoFieldRows[geoFieldsTabActivo]">
+                <label class="geo-field-row" [class.disabled]="row.required">
+                    <input
+                        type="checkbox"
+                        [checked]="isGeoDraftChecked(geoFieldsTabActivo, row.key)"
+                        [disabled]="row.required"
+                        (change)="toggleGeoDraft(geoFieldsTabActivo, row.key)"
+                    />
+                    <span class="geo-field-label">{{ row.label }}</span>
+                    <code class="geo-field-key">{{ row.key }}</code>
+                </label>
+            </li>
+        </ul>
+        <div class="geo-fields-foot">
+            <button type="button" class="geo-foot-btn ghost" (click)="resetGeoFieldsDefaults()">Restaurar todo por defecto</button>
+            <div class="geo-foot-actions">
+                <button type="button" class="geo-foot-btn ghost" (click)="closeGeoFieldsModal()">Cancelar</button>
+                <button type="button" class="geo-foot-btn primary" (click)="saveGeoFieldsModal()">Guardar</button>
+            </div>
+        </div>
     </div>
 </div>

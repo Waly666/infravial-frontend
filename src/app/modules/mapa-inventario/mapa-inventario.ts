@@ -15,6 +15,7 @@ import { ViaTramoService } from '../../core/services/via-tramo.service';
 import { SenVertService } from '../../core/services/sen-vert.service';
 import { SenHorService } from '../../core/services/sen-hor.service';
 import { SemaforoService } from '../../core/services/semaforo.service';
+import { ControlSemService } from '../../core/services/control-sem.service';
 import { JornadaService } from '../../core/services/jornada.service';
 import {
     geoDepartamentos,
@@ -30,6 +31,29 @@ import {
     googleStreetViewUrl,
     latLngFromUbicacion
 } from '../../shared/utils/street-view';
+import {
+    absoluteApiBaseForExport,
+    applyGeoJsonFieldSelection,
+    buildCollection,
+    downloadGeoJson,
+    featureFromControlSem,
+    featureFromSenHor,
+    featureFromSenVert,
+    featureFromSemaforo,
+    featureFromViaTramo,
+    anchoTotalPerfilM,
+    type GeoJsonFeature
+} from '../../shared/utils/geojson-export';
+import {
+    capaPropertyToTab,
+    defaultSelectionForTab,
+    FOTO_INDEXADA_KEY,
+    GEOJSON_EXPORT_TABS,
+    GEOJSON_FIELD_ROWS,
+    loadExportFieldPrefs,
+    saveExportFieldPrefs,
+    type GeoJsonExportTab
+} from '../../shared/utils/geojson-export-config';
 
 export type MapaBaseMode = 'dark' | 'paper' | 'satellite';
 
@@ -67,19 +91,6 @@ function pointToLatLng(c: number[] | undefined): L.LatLngExpression | null {
     return [c[1], c[0]];
 }
 
-/** Fin del día local (inclusive) para comparar fechas de inventario. */
-function endOfLocalDayMs(d: Date): number {
-    return new Date(
-        d.getFullYear(),
-        d.getMonth(),
-        d.getDate(),
-        23,
-        59,
-        59,
-        999
-    ).getTime();
-}
-
 @Component({
     selector: 'app-mapa-inventario',
     standalone: true,
@@ -98,17 +109,19 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
     senVert: any[] = [];
     senHor: any[] = [];
     semaforos: any[] = [];
+    controlSemaforicos: any[] = [];
 
-    /** ms de inventario por _id de tramo (fechaInv o fechaCreación). */
-    private tramoInvMsById = new Map<string, number>();
-    /** Fines de día únicos ordenados (time-lapse). */
-    timelapseCutoffs: number[] = [];
-    /** Activa el filtro acumulado “hasta” la fecha del deslizador. */
-    timelapseActivo = false;
-    /** Índice en timelapseCutoffs. */
-    timelapseIndex = 0;
-    timelapsePlaying = false;
-    private timelapsePlayTimer: ReturnType<typeof setInterval> | null = null;
+    /** Selector de exportación GeoJSON (respeta filtros del mapa). */
+    exportCapa: '' | 'via_tramos' | 'sen_vert' | 'sen_hor' | 'semaforos' | 'control_sem' | 'todo' =
+        '';
+
+    /** Campos exportables por tipo (persistido en localStorage). */
+    exportFieldByTab = loadExportFieldPrefs();
+    readonly geoExportTabs = GEOJSON_EXPORT_TABS;
+    readonly geoFieldRows = GEOJSON_FIELD_ROWS;
+    showGeoFieldsModal = false;
+    geoFieldsTabActivo: GeoJsonExportTab = 'via_tramos';
+    private draftFieldByTab = new Map<GeoJsonExportTab, Set<string>>();
 
     busqueda = '';
     filtroDepartamento = '';
@@ -121,6 +134,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
     showSenVert = true;
     showSenHor = true;
     showSemaforos = true;
+    showControlSem = true;
 
     mapMode: MapaBaseMode = 'dark';
 
@@ -130,12 +144,14 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
     private layerSV = L.layerGroup();
     private layerSH = L.layerGroup();
     private layerSem = L.layerGroup();
+    private layerControlSem = L.layerGroup();
 
     constructor(
         private viaTramoService: ViaTramoService,
         private senVertService: SenVertService,
         private senHorService: SenHorService,
         private semaforoService: SemaforoService,
+        private controlSemService: ControlSemService,
         private jornadaService: JornadaService,
         public router: Router
     ) {}
@@ -147,12 +163,84 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         });
     }
 
+    openGeoFieldsModal(): void {
+        this.draftFieldByTab = new Map();
+        for (const t of GEOJSON_EXPORT_TABS) {
+            const cur = this.exportFieldByTab.get(t.id);
+            this.draftFieldByTab.set(
+                t.id,
+                cur ? new Set(cur) : defaultSelectionForTab(t.id)
+            );
+        }
+        this.geoFieldsTabActivo = 'via_tramos';
+        this.showGeoFieldsModal = true;
+    }
+
+    closeGeoFieldsModal(): void {
+        this.showGeoFieldsModal = false;
+    }
+
+    saveGeoFieldsModal(): void {
+        for (const t of GEOJSON_EXPORT_TABS) {
+            const d = this.draftFieldByTab.get(t.id);
+            if (d) this.exportFieldByTab.set(t.id, new Set(d));
+        }
+        saveExportFieldPrefs(this.exportFieldByTab);
+        this.closeGeoFieldsModal();
+    }
+
+    isGeoDraftChecked(tab: GeoJsonExportTab, key: string): boolean {
+        return this.draftFieldByTab.get(tab)?.has(key) ?? false;
+    }
+
+    toggleGeoDraft(tab: GeoJsonExportTab, key: string): void {
+        const row = GEOJSON_FIELD_ROWS[tab].find((r) => r.key === key);
+        if (row?.required) return;
+        const s = this.draftFieldByTab.get(tab);
+        if (!s) return;
+        if (s.has(key)) s.delete(key);
+        else s.add(key);
+    }
+
+    selectAllGeoDraft(tab: GeoJsonExportTab): void {
+        this.draftFieldByTab.set(tab, defaultSelectionForTab(tab));
+    }
+
+    /** Solo ID (y obligatorios). */
+    selectMinimalGeoDraft(tab: GeoJsonExportTab): void {
+        const s = new Set<string>();
+        for (const r of GEOJSON_FIELD_ROWS[tab]) {
+            if (r.required) s.add(r.key);
+        }
+        this.draftFieldByTab.set(tab, s);
+    }
+
+    resetGeoFieldsDefaults(): void {
+        for (const t of GEOJSON_EXPORT_TABS) {
+            this.draftFieldByTab.set(t.id, defaultSelectionForTab(t.id));
+        }
+    }
+
+    private filterFeatureProps(f: GeoJsonFeature): GeoJsonFeature {
+        const capaVal = String((f.properties as { capa?: string })?.capa ?? '');
+        const tab = capaPropertyToTab(capaVal);
+        const sel =
+            this.exportFieldByTab.get(tab) ?? defaultSelectionForTab(tab);
+        return {
+            ...f,
+            properties: applyGeoJsonFieldSelection(
+                f.properties as Record<string, unknown>,
+                sel,
+                FOTO_INDEXADA_KEY
+            )
+        };
+    }
+
     ngAfterViewInit(): void {
         setTimeout(() => this.initMap(), 0);
     }
 
     ngOnDestroy(): void {
-        this.stopTimelapsePlay();
         this.map?.remove();
         this.map = null;
     }
@@ -167,6 +255,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         this.layerSV.addTo(this.map);
         this.layerSH.addTo(this.map);
         this.layerSem.addTo(this.map);
+        this.layerControlSem.addTo(this.map);
 
         this.loadData();
 
@@ -233,7 +322,13 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     get allGeoRows(): any[] {
-        return [...this.tramos, ...this.senVert, ...this.senHor, ...this.semaforos];
+        return [
+            ...this.tramos,
+            ...this.senVert,
+            ...this.senHor,
+            ...this.semaforos,
+            ...this.controlSemaforicos
+        ];
     }
 
     get departamentosDisponibles(): string[] {
@@ -327,108 +422,6 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         this.redrawMap();
     }
 
-    onTimelapseToggle(): void {
-        if (!this.timelapseActivo) this.stopTimelapsePlay();
-        if (
-            this.timelapseActivo &&
-            this.timelapseCutoffs.length &&
-            this.timelapseIndex >= this.timelapseCutoffs.length
-        ) {
-            this.timelapseIndex = this.timelapseCutoffs.length - 1;
-        }
-        this.redrawMap();
-    }
-
-    onTimelapseSliderChange(): void {
-        this.redrawMap();
-    }
-
-    toggleTimelapsePlay(): void {
-        if (!this.timelapseActivo || !this.timelapseCutoffs.length) return;
-        if (this.timelapsePlaying) {
-            this.stopTimelapsePlay();
-            return;
-        }
-        this.timelapsePlaying = true;
-        this.timelapsePlayTimer = setInterval(() => {
-            if (this.timelapseIndex < this.timelapseCutoffs.length - 1) {
-                this.timelapseIndex++;
-            } else {
-                this.stopTimelapsePlay();
-            }
-            this.redrawMap();
-        }, 1800);
-    }
-
-    stopTimelapsePlay(): void {
-        this.timelapsePlaying = false;
-        if (this.timelapsePlayTimer != null) {
-            clearInterval(this.timelapsePlayTimer);
-            this.timelapsePlayTimer = null;
-        }
-    }
-
-    timelapseLabel(): string {
-        if (!this.timelapseCutoffs.length || !this.timelapseActivo) return '—';
-        const ms = this.timelapseCutoffs[this.timelapseIndex];
-        if (ms == null) return '—';
-        return new Date(ms).toLocaleDateString('es-CO', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-    }
-
-    private tramoInventoryMs(t: any): number | null {
-        const raw = t?.fechaInv || t?.fechaCreacion;
-        if (!raw) return null;
-        const ms = new Date(raw).getTime();
-        return Number.isNaN(ms) ? null : ms;
-    }
-
-    private rebuildTramoInvIndex(): void {
-        this.tramoInvMsById.clear();
-        for (const t of this.tramos) {
-            const m = this.tramoInventoryMs(t);
-            if (m != null) this.tramoInvMsById.set(String(t._id), m);
-        }
-    }
-
-    private rebuildTimelapseCutoffs(): void {
-        const byDay = new Map<string, number>();
-        for (const t of this.tramos) {
-            const m = this.tramoInventoryMs(t);
-            if (m == null) continue;
-            const d = new Date(m);
-            const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-            byDay.set(key, endOfLocalDayMs(d));
-        }
-        this.timelapseCutoffs = Array.from(byDay.values()).sort((a, b) => a - b);
-        if (this.timelapseIndex >= this.timelapseCutoffs.length) {
-            this.timelapseIndex = Math.max(0, this.timelapseCutoffs.length - 1);
-        }
-    }
-
-    private getTimelapseCutoffMs(): number | null {
-        if (!this.timelapseActivo || !this.timelapseCutoffs.length) return null;
-        return this.timelapseCutoffs[this.timelapseIndex] ?? null;
-    }
-
-    private passesTimelapseTramo(t: any): boolean {
-        const c = this.getTimelapseCutoffMs();
-        if (c == null) return true;
-        const inv = this.tramoInventoryMs(t);
-        if (inv == null) return true;
-        return inv <= c;
-    }
-
-    private tramoIdFromChild(r: any): string | null {
-        const v = r?.idViaTramo;
-        if (!v) return null;
-        if (typeof v === 'object' && v._id != null) return String(v._id);
-        return String(v);
-    }
-
     /** ObjectId del documento en API (string completa), no el resumen por código de catálogo. */
     private mongoIdRegistro(r: any): string {
         if (!r || r._id == null || r._id === '') return '—';
@@ -442,20 +435,6 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
             if (s !== '[object Object]') return s;
         }
         return String(id);
-    }
-
-    private passesTimelapseChild(r: any): boolean {
-        const c = this.getTimelapseCutoffMs();
-        if (c == null) return true;
-        const tid = this.tramoIdFromChild(r);
-        if (!tid) return false;
-        let inv = this.tramoInvMsById.get(tid);
-        if (inv == null && typeof r.idViaTramo === 'object' && r.idViaTramo) {
-            const m = this.tramoInventoryMs(r.idViaTramo);
-            if (m != null) inv = m;
-        }
-        if (inv == null) return true;
-        return inv <= c;
     }
 
     private tramoMatchesSearch(t: any, qRaw: string): boolean {
@@ -514,9 +493,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
                     this.filtroDepartamento,
                     this.filtroMunicipio,
                     this.filtroZat
-                ) &&
-                this.tramoMatchesSearch(t, qRaw) &&
-                this.passesTimelapseTramo(t)
+                ) && this.tramoMatchesSearch(t, qRaw)
         );
     }
 
@@ -535,9 +512,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
                 return false;
             }
             if (fc && (r.codSe || '').trim() !== fc) return false;
-            return (
-                this.vertMatchesSearch(r, qRaw) && this.passesTimelapseChild(r)
-            );
+            return this.vertMatchesSearch(r, qRaw);
         });
     }
 
@@ -556,9 +531,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
                 return false;
             }
             if (fc && (r.codSeHor || '').trim() !== fc) return false;
-            return (
-                this.horMatchesSearch(r, qRaw) && this.passesTimelapseChild(r)
-            );
+            return this.horMatchesSearch(r, qRaw);
         });
     }
 
@@ -594,9 +567,44 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
             ) {
                 return false;
             }
-            return (
-                this.semMatchesSearch(r, qRaw) && this.passesTimelapseChild(r)
-            );
+            return this.semMatchesSearch(r, qRaw);
+        });
+    }
+
+    private controlMatchesSearch(r: any, qRaw: string): boolean {
+        const z = rowZatLabel(r);
+        const ne = r.numExterno != null ? String(r.numExterno) : '';
+        const blob = [
+            ne,
+            r.serialControlador,
+            r.modelo,
+            r.fabricante,
+            r.claseControlador,
+            r.fase,
+            r.accion,
+            r.idViaTramo?.via,
+            r.idViaTramo?.municipio,
+            r.idViaTramo?.departamento,
+            nomenclaturaSearchText(r),
+            z !== '—' ? z : ''
+        ].join(' ');
+        return textBlobMatchesQuery(blob, qRaw);
+    }
+
+    private filteredControlSem(): any[] {
+        const qRaw = this.busqueda.trim();
+        return this.controlSemaforicos.filter((r) => {
+            if (
+                !matchesGeoFilters(
+                    r,
+                    this.filtroDepartamento,
+                    this.filtroMunicipio,
+                    this.filtroZat
+                )
+            ) {
+                return false;
+            }
+            return this.controlMatchesSearch(r, qRaw);
         });
     }
 
@@ -615,15 +623,17 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
                 .pipe(catchError(() => of({ registros: [] }))),
             sem: this.semaforoService
                 .getAll()
+                .pipe(catchError(() => of({ registros: [] }))),
+            cs: this.controlSemService
+                .getAll()
                 .pipe(catchError(() => of({ registros: [] })))
         }).subscribe({
-            next: ({ tr, sv, sh, sem }) => {
+            next: ({ tr, sv, sh, sem, cs }) => {
                 this.tramos = tr.tramos || [];
                 this.senVert = sv.registros || [];
                 this.senHor = sh.registros || [];
                 this.semaforos = sem.registros || [];
-                this.rebuildTramoInvIndex();
-                this.rebuildTimelapseCutoffs();
+                this.controlSemaforicos = cs.registros || [];
                 this.loading = false;
                 setTimeout(() => this.redrawMap(), 0);
                 this.scheduleInvalidateSize();
@@ -642,6 +652,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         this.layerSV.clearLayers();
         this.layerSH.clearLayers();
         this.layerSem.clearLayers();
+        this.layerControlSem.clearLayers();
 
         const bounds = L.latLngBounds([] as L.LatLngTuple[]);
         let hasBounds = false;
@@ -742,6 +753,23 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
             }
         }
 
+        if (this.showControlSem) {
+            for (const r of this.filteredControlSem()) {
+                const ll = pointToLatLng(r.ubicacion?.coordinates);
+                if (!ll) continue;
+                const m = L.circleMarker(ll, {
+                    radius: 8,
+                    color: '#b45309',
+                    weight: 2,
+                    fillColor: '#fbbf24',
+                    fillOpacity: 0.95
+                });
+                m.bindPopup(this.popupControlSem(r), { maxWidth: 320 });
+                m.addTo(this.layerControlSem);
+                extend(ll);
+            }
+        }
+
         if (hasBounds && bounds.isValid()) {
             this.map.fitBounds(bounds, { padding: [48, 48], maxZoom: 17 });
         }
@@ -802,8 +830,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         ${row('Cuneta izq.', t.cunetaIzq)}
         ${row('Cuneta der.', t.cunetaDer)}
         ${row('Andén izq.', t.andenIzq)}
-        ${row('Andén der.', t.andenDer)}
-        ${row('Ancho total perfil', t.anchoTotalPerfil)}`;
+        ${row('Andén der.', t.andenDer)}`;
     }
 
     private popupTramo(t: any): string {
@@ -820,8 +847,7 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
             : '—';
         const coords = this.coordsTexto(t.ubicacion);
         const nom = this.nomenclaturaDesdeTramo(t);
-        const fase = t.fase != null && String(t.fase).trim() !== '' ? String(t.fase) : '—';
-        const accion = t.accion != null && String(t.accion).trim() !== '' ? String(t.accion) : '—';
+        const anchoProf = anchoTotalPerfilM(t);
         const geoAsp = this.tramoGeometriaAsfaltoHtml(t);
         return `<div class="map-popup">
       <div class="map-popup-tag">Tramo</div>
@@ -838,12 +864,11 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         <dt>Tipo vía</dt><dd>${esc(t.tipoVia || '—')}</dd>
         <dt>Sector</dt><dd>${esc(t.sector || '—')}</dd>
         <dt>Zona</dt><dd>${esc(t.zona || '—')}</dd>
-        <dt>Fase</dt><dd>${esc(fase)}</dd>
-        <dt>Acción</dt><dd>${esc(accion)}</dd>
         <dt>Estado vía</dt><dd>${esc(this.estadoViaTramoTexto(t))}</dd>
         <dt>Capa rodadura</dt><dd>${esc(t.capaRodadura || '—')}</dd>
         ${geoAsp}
-        <dt>Longitud</dt><dd>${esc(t.longitud_m != null ? t.longitud_m + ' m' : '—')}</dd>
+        <dt>Longitud del tramo</dt><dd>${esc(t.longitud_m != null && t.longitud_m !== '' ? t.longitud_m + ' m' : '—')}</dd>
+        <dt>Ancho total perfil</dt><dd>${esc(anchoProf != null ? anchoProf + ' m' : '—')}</dd>
       </dl>
       ${img}
       ${this.popupStreetViewBlock(t.ubicacion)}
@@ -918,6 +943,45 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
     </div>`;
     }
 
+    private popupControlSem(r: any): string {
+        const f1 = absPhoto(r.urlFotoControlador);
+        const f2 = absPhoto(r.urlFotoArmario);
+        const img1 = f1
+            ? `<div class="map-popup-imgwrap"><img src="${esc(f1)}" alt="" class="map-popup-img" /></div>`
+            : '';
+        const img2 = f2
+            ? `<div class="map-popup-imgwrap"><img src="${esc(f2)}" alt="" class="map-popup-img" /></div>`
+            : '';
+        const vt = r.idViaTramo;
+        const via = vt?.via || '—';
+        const dpto = vt?.departamento || '—';
+        const mun = vt?.municipio || '—';
+        const nom = this.nomenclaturaDesdeTramo(vt);
+        const coords = this.coordsTexto(r.ubicacion);
+        const z = rowZatLabel(r);
+        const label =
+            r.numExterno != null ? `Control Nº ${r.numExterno}` : 'Control semafórico';
+        return `<div class="map-popup">
+      <div class="map-popup-tag map-popup-tag-cs">Control semafórico</div>
+      <div class="map-popup-mongo-id"><code>${esc(this.mongoIdRegistro(r))}</code></div>
+      <strong>${esc(label)}</strong>
+      <dl class="map-popup-dl">
+        <dt>Estado controlador</dt><dd>${esc(r.estadoControlador || '—')}</dd>
+        <dt>Tipo</dt><dd>${esc(r.tipoControlador || '—')}</dd>
+        <dt>Serial</dt><dd>${esc(r.serialControlador || '—')}</dd>
+        <dt>Modelo</dt><dd>${esc(r.modelo || '—')}</dd>
+        <dt>Vía / tramo</dt><dd>${esc(via)}</dd>
+        <dt>Nomenclatura</dt><dd>${esc(nom)}</dd>
+        <dt>Departamento</dt><dd>${esc(dpto)}</dd>
+        <dt>Municipio</dt><dd>${esc(mun)}</dd>
+        <dt>Coordenadas</dt><dd><code>${esc(coords)}</code> <span class="map-popup-coord-hint">(lat, lng)</span></dd>
+        <dt>ZAT</dt><dd>${esc(z)}</dd>
+      </dl>
+      ${img1}${img2}
+      ${this.popupStreetViewBlock(r.ubicacion)}
+    </div>`;
+    }
+
     private popupSemaforo(r: any): string {
         const foto = absPhoto(r.urlFotoSemaforo);
         const img = foto
@@ -956,12 +1020,113 @@ export class MapaInventarioComponent implements OnInit, AfterViewInit, OnDestroy
         return `<div class="map-popup-sv"><a class="map-popup-sv-link" href="${href}" target="_blank" rel="noopener noreferrer">Street View</a></div>`;
     }
 
-    conteos(): { tr: number; sv: number; sh: number; sem: number } {
+    conteos(): { tr: number; sv: number; sh: number; sem: number; cs: number } {
         return {
             tr: this.filteredTramos().length,
             sv: this.filteredVert().length,
             sh: this.filteredHor().length,
-            sem: this.filteredSemaforos().length
+            sem: this.filteredSemaforos().length,
+            cs: this.filteredControlSem().length
         };
+    }
+
+    private baseExportApi(): string {
+        return absoluteApiBaseForExport(environment.apiUrl);
+    }
+
+    /** Descarga GeoJSON según `exportCapa` (mismos filtros que el mapa). */
+    ejecutarExportGeoJson(): void {
+        const capa = this.exportCapa;
+        if (!capa) return;
+        const base = this.baseExportApi();
+        const stamp = new Date().toISOString().slice(0, 10);
+
+        const pick = <T>(xs: (T | null)[]): T[] =>
+            xs.filter((x): x is T => x != null);
+
+        const pipe = (fs: GeoJsonFeature[]) =>
+            fs.map((f) => this.filterFeatureProps(f));
+
+        if (capa === 'via_tramos') {
+            const feats = pipe(
+                pick(this.filteredTramos().map((t) => featureFromViaTramo(t, base)))
+            );
+            downloadGeoJson(
+                buildCollection('infravial_via_tramos', feats),
+                `infravial_via_tramos_${stamp}.geojson`
+            );
+            return;
+        }
+        if (capa === 'sen_vert') {
+            const feats = pipe(
+                pick(this.filteredVert().map((r) => featureFromSenVert(r, base)))
+            );
+            downloadGeoJson(
+                buildCollection('infravial_senales_verticales', feats),
+                `infravial_sen_vert_${stamp}.geojson`
+            );
+            return;
+        }
+        if (capa === 'sen_hor') {
+            const feats = pipe(
+                pick(this.filteredHor().map((r) => featureFromSenHor(r, base)))
+            );
+            downloadGeoJson(
+                buildCollection('infravial_senales_horizontales', feats),
+                `infravial_sen_hor_${stamp}.geojson`
+            );
+            return;
+        }
+        if (capa === 'semaforos') {
+            const feats = pipe(
+                pick(
+                    this.filteredSemaforos().map((r) =>
+                        featureFromSemaforo(r, base)
+                    )
+                )
+            );
+            downloadGeoJson(
+                buildCollection('infravial_semaforos', feats),
+                `infravial_semaforos_${stamp}.geojson`
+            );
+            return;
+        }
+        if (capa === 'control_sem') {
+            const feats = pipe(
+                pick(
+                    this.filteredControlSem().map((r) =>
+                        featureFromControlSem(r, base)
+                    )
+                )
+            );
+            downloadGeoJson(
+                buildCollection('infravial_control_semaforico', feats),
+                `infravial_control_semaforico_${stamp}.geojson`
+            );
+            return;
+        }
+        if (capa === 'todo') {
+            const feats = pipe(
+                pick([
+                    ...this.filteredTramos().map((t) =>
+                        featureFromViaTramo(t, base)
+                    ),
+                    ...this.filteredVert().map((r) =>
+                        featureFromSenVert(r, base)
+                    ),
+                    ...this.filteredHor().map((r) => featureFromSenHor(r, base)),
+                    ...this.filteredSemaforos().map((r) =>
+                        featureFromSemaforo(r, base)
+                    ),
+                    ...this.filteredControlSem().map((r) =>
+                        featureFromControlSem(r, base)
+                    )
+                ])
+            );
+            downloadGeoJson(
+                buildCollection('infravial_mapa_completo', feats),
+                `infravial_mapa_completo_${stamp}.geojson`
+            );
+        }
     }
 }
