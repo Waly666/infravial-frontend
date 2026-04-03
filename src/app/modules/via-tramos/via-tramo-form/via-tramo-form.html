@@ -107,6 +107,18 @@
             </div>
         </div>
 
+        <div class="geo-preview-wrap">
+            <p class="geo-preview-title">Vista del tramo en mapa</p>
+            <div
+                appGeoPreviewMap
+                [previewLat]="form.lat_inicio"
+                [previewLng]="form.lng_inicio"
+                [previewLat2]="form.lat_fin"
+                [previewLng2]="form.lng_fin"
+                class="geo-preview-map-el"
+            ></div>
+        </div>
+
         <!-- Botón abrir mapa -->
         <button class="btn-mapa" (click)="abrirMapa()">
             🗺️ {{ form.lat_inicio && form.lat_fin ? 'Ver / Editar en Mapa' : 'Abrir Mapa' }}

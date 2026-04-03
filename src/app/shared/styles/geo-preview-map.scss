@@ -1,0 +1,41 @@
+/* Mapa embebido bajo coordenadas (directiva appGeoPreviewMap) */
+.geo-preview-wrap {
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.geo-preview-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary, rgba(180, 200, 255, 0.65));
+    margin-bottom: 0.5rem;
+}
+
+.geo-preview-map-el {
+    width: 100%;
+    min-height: 220px;
+    height: 240px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border-color, rgba(74, 158, 255, 0.15));
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.geo-preview-map-el.geo-preview-map--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+}
+
+.geo-preview-map__placeholder {
+    font-size: 0.875rem;
+    color: var(--text-muted, rgba(180, 200, 255, 0.45));
+    line-height: 1.45;
+    max-width: 280px;
+}
+
+.geo-preview-map-el .leaflet-container {
+    font-family: var(--font-sans, system-ui, sans-serif);
+}

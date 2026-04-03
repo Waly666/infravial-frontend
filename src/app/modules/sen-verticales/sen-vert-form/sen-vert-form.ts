@@ -19,11 +19,12 @@ import {
     TramoNomenclaturaPipe,
     MongoIdPipe
 } from '../../../shared/pipes/tramo-display.pipe';
+import { GeoPreviewMapDirective } from '../../../shared/directives/geo-preview-map.directive';
 
 @Component({
     selector: 'app-sen-vert-form',
     standalone: true,
-    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoNomenclaturaPipe, MongoIdPipe],
+    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoNomenclaturaPipe, MongoIdPipe, GeoPreviewMapDirective],
     templateUrl: './sen-vert-form.html',
     styleUrls: [
         './sen-vert-form.scss',

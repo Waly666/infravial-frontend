@@ -15,11 +15,12 @@ import { CajaInspService } from '../../../core/services/caja-insp.service';
 import { ControlSemService } from '../../../core/services/control-sem.service';
 import { environment } from '../../../../environments/environment';
 import { ApiService } from '../../../core/services/api.service';
+import { GeoPreviewMapDirective } from '../../../shared/directives/geo-preview-map.directive';
 
 @Component({
     selector: 'app-via-tramo-form',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, GeoPreviewMapDirective],
     templateUrl: './via-tramo-form.html',
     styleUrl: './via-tramo-form.scss'
 })

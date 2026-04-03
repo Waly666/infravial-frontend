@@ -18,11 +18,12 @@ import {
     TramoNomenclaturaPipe,
     MongoIdPipe
 } from '../../../shared/pipes/tramo-display.pipe';
+import { GeoPreviewMapDirective } from '../../../shared/directives/geo-preview-map.directive';
 
 @Component({
     selector: 'app-caja-insp-form',
     standalone: true,
-    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoNomenclaturaPipe, MongoIdPipe],
+    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoNomenclaturaPipe, MongoIdPipe, GeoPreviewMapDirective],
     templateUrl: './caja-insp-form.html',
     styleUrls: [
         './caja-insp-form.scss',

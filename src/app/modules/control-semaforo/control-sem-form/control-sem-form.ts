@@ -18,11 +18,12 @@ import {
     TramoNomenclaturaPipe,
     MongoIdPipe
 } from '../../../shared/pipes/tramo-display.pipe';
+import { GeoPreviewMapDirective } from '../../../shared/directives/geo-preview-map.directive';
 
 @Component({
     selector: 'app-control-sem-form',
     standalone: true,
-    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoNomenclaturaPipe, MongoIdPipe],
+    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoNomenclaturaPipe, MongoIdPipe, GeoPreviewMapDirective],
     templateUrl: './control-sem-form.html',
     styleUrls: [
         './control-sem-form.scss',

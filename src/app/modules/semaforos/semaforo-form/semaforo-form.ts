@@ -22,11 +22,12 @@ import {
     TramoNomenclaturaPipe,
     MongoIdPipe
 } from '../../../shared/pipes/tramo-display.pipe';
+import { GeoPreviewMapDirective } from '../../../shared/directives/geo-preview-map.directive';
 
 @Component({
     selector: 'app-semaforo-form',
     standalone: true,
-    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoNomenclaturaPipe, MongoIdPipe],
+    imports: [CommonModule, FormsModule, TramoGeoPipe, TramoNomenclaturaPipe, MongoIdPipe, GeoPreviewMapDirective],
     templateUrl: './semaforo-form.html',
     styleUrls: [
         './semaforo-form.scss',

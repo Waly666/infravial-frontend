@@ -96,6 +96,17 @@
             </div>
         </div>
 
+        <div class="geo-preview-wrap">
+            <p class="geo-preview-title">Vista en mapa</p>
+            <div
+                appGeoPreviewMap
+                [previewLat]="form.lat"
+                [previewLng]="form.lng"
+                pointEmoji="➖"
+                class="geo-preview-map-el"
+            ></div>
+        </div>
+
         <button class="btn-mapa" (click)="abrirMapa()">
             🗺️ {{ form.lat ? "Ver / Editar en Mapa" : "Fijar en Mapa" }}
         </button>
