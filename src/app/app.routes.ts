@@ -181,10 +181,10 @@ export const routes: Routes = [
                         loadComponent: () => import('./modules/backups/backup-admin/backup-admin').then(m => m.BackupAdminComponent)
                     },
                     {
-                        path: 'importacion',
+                        path: 'data-transfer',
                         canActivate: [roleGuard],
                         data: { roles: ['admin'] },
-                        loadComponent: () => import('./modules/import-admin/import-admin').then(m => m.ImportAdminComponent)
+                        loadComponent: () => import('./modules/data-transfer/data-transfer').then(m => m.DataTransferComponent)
                     },
                     {
                         path: 'reportes',

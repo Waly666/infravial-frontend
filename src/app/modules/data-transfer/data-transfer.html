@@ -1,0 +1,216 @@
+<div class="page-container">
+
+    <!-- CABECERA -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Transferencia de Datos</h1>
+            <p class="page-sub">
+                Exporta registros con sus fotos como ZIP, e impórtalos en otra instalación. Solo administradores.
+            </p>
+        </div>
+        <button type="button" class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button type="button" class="tab-btn" [class.active]="tabActiva === 'exportar'" (click)="tabActiva = 'exportar'">
+            <span class="material-symbols-outlined tab-icon">upload</span> Exportar
+        </button>
+        <button type="button" class="tab-btn" [class.active]="tabActiva === 'importar'" (click)="tabActiva = 'importar'">
+            <span class="material-symbols-outlined tab-icon">download</span> Importar
+        </button>
+    </div>
+
+    <!-- ══════════════════════════════════════ EXPORTAR ═══════════════════════ -->
+    <div class="tab-content" *ngIf="tabActiva === 'exportar'">
+
+        <div class="card">
+            <h2 class="card-title">Filtro de exportación</h2>
+
+            <!-- Tipo de filtro -->
+            <div class="field-row">
+                <label class="field-label">Filtrar por</label>
+                <div class="radio-group">
+                    <label class="radio-opt">
+                        <input type="radio" name="tipoFiltro" value="municipio"    [(ngModel)]="tipoFiltro" (change)="onTipoFiltroChange()" [disabled]="exportando">
+                        <span>Municipio</span>
+                    </label>
+                    <label class="radio-opt">
+                        <input type="radio" name="tipoFiltro" value="departamento" [(ngModel)]="tipoFiltro" (change)="onTipoFiltroChange()" [disabled]="exportando">
+                        <span>Departamento</span>
+                    </label>
+                    <label class="radio-opt">
+                        <input type="radio" name="tipoFiltro" value="jornada"      [(ngModel)]="tipoFiltro" (change)="onTipoFiltroChange()" [disabled]="exportando">
+                        <span>Jornada</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Valor del filtro -->
+            <div class="field-row">
+                <label class="field-label">{{ tipoFiltro === 'jornada' ? 'Jornada' : (tipoFiltro | titlecase) }}</label>
+                <select *ngIf="tipoFiltro !== 'jornada'" [(ngModel)]="valorFiltro" [disabled]="exportando" class="select-field">
+                    <option value="">— Seleccionar —</option>
+                    <option *ngFor="let op of filtroOpciones" [value]="op">{{ op }}</option>
+                </select>
+                <select *ngIf="tipoFiltro === 'jornada'" [(ngModel)]="valorFiltro" [disabled]="exportando" class="select-field">
+                    <option value="">— Seleccionar jornada —</option>
+                    <option *ngFor="let j of jornadas" [value]="j._id">{{ jornadaLabel(j) }}</option>
+                </select>
+            </div>
+
+            <!-- Rango de fechas -->
+            <div class="field-row dates-row">
+                <div class="date-group">
+                    <label class="field-label">Fecha desde</label>
+                    <input type="date" [(ngModel)]="fechaDesde" [disabled]="exportando" class="input-field">
+                </div>
+                <div class="date-group">
+                    <label class="field-label">Fecha hasta</label>
+                    <input type="date" [(ngModel)]="fechaHasta" [disabled]="exportando" class="input-field">
+                </div>
+            </div>
+        </div>
+
+        <!-- Selección de tablas -->
+        <div class="card">
+            <div class="card-title-row">
+                <h2 class="card-title">Tablas a exportar</h2>
+                <div class="btn-row-sm">
+                    <button type="button" class="btn-link" (click)="toggleTodas(true)"  [disabled]="exportando">Todas</button>
+                    <button type="button" class="btn-link" (click)="toggleTodas(false)" [disabled]="exportando">Ninguna</button>
+                </div>
+            </div>
+
+            <div class="tables-group">
+                <div class="tables-group-label">Registros operacionales</div>
+                <div class="check-grid">
+                    <label class="check-opt" *ngFor="let t of operacionales">
+                        <input type="checkbox"
+                            [checked]="tablasSeleccionadas.has(t.key)"
+                            (change)="toggleTabla(t.key)"
+                            [disabled]="exportando">
+                        <span>{{ t.label }}</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="tables-group">
+                <div class="tables-group-label">Catálogos</div>
+                <div class="check-grid">
+                    <label class="check-opt" *ngFor="let t of catalogos">
+                        <input type="checkbox"
+                            [checked]="tablasSeleccionadas.has(t.key)"
+                            (change)="toggleTabla(t.key)"
+                            [disabled]="exportando">
+                        <span>{{ t.label }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button type="button" class="btn-primary"
+                [disabled]="exportando || !valorFiltro || !tablasSeleccionadas.size"
+                (click)="ejecutarExportacion()">
+                <span class="material-symbols-outlined btn-icon">upload_file</span>
+                {{ exportando ? 'Exportando…' : 'Generar exportación' }}
+            </button>
+            <button type="button" class="btn-success"
+                *ngIf="estadoJob === 'done' && tabActiva === 'exportar'"
+                (click)="descargarExport()">
+                <span class="material-symbols-outlined btn-icon">download</span>
+                Descargar ZIP
+            </button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ IMPORTAR ═══════════════════════ -->
+    <div class="tab-content" *ngIf="tabActiva === 'importar'">
+
+        <div class="card">
+            <h2 class="card-title">Importar desde ZIP exportado</h2>
+
+            <div class="field-row">
+                <label class="file-label">
+                    <span class="field-label">Archivo (.zip exportado por InfraVial)</span>
+                    <input type="file" accept=".zip" (change)="onFileChange($event)" [disabled]="importando">
+                </label>
+                <span class="file-name" *ngIf="archivoImport">{{ archivoImport.name }}</span>
+            </div>
+
+            <label class="check-opt">
+                <input type="checkbox" [(ngModel)]="dryRun" [disabled]="importando">
+                <span>Dry-run (simular sin guardar en base de datos)</span>
+            </label>
+        </div>
+
+        <div class="btn-row">
+            <button type="button" class="btn-primary"
+                [disabled]="importando || !archivoImport"
+                (click)="ejecutarImportacion()">
+                <span class="material-symbols-outlined btn-icon">download_for_offline</span>
+                {{ importando ? 'Importando…' : (dryRun ? 'Simular importación' : 'Ejecutar importación') }}
+            </button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ MENSAJES ═══════════════════════ -->
+    <div class="alert-success" *ngIf="mensajeOk">{{ mensajeOk }}</div>
+    <div class="alert-error"   *ngIf="errorMsg">{{ errorMsg }}</div>
+
+    <!-- ══════════════════════════════════════ PROGRESO ═══════════════════════ -->
+    <div class="progress-card" *ngIf="hayProgreso">
+        <div class="progress-header">
+            <h2 class="progress-title">Progreso en tiempo real</h2>
+            <span class="status-badge" [class]="estadoJob">
+                {{ estadoJob === 'running' ? 'Procesando…' : estadoJob === 'done' ? 'Completado' : estadoJob === 'error' ? 'Error' : '' }}
+            </span>
+        </div>
+
+        <!-- Progreso por tabla -->
+        <div class="progress-section-label">Tablas de datos</div>
+        <div class="progress-grid" *ngIf="tableEntries().length; else sinTablas">
+            <div class="progress-block" *ngFor="let entry of tableEntries()">
+                <div class="progress-head">
+                    <span>{{ entry[1].label }}</span>
+                    <span class="table-status-badge" [class]="entry[1].status">{{ entry[1].status }}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill"
+                        [style.width.%]="pct(entry[1].current, entry[1].total)"
+                        [class.done]="entry[1].status === 'done'">
+                    </div>
+                </div>
+                <div class="progress-foot">
+                    {{ entry[1].current }} / {{ entry[1].total || '—' }}
+                    &nbsp;·&nbsp; OK <span class="ok-num">{{ entry[1].ok }}</span>
+                    &nbsp;·&nbsp; Err <span class="err-num">{{ entry[1].err }}</span>
+                </div>
+            </div>
+        </div>
+        <ng-template #sinTablas>
+            <p class="no-tables-msg">Iniciando procesamiento…</p>
+        </ng-template>
+
+        <!-- Progreso de fotos -->
+        <div class="progress-section-label" *ngIf="fotosProgreso.total > 0 || estadoJob === 'running'">Fotos</div>
+        <div class="progress-block photos-block" *ngIf="fotosProgreso.total > 0">
+            <div class="progress-head">
+                <span>Archivos de fotos</span>
+                <span class="file-count">{{ fotosProgreso.total }} archivos</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill photos"
+                    [style.width.%]="pct(fotosProgreso.current, fotosProgreso.total)">
+                </div>
+            </div>
+            <div class="progress-foot">
+                {{ fotosProgreso.current }} / {{ fotosProgreso.total }}
+                &nbsp;·&nbsp; OK <span class="ok-num">{{ fotosProgreso.ok }}</span>
+                &nbsp;·&nbsp; No encontradas <span class="err-num">{{ fotosProgreso.err }}</span>
+            </div>
+        </div>
+    </div>
+
+</div>

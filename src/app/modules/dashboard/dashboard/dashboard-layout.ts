@@ -6,7 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { JornadaService } from '../../../core/services/jornada.service';
 
 /** Rutas del submenú Utils (mismo orden que en el menú). */
-const UTILS_ROUTE_IDS = ['importacion', 'catalogos', 'usuarios', 'auditoria', 'respaldos'] as const;
+const UTILS_ROUTE_IDS = ['data-transfer', 'catalogos', 'usuarios', 'auditoria', 'respaldos'] as const;
 
 type MenuLink = { id: string; label: string; icon: string };
 type MenuEntry =
@@ -45,7 +45,7 @@ export class DashboardLayoutComponent implements OnInit {
             icon: 'construction',
             roles: ['admin'],
             children: [
-                { id: 'importacion', label: 'Importar Excel', icon: 'upload_file' },
+                { id: 'data-transfer', label: 'Transferencia Datos', icon: 'sync_alt' },
                 { id: 'catalogos',   label: 'Catálogos',      icon: 'menu_book' },
                 { id: 'usuarios',    label: 'Usuarios',       icon: 'groups' },
                 { id: 'auditoria',   label: 'Auditoría',      icon: 'fact_check' },
