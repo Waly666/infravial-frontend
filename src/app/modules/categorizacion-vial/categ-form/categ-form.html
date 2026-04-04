@@ -1,0 +1,458 @@
+<div class="cv-form-container">
+
+    <!-- Cabecera -->
+    <div class="cv-form-header">
+        <button class="btn-back" (click)="cancelar()">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div>
+            <h2>{{ modoEdicion ? 'Editar Categorización' : 'Nueva Categorización Vial' }}</h2>
+            <p>Metodología Min. Transporte — Ley 1228/2008</p>
+        </div>
+        <div class="cv-header-matriz" *ngIf="editId">
+            <span class="cv-matriz-label">Reporte matriz</span>
+            <button type="button" class="btn-matriz" (click)="descargarMatriz('xlsx')" title="Descargar matriz en Excel">
+                <span class="material-symbols-outlined">table_chart</span>
+                Excel
+            </button>
+            <button type="button" class="btn-matriz btn-matriz-pdf" (click)="descargarMatriz('pdf')" title="Descargar matriz en PDF">
+                <span class="material-symbols-outlined">picture_as_pdf</span>
+                PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="cv-form-layout">
+
+        <!-- ═══════════════ Columna Izquierda: Formulario ════════════════ -->
+        <div class="cv-form-main">
+
+            <!-- Identificación de la vía -->
+            <section class="cv-section">
+                <h3 class="cv-section-title">
+                    <span class="material-symbols-outlined">info</span>
+                    Identificación de la Vía
+                </h3>
+
+                <div class="cv-grid-2">
+                    <div class="cv-field">
+                        <label>Nombre / Código de la vía *</label>
+                        <input type="text" [(ngModel)]="form.nombreVia" placeholder="Ej: Troncal del Magdalena, Vía 45-07" />
+                    </div>
+                    <div class="cv-field">
+                        <label>Código PR</label>
+                        <input type="text" [(ngModel)]="form.codigoPR" placeholder="Ej: 45+000" />
+                    </div>
+                    <div class="cv-field cv-jornada-vinculada" *ngIf="datosTerritorioDesdeJornada">
+                        <label>Jornada de levantamiento</label>
+                        <p class="cv-field-hint">
+                            Municipio, departamento y códigos DIVIPOL provienen de la <strong>jornada</strong> vinculada
+                            (<code>idJornada</code>). Al guardar, el servidor los alinea con los datos actuales de esa jornada.
+                        </p>
+                    </div>
+                    <div class="cv-field cv-field--divipol-search" *ngIf="!datosTerritorioDesdeJornada">
+                        <label>Buscar municipio (DIVIPOL) *</label>
+                        <div class="cv-divipol-wrap">
+                            <input
+                                type="text"
+                                [(ngModel)]="busquedaDivipol"
+                                (input)="onBusquedaDivipolInput()"
+                                placeholder="Escriba al menos 2 caracteres…"
+                                autocomplete="off"
+                            />
+                            <span class="cv-divipol-spinner" *ngIf="buscandoDivipol" aria-hidden="true">…</span>
+                            <div class="divipol-results" *ngIf="mostrarDivipol && resultadosDivipol.length">
+                                <button
+                                    type="button"
+                                    class="divipol-item"
+                                    *ngFor="let item of resultadosDivipol"
+                                    (click)="seleccionarDivipol(item)">
+                                    <strong>{{ item.divipolMunicipio }}</strong>
+                                    <span>{{ item.divipolDepto }} · Cód. {{ item.divipolMunCod }}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="cv-field-hint">El departamento se asigna automáticamente según el municipio elegido en la tabla DIVIPOL.</p>
+                    </div>
+                    <div class="cv-field">
+                        <label>Municipio seleccionado *</label>
+                        <input type="text" [(ngModel)]="form.municipio" readonly placeholder="—" />
+                    </div>
+                    <div class="cv-field">
+                        <label>Departamento *</label>
+                        <input type="text" [(ngModel)]="form.departamento" readonly placeholder="—" />
+                    </div>
+                    <div class="cv-field">
+                        <label>Cód. municipio (DIVIPOL)</label>
+                        <input type="text" [(ngModel)]="form.munDivipol" readonly placeholder="—" />
+                    </div>
+                    <div class="cv-field">
+                        <label>Cód. departamento</label>
+                        <input type="text" [(ngModel)]="form.deptoDivipol" readonly placeholder="—" />
+                    </div>
+                    <div class="cv-field">
+                        <label>Longitud del tramo según eje vial (km) *</label>
+                        <input
+                            type="number"
+                            [(ngModel)]="form.longitud_km"
+                            placeholder="Ej: 2,35 — recorrido real con curvas"
+                            min="0"
+                            step="0.001"
+                        />
+                        <p class="cv-field-hint">
+                            Longitud <strong>real</strong> del tramo por el eje de la vía (curvas, alineaciones). Es mayor o igual que la línea recta entre A y B del mapa.
+                        </p>
+                    </div>
+                    <div class="cv-field">
+                        <label>Ancho de calzada (m)</label>
+                        <input type="number" [(ngModel)]="form.ancho_m" placeholder="0.0" min="0" step="0.1" />
+                    </div>
+                </div>
+
+                <div class="cv-field">
+                    <label>Observaciones</label>
+                    <textarea [(ngModel)]="form.observaciones" rows="2" placeholder="Observaciones generales del tramo..."></textarea>
+                </div>
+            </section>
+
+            <!-- Georreferenciación: mapa centrado en el municipio DIVIPOL (sin buscar territorio) -->
+            <section class="cv-section cv-section--geo" *ngIf="form.municipio && form.departamento">
+                <h3 class="cv-section-title">
+                    <span class="material-symbols-outlined">map</span>
+                    Georreferenciación del tramo
+                </h3>
+                <p class="cv-section-desc">
+                    El mapa se centra en <strong>{{ form.municipio }}</strong> ({{ form.departamento }}). Marque inicio (A) y fin (B).
+                    La <strong>línea del mapa</strong> es recta: ahí se calcula la <strong>longitud geodésica</strong> (referencia).
+                    La <strong>longitud del tramo en km</strong> del formulario la digita usted según el trazado real de la vía.
+                </p>
+
+                <div class="coords-display">
+                    <div class="coord-item" [class.set]="form.lat_inicio != null">
+                        <span class="coord-label">Inicio (A)</span>
+                        <span class="coord-val" *ngIf="form.lat_inicio != null && form.lng_inicio != null">
+                            {{ form.lat_inicio | number:'1.6-6' }}, {{ form.lng_inicio | number:'1.6-6' }}
+                        </span>
+                        <span class="coord-val empty" *ngIf="form.lat_inicio == null">Sin definir</span>
+                    </div>
+                    <div class="coord-item" [class.set]="form.lat_fin != null">
+                        <span class="coord-label">Fin (B)</span>
+                        <span class="coord-val" *ngIf="form.lat_fin != null && form.lng_fin != null">
+                            {{ form.lat_fin | number:'1.6-6' }}, {{ form.lng_fin | number:'1.6-6' }}
+                        </span>
+                        <span class="coord-val empty" *ngIf="form.lat_fin == null">Sin definir</span>
+                    </div>
+                    <div class="coord-item" [class.set]="form.longitud_tramo_m">
+                        <span class="coord-label">Geodésica (línea recta A–B)</span>
+                        <span class="coord-val" *ngIf="form.longitud_tramo_m">
+                            {{ form.longitud_tramo_m }} m
+                            <ng-container *ngIf="longitudGeodesicaKm() != null">
+                                ≈ {{ longitudGeodesicaKm() | number:'1.3-3' }} km recta</ng-container>
+                        </span>
+                        <span class="coord-val empty" *ngIf="!form.longitud_tramo_m">Marque A y B para calcular</span>
+                    </div>
+                </div>
+
+                <div class="geo-preview-wrap">
+                    <p class="geo-preview-title">Mapa del municipio y tramo</p>
+                    <div
+                        appGeoPreviewMap
+                        [previewLat]="form.lat_inicio"
+                        [previewLng]="form.lng_inicio"
+                        [previewLat2]="form.lat_fin"
+                        [previewLng2]="form.lng_fin"
+                        [fallbackCenterLat]="muniCenterLat"
+                        [fallbackCenterLng]="muniCenterLng"
+                        [fallbackZoom]="muniMapZoom"
+                        class="geo-preview-map-el"
+                    ></div>
+                </div>
+
+                <button type="button" class="btn-mapa" (click)="abrirMapa()">
+                    <span class="material-symbols-outlined" style="vertical-align:middle;font-size:1.1rem">map</span>
+                    {{ form.lat_inicio != null && form.lat_fin != null ? 'Ver / editar en mapa' : 'Abrir mapa' }}
+                </button>
+
+                <p class="map-hint map-hint-ficha">
+                    Primer clic → inicio · Segundo clic → fin y <strong>geodésica</strong> en línea recta · Tercer clic (tramo completo) → reinicia. La longitud de vía en km se digita arriba.
+                </p>
+
+                <div class="mapa-overlay" *ngIf="mapaAbierto">
+                    <div class="mapa-modal">
+                        <div class="mapa-header">
+                            <span>{{ jornada?.municipio || form.municipio || 'Mapa' }} — Tramo a categorizar</span>
+                            <button type="button" class="mapa-close" (click)="cerrarMapa()">Cerrar</button>
+                        </div>
+                        <div id="leaflet-map-categ-vial" class="leaflet-map"></div>
+                        <div class="mapa-footer">
+                            <div class="mapa-instruccion">
+                                <span *ngIf="form.lat_inicio == null">Clic para marcar el <strong>inicio</strong></span>
+                                <span *ngIf="form.lat_inicio != null && form.lat_fin == null">Clic para marcar el <strong>fin</strong></span>
+                                <span *ngIf="form.lat_inicio != null && form.lat_fin != null">
+                                    Puntos listos — geodésica {{ form.longitud_tramo_m }} m (recta A–B) — la longitud en km del tramo se digita en el formulario — Clic para reiniciar
+                                </span>
+                            </div>
+                            <button type="button" class="btn-confirm-map" (click)="cerrarMapa()"
+                                    *ngIf="form.lat_inicio != null && form.lat_fin != null">
+                                Confirmar coordenadas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Responsable de la clasificación -->
+            <section class="cv-section">
+                <h3 class="cv-section-title">
+                    <span class="material-symbols-outlined">badge</span>
+                    Responsable de la clasificación
+                </h3>
+                <div class="cv-field" style="max-width: 280px">
+                    <label>Fecha de clasificación</label>
+                    <input type="date" [(ngModel)]="form.fechaClasificacion" />
+                </div>
+                <div class="cv-grid-2">
+                    <div class="cv-field">
+                        <label>Nombre del funcionario / profesional</label>
+                        <input type="text" [(ngModel)]="form.nombreFuncionario" placeholder="Nombre completo" />
+                    </div>
+                    <div class="cv-field">
+                        <label>Entidad</label>
+                        <input type="text" [(ngModel)]="form.entidadFuncionario" placeholder="Ej: Secretaría de Movilidad, interventoría..." />
+                    </div>
+                </div>
+            </section>
+
+            <!-- ────── Criterio 1: Funcionalidad ────── -->
+            <section class="cv-section">
+                <h3 class="cv-section-title">
+                    <span class="material-symbols-outlined">route</span>
+                    PARTE 1. FUNCIONALIDAD — Criterio 1
+                    <span class="peso-badge">Peso: 40 pts</span>
+                </h3>
+
+                <details class="cv-matriz-oficial">
+                    <summary class="cv-matriz-oficial__summary">
+                        Matriz oficial — enunciados Parte 1 (referencia guía MinTransporte)
+                        <span class="cv-matriz-oficial__summary-hint">Mostrar u ocultar texto completo</span>
+                    </summary>
+                    <div class="cv-matriz-oficial__body">
+                        <p class="cv-matriz-oficial__intro">{{ matrizParte1Intro }}</p>
+                        <p class="cv-matriz-oficial__contexto">{{ matrizParte1Contexto }}</p>
+                        <ol class="cv-matriz-oficial__lista">
+                            <li *ngFor="let linea of matrizParte1Items">{{ linea }}</li>
+                        </ol>
+                        <p class="cv-matriz-oficial__pie">
+                            En la matriz impresa se marcan casillas por orden vial; aquí elija <strong>una</strong> opción A, B o C que consolide el resultado de la Parte 1 según la guía.
+                        </p>
+                    </div>
+                </details>
+
+                <p class="cv-section-desc">
+                    ¿Cuál es la función principal de esta vía dentro de la red vial nacional? (Selección consolidada A / B / C)
+                </p>
+
+                <div class="cv-opciones">
+                    <label *ngFor="let op of OPCIONES['funcionalidad']"
+                           class="cv-opcion"
+                           [class.seleccionada]="form.funcionalidad === op.valor">
+                        <input type="radio" name="funcionalidad" [value]="op.valor"
+                               [(ngModel)]="form.funcionalidad" (ngModelChange)="onCriterioChange()" />
+                        <div class="cv-opcion-body">
+                            <div class="cv-opcion-header">
+                                <span class="cv-opcion-key">{{ op.valor }}</span>
+                                <span class="cv-opcion-label">{{ op.etiqueta }}</span>
+                                <span class="cv-opcion-pts">{{ op.orden === 1 ? '40' : op.orden === 2 ? '25' : '10' }} pts</span>
+                            </div>
+                            <p class="cv-opcion-desc">{{ op.descripcion }}</p>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- ────── Criterio 2: TPD ────── -->
+            <section class="cv-section">
+                <h3 class="cv-section-title">
+                    <span class="material-symbols-outlined">directions_car</span>
+                    Criterio 2 — Tráfico Promedio Diario (TPD)
+                    <span class="peso-badge">Peso: 20 pts</span>
+                </h3>
+                <p class="cv-section-desc">
+                    Seleccione el rango de tráfico promedio diario medido o estimado para este tramo.
+                </p>
+
+                <div class="cv-field cv-field-inline" style="margin-bottom: 12px;">
+                    <label>Valor TPD (opcional)</label>
+                    <input type="number" [(ngModel)]="form.tpdValor" placeholder="Vehículos / día" min="0" style="max-width:200px" />
+                </div>
+
+                <div class="cv-opciones">
+                    <label *ngFor="let op of OPCIONES['tpd']"
+                           class="cv-opcion"
+                           [class.seleccionada]="form.tpd === op.valor">
+                        <input type="radio" name="tpd" [value]="op.valor"
+                               [(ngModel)]="form.tpd" (ngModelChange)="onCriterioChange()" />
+                        <div class="cv-opcion-body">
+                            <div class="cv-opcion-header">
+                                <span class="cv-opcion-key">{{ op.valor }}</span>
+                                <span class="cv-opcion-label">{{ op.etiqueta }}</span>
+                                <span class="cv-opcion-pts">{{ op.orden === 1 ? '20' : op.orden === 2 ? '10' : '5' }} pts</span>
+                            </div>
+                            <p class="cv-opcion-desc">{{ op.descripcion }}</p>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- ────── Criterio 3: Diseño Geométrico ────── -->
+            <section class="cv-section">
+                <h3 class="cv-section-title">
+                    <span class="material-symbols-outlined">straighten</span>
+                    PARTE 3. DISEÑO GEOMÉTRICO — Criterio 3
+                    <span class="peso-badge">Peso: 20 pts</span>
+                </h3>
+
+                <details class="cv-matriz-oficial">
+                    <summary class="cv-matriz-oficial__summary">
+                        Matriz oficial — enunciado Parte 3 (referencia guía MinTransporte)
+                        <span class="cv-matriz-oficial__summary-hint">Mostrar u ocultar texto completo</span>
+                    </summary>
+                    <div class="cv-matriz-oficial__body">
+                        <p class="cv-matriz-oficial__intro">{{ matrizParte3Intro }}</p>
+                        <p class="cv-matriz-oficial__pie">{{ matrizParte3Nota }}</p>
+                    </div>
+                </details>
+
+                <p class="cv-section-desc">
+                    ¿Cuál es el estándar de diseño geométrico predominante en este tramo? (Selección consolidada A / B / C — numerales 3,2 y 5,3)
+                </p>
+
+                <div class="cv-opciones">
+                    <label *ngFor="let op of OPCIONES['disenoGeometrico']"
+                           class="cv-opcion"
+                           [class.seleccionada]="form.disenoGeometrico === op.valor">
+                        <input type="radio" name="disenoGeometrico" [value]="op.valor"
+                               [(ngModel)]="form.disenoGeometrico" (ngModelChange)="onCriterioChange()" />
+                        <div class="cv-opcion-body">
+                            <div class="cv-opcion-header">
+                                <span class="cv-opcion-key">{{ op.valor }}</span>
+                                <span class="cv-opcion-label">{{ op.etiqueta }}</span>
+                                <span class="cv-opcion-pts">{{ op.orden === 1 ? '20' : op.orden === 2 ? '10' : '5' }} pts</span>
+                            </div>
+                            <p class="cv-opcion-desc">{{ op.descripcion }}</p>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- ────── Criterio 4: Población ────── -->
+            <section class="cv-section">
+                <h3 class="cv-section-title">
+                    <span class="material-symbols-outlined">groups</span>
+                    Criterio 4 — Población Servida
+                    <span class="peso-badge">Peso: 20 pts</span>
+                </h3>
+                <p class="cv-section-desc">
+                    ¿A cuántos habitantes sirve directamente este tramo vial?
+                </p>
+
+                <div class="cv-field cv-field-inline" style="margin-bottom: 12px;">
+                    <label>Valor población (opcional)</label>
+                    <input type="number" [(ngModel)]="form.poblacionValor" placeholder="Número de habitantes" min="0" style="max-width:220px" />
+                </div>
+
+                <div class="cv-opciones">
+                    <label *ngFor="let op of OPCIONES['poblacion']"
+                           class="cv-opcion"
+                           [class.seleccionada]="form.poblacion === op.valor">
+                        <input type="radio" name="poblacion" [value]="op.valor"
+                               [(ngModel)]="form.poblacion" (ngModelChange)="onCriterioChange()" />
+                        <div class="cv-opcion-body">
+                            <div class="cv-opcion-header">
+                                <span class="cv-opcion-key">{{ op.valor }}</span>
+                                <span class="cv-opcion-label">{{ op.etiqueta }}</span>
+                                <span class="cv-opcion-pts">{{ op.orden === 1 ? '20' : op.orden === 2 ? '10' : '5' }} pts</span>
+                            </div>
+                            <p class="cv-opcion-desc">{{ op.descripcion }}</p>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Error y botones -->
+            <div *ngIf="errorMsg" class="cv-error">{{ errorMsg }}</div>
+
+            <div class="cv-actions">
+                <button class="btn-cancel" (click)="cancelar()" [disabled]="guardando">Cancelar</button>
+                <button class="btn-save" (click)="guardar()" [disabled]="guardando">
+                    <span class="material-symbols-outlined">{{ guardando ? 'hourglass_empty' : 'save' }}</span>
+                    {{ guardando ? 'Guardando...' : 'Guardar' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- ═══════════════ Columna Derecha: Resultado ════════════════ -->
+        <div class="cv-scoring-panel">
+            <div class="cv-scoring-sticky">
+
+                <h3 class="cv-scoring-title">Resultado de Clasificación</h3>
+
+                <!-- Clasificación actual -->
+                <div class="cv-clasif-result">
+                    <span class="badge-clasif-lg" [ngClass]="badgeClasif(scoring.clasificacion)">
+                        {{ labelClasif(scoring.clasificacion) }}
+                    </span>
+                </div>
+
+                <!-- Barras de puntaje -->
+                <div class="cv-bars">
+                    <div class="cv-bar-row">
+                        <span class="cv-bar-label">1er Orden</span>
+                        <div class="cv-bar-track">
+                            <div class="cv-bar-fill cv-bar-1"
+                                 [style.width.%]="pctBar(scoring.ptsPrimerOrden)"></div>
+                        </div>
+                        <span class="cv-bar-pts">{{ scoring.ptsPrimerOrden }} pts</span>
+                    </div>
+                    <div class="cv-bar-row">
+                        <span class="cv-bar-label">2do Orden</span>
+                        <div class="cv-bar-track">
+                            <div class="cv-bar-fill cv-bar-2"
+                                 [style.width.%]="pctBar(scoring.ptsSegundoOrden)"></div>
+                        </div>
+                        <span class="cv-bar-pts">{{ scoring.ptsSegundoOrden }} pts</span>
+                    </div>
+                    <div class="cv-bar-row">
+                        <span class="cv-bar-label">3er Orden</span>
+                        <div class="cv-bar-track">
+                            <div class="cv-bar-fill cv-bar-3"
+                                 [style.width.%]="pctBar(scoring.ptsTercerOrden)"></div>
+                        </div>
+                        <span class="cv-bar-pts">{{ scoring.ptsTercerOrden }} pts</span>
+                    </div>
+                </div>
+
+                <!-- Resumen por criterio -->
+                <div class="cv-resumen-criterios">
+                    <h4>Detalle por criterio</h4>
+                    <div *ngFor="let c of criterios" class="cv-crit-row">
+                        <span class="material-symbols-outlined cv-crit-icon">{{ c.icono }}</span>
+                        <div class="cv-crit-info">
+                            <span class="cv-crit-label">{{ c.label }}</span>
+                            <span class="cv-crit-opcion" *ngIf="opcionSeleccionada(c.key) as op">
+                                {{ op.etiqueta }}
+                            </span>
+                        </div>
+                        <span class="cv-crit-pts">+{{ ptsCriterio(c.key) }}</span>
+                    </div>
+                </div>
+
+                <!-- Nota metodológica -->
+                <div class="cv-nota">
+                    <span class="material-symbols-outlined">info</span>
+                    <p>En caso de empate entre órdenes, prevalece el criterio de <strong>Funcionalidad</strong>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

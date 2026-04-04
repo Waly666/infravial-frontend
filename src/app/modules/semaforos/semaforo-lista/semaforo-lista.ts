@@ -32,6 +32,7 @@ import {
     type TableSortDirection
 } from '../../../shared/utils/table-sort';
 import { ListaValorBadgeClassPipe } from '../../../shared/pipes/lista-valor-badge-class.pipe';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-semaforo-lista',
@@ -65,6 +66,7 @@ export class SemaforoListaComponent implements OnInit {
     constructor(
         private semaforoService: SemaforoService,
         private jornadaService:  JornadaService,
+        private confirmDialog:   ConfirmDialogService,
         public  authService:     AuthService,
         public  router:          Router
     ) {}
@@ -269,11 +271,24 @@ export class SemaforoListaComponent implements OnInit {
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
 
     eliminar(id: string) {
-        if (!confirm('¿Eliminar este semáforo?')) return;
-        this.semaforoService.delete(id).subscribe({
-            next: () => this.loadRegistros(),
-            error: (err) => alert(err.error?.message || 'Error al eliminar')
-        });
+        this.confirmDialog
+            .confirm({
+                title: '¿Eliminar este semáforo?',
+                message:
+                    'Se quitará del inventario junto con su historial en listados. Esta acción no se puede deshacer.',
+                confirmText: 'Sí, eliminar',
+                cancelText: 'Cancelar',
+                variant: 'danger',
+                icon: 'delete'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.semaforoService.delete(id).subscribe({
+                    next: () => this.loadRegistros(),
+                    error: (err) =>
+                        alert(err.error?.message || 'Error al eliminar')
+                });
+            });
     }
 
     tieneStreetView(r: any): boolean {

@@ -32,6 +32,7 @@ import {
     type TableSortDirection
 } from "../../../shared/utils/table-sort";
 import { ListaValorBadgeClassPipe } from "../../../shared/pipes/lista-valor-badge-class.pipe";
+import { ConfirmDialogService } from "../../../shared/services/confirm-dialog.service";
 
 @Component({
     selector: "app-sen-vert-lista",
@@ -68,6 +69,7 @@ export class SenVertListaComponent implements OnInit {
     constructor(
         private senVertService: SenVertService,
         private jornadaService: JornadaService,
+        private confirmDialog:  ConfirmDialogService,
         public  authService:    AuthService,
         public  router:         Router
     ) {}
@@ -293,11 +295,24 @@ export class SenVertListaComponent implements OnInit {
     }
 
     eliminar(id: string) {
-        if (!confirm("Eliminar esta señal vertical?")) return;
-        this.senVertService.delete(id).subscribe({
-            next: () => this.loadRegistros(),
-            error: (err) => alert(err.error?.message || "Error al eliminar")
-        });
+        this.confirmDialog
+            .confirm({
+                title: "¿Eliminar esta señal vertical?",
+                message:
+                    "Se quitará del inventario. Esta acción no se puede deshacer.",
+                confirmText: "Sí, eliminar",
+                cancelText: "Cancelar",
+                variant: "danger",
+                icon: "delete"
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.senVertService.delete(id).subscribe({
+                    next: () => this.loadRegistros(),
+                    error: (err) =>
+                        alert(err.error?.message || "Error al eliminar")
+                });
+            });
     }
 
     tieneStreetView(r: any): boolean {

@@ -38,6 +38,8 @@ export class DashboardLayoutComponent implements OnInit {
         { kind: 'link', id: 'semaforos',        label: 'Semáforos',            icon: 'traffic', roles: ['admin','supervisor','encuestador'] },
         { kind: 'link', id: 'control-semaforo', label: 'Control Semáforo',     icon: 'tune', roles: ['admin','supervisor','encuestador'] },
         { kind: 'link', id: 'cajas-inspeccion', label: 'Cajas Inspección',     icon: 'inventory_2', roles: ['admin','supervisor','encuestador'] },
+        { kind: 'link', id: 'mapa-inventario',    label: 'Mapa inventario',      icon: 'map', roles: ['admin','supervisor','encuestador'] },
+        { kind: 'link', id: 'categorizacion-vial', label: 'Categorización Vial', icon: 'account_tree', roles: ['admin','supervisor','encuestador'] },
         {
             kind: 'group',
             id: 'utils',
@@ -52,7 +54,6 @@ export class DashboardLayoutComponent implements OnInit {
                 { id: 'respaldos',   label: 'Respaldos',      icon: 'settings_backup_restore' },
             ],
         },
-        { kind: 'link', id: 'mapa-inventario',  label: 'Mapa inventario',      icon: 'map', roles: ['admin','supervisor','encuestador'] },
         { kind: 'link', id: 'reportes',         label: 'Reportes',             icon: 'analytics', roles: ['admin','supervisor'] },
     ];
 

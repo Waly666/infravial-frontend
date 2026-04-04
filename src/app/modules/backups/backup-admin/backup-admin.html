@@ -75,7 +75,7 @@
         <h2 class="card-title purge-title">Limpiar base de datos (irreversible)</h2>
         <p class="card-hint">Marca solo lo que quieres borrar. Se recomienda un backup antes. Los usuarios: se eliminan <strong>todos excepto tu sesión actual</strong>.</p>
         <div class="purge-grid">
-            <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.inventario" [disabled]="purgando" /> Inventario (tramos, señales, semáforos, cajas, control, encuesta vial, observaciones)</label>
+            <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.inventario" [disabled]="purgando" /> Inventario (tramos, señales, semáforos, cajas, categorización vial, control, encuesta vial, observaciones)</label>
             <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.catalogos" [disabled]="purgando" /> Catálogos de señalización (SV, esquema perfil, ubic. SH, demarcaciones)</label>
             <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.geograficos" [disabled]="purgando" /> ZAT, comunas y barrios</label>
             <label class="purge-item"><input type="checkbox" [(ngModel)]="purge.jornadas" [disabled]="purgando" /> Jornadas</label>

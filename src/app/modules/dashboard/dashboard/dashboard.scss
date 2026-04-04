@@ -565,6 +565,7 @@
 .stat-card[data-stat='semaforos']        .stat-icon-wrap { background: linear-gradient(145deg, #f87171 0%, #dc2626 100%); }
 .stat-card[data-stat='control-semaforo'] .stat-icon-wrap { background: linear-gradient(145deg, #f472b6 0%, #db2777 100%); }
 .stat-card[data-stat='cajas-inspeccion'] .stat-icon-wrap { background: linear-gradient(145deg, #facc15 0%, #ca8a04 100%); }
+.stat-card[data-stat='categorizacion-vial'] .stat-icon-wrap { background: linear-gradient(145deg, #34d399 0%, #059669 100%); }
 
 .stat-ic {
     font-size: 26px !important;
@@ -1308,6 +1309,10 @@
 
 :host-context(body.light-mode) .stat-card[data-stat='cajas-inspeccion'] .stat-ic {
     color: #422006;
+}
+
+:host-context(body.light-mode) .stat-card[data-stat='categorizacion-vial'] .stat-ic {
+    color: #ecfdf5;
 }
 
 :host-context(body.light-mode) .stat-value {

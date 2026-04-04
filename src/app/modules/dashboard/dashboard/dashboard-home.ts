@@ -250,26 +250,29 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         const font = getComputedStyle(document.body).fontFamily || "'Syne', sans-serif";
         const fontNum = this.fontNumeric();
 
-        const invLabels = ['Vía tramos', 'Señ. V.', 'Señ. H.', 'Semáforos', 'Ctrl sem.', 'Cajas'];
+        const invLabels = ['Vía tramos', 'Señ. V.', 'Señ. H.', 'Semáforos', 'Ctrl sem.', 'Cajas', 'Cat. vial'];
         const invData = [
             this.stats.totalTramos || 0,
             this.stats.totalSenVert || 0,
             this.stats.totalSenHor || 0,
             this.stats.totalSemaforos || 0,
             this.stats.totalControlSem ?? 0,
-            this.stats.totalCajasInsp ?? 0
+            this.stats.totalCajasInsp ?? 0,
+            this.stats.totalCategVial ?? 0
         ];
         const invBarBg = [
             'rgba(91,143,255,0.75)', 'rgba(124,92,255,0.75)', 'rgba(0,229,192,0.55)',
-            'rgba(255,107,107,0.65)', 'rgba(244,114,182,0.65)', 'rgba(251,191,36,0.7)'
+            'rgba(255,107,107,0.65)', 'rgba(244,114,182,0.65)', 'rgba(251,191,36,0.7)',
+            'rgba(52,211,153,0.72)'
         ];
         const invPieBg = [
             'rgba(91,143,255,0.88)', 'rgba(124,92,255,0.88)', 'rgba(0,229,192,0.75)',
-            'rgba(255,107,107,0.82)', 'rgba(244,114,182,0.82)', 'rgba(251,191,36,0.85)'
+            'rgba(255,107,107,0.82)', 'rgba(244,114,182,0.82)', 'rgba(251,191,36,0.85)',
+            'rgba(52,211,153,0.88)'
         ];
         const invBorder = [
             'rgb(91,143,255)', 'rgb(124,92,255)', 'rgb(0,200,170)',
-            'rgb(255,90,90)', 'rgb(236,72,153)', 'rgb(245,180,50)'
+            'rgb(255,90,90)', 'rgb(236,72,153)', 'rgb(245,180,50)', 'rgb(16,185,129)'
         ];
         const invTotal = invData.reduce((a, b) => a + b, 0);
 

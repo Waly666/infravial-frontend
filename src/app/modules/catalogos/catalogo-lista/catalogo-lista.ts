@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { CatalogoService } from '../../../core/services/catalogo.service';
 import { ApiService } from '../../../core/services/api.service';
 import { environment } from '../../../../environments/environment';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-catalogo-lista',
@@ -61,6 +62,7 @@ export class CatalogoListaComponent implements OnInit {
     constructor(
         private catalogoService: CatalogoService,
         private api:             ApiService,
+        private confirmDialog:   ConfirmDialogService,
         public  router:          Router
     ) {}
 
@@ -183,11 +185,26 @@ export class CatalogoListaComponent implements OnInit {
     }
 
     eliminar(id: string) {
-        if (!confirm('¿Eliminar este registro?')) return;
-        this.catalogoService.delete(this.catalogoActivo, id).subscribe({
-            next: () => this.cargarCatalogo(),
-            error: (err) => alert(err.error?.message || 'Error al eliminar')
-        });
+        const label = this.catalogoInfo?.label ?? 'este catálogo';
+        this.confirmDialog
+            .confirm({
+                title: '¿Eliminar este registro?',
+                message: `Se quitará del catálogo «${label}». Esta acción no se puede deshacer.`,
+                confirmText: 'Sí, eliminar',
+                cancelText: 'Cancelar',
+                variant: 'danger',
+                icon: 'delete'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.catalogoService
+                    .delete(this.catalogoActivo, id)
+                    .subscribe({
+                        next: () => this.cargarCatalogo(),
+                        error: (err) =>
+                            alert(err.error?.message || 'Error al eliminar')
+                    });
+            });
     }
 
     cerrarModal() {

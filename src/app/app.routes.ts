@@ -187,6 +187,18 @@ export const routes: Routes = [
                         loadComponent: () => import('./modules/data-transfer/data-transfer').then(m => m.DataTransferComponent)
                     },
                     {
+                        path: 'categorizacion-vial',
+                        loadComponent: () => import('./modules/categorizacion-vial/categ-lista/categ-lista').then(m => m.CategListaComponent)
+                    },
+                    {
+                        path: 'categorizacion-vial/nueva',
+                        loadComponent: () => import('./modules/categorizacion-vial/categ-form/categ-form').then(m => m.CategFormComponent)
+                    },
+                    {
+                        path: 'categorizacion-vial/editar/:id',
+                        loadComponent: () => import('./modules/categorizacion-vial/categ-form/categ-form').then(m => m.CategFormComponent)
+                    },
+                    {
                         path: 'reportes',
                         canActivate: [roleGuard],
                         data: { roles: ['admin', 'supervisor'] },

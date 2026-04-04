@@ -1,0 +1,816 @@
+.cv-form-container {
+    padding: 24px;
+    max-width: 1400px;
+}
+
+.cv-form-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+
+    h2 { margin: 0; font-size: 1.25rem; }
+    p  { margin: 0; font-size: .82rem; opacity: .6; }
+
+    > div:nth-child(2) {
+        flex: 1;
+        min-width: 180px;
+    }
+}
+
+.cv-header-matriz {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cv-matriz-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.55;
+}
+
+.btn-matriz {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(74, 158, 255, 0.4);
+    background: rgba(74, 158, 255, 0.12);
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: background 0.15s;
+
+    .material-symbols-outlined { font-size: 1.1rem; }
+
+    &:hover { background: rgba(74, 158, 255, 0.22); }
+}
+
+.btn-matriz-pdf {
+    border-color: rgba(220, 38, 38, 0.4);
+    background: rgba(220, 38, 38, 0.1);
+
+    &:hover { background: rgba(220, 38, 38, 0.18); }
+}
+
+.btn-back {
+    background: rgba(255,255,255,.1);
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    transition: background .2s;
+
+    &:hover { background: rgba(255,255,255,.2); }
+    .material-symbols-outlined { font-size: 1.4rem; }
+}
+
+// ── Layout dos columnas ────────────────────────────────────────────────────
+.cv-form-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+}
+
+// ── Secciones del formulario ───────────────────────────────────────────────
+.cv-section {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.cv-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
+    font-size: 1rem;
+    font-weight: 600;
+
+    .material-symbols-outlined { font-size: 1.3rem; color: var(--primary, #1976d2); }
+}
+
+.cv-section-desc {
+    margin: 0 0 14px;
+    font-size: .86rem;
+    opacity: .7;
+    line-height: 1.5;
+}
+
+// Texto de referencia de la matriz oficial (Parte 1 / Parte 3, guía MinTransporte)
+.cv-matriz-oficial {
+    margin: 0 0 16px;
+    padding: 12px 16px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(74, 158, 255, 0.22);
+    background: rgba(74, 158, 255, 0.06);
+    font-size: 0.82rem;
+    line-height: 1.55;
+
+    &__summary {
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 6px 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.82;
+        user-select: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        &::marker {
+            content: '';
+        }
+    }
+
+    &__summary-hint {
+        font-size: 0.72rem;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+        opacity: 0.55;
+    }
+
+    &__body {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(74, 158, 255, 0.18);
+    }
+
+    &[open] &__summary-hint {
+        opacity: 0.65;
+    }
+
+    &__intro,
+    &__contexto,
+    &__pie {
+        margin: 0 0 10px;
+        opacity: 0.88;
+    }
+
+    &__contexto:last-of-type,
+    &__intro:last-of-type {
+        margin-bottom: 10px;
+    }
+
+    &__lista {
+        margin: 0 0 12px;
+        padding-left: 1.25rem;
+        opacity: 0.9;
+
+        li {
+            margin-bottom: 6px;
+        }
+    }
+
+    &__pie {
+        margin-bottom: 0;
+        font-size: 0.8rem;
+        opacity: 0.75;
+    }
+}
+
+.peso-badge {
+    margin-left: auto;
+    font-size: .75rem;
+    font-weight: 500;
+    background: rgba(25,118,210,.2);
+    color: #64b5f6;
+    padding: 2px 10px;
+    border-radius: 10px;
+}
+
+// ── Grid de campos ─────────────────────────────────────────────────────────
+.cv-field--divipol-search {
+    grid-column: 1 / -1;
+}
+
+.cv-divipol-wrap {
+    position: relative;
+}
+
+.cv-divipol-wrap > input {
+    width: 100%;
+}
+
+.cv-divipol-spinner {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.cv-field-hint {
+    margin: 6px 0 0;
+    font-size: 0.75rem;
+    opacity: 0.55;
+    line-height: 1.4;
+}
+
+.divipol-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    margin-top: 4px;
+    background: rgba(12, 20, 40, 0.98);
+    border: 1px solid rgba(74, 158, 255, 0.35);
+    border-radius: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+button.divipol-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+    margin: 0;
+    padding: 0.55rem 0.85rem;
+    cursor: pointer;
+    border: none;
+    border-bottom: 1px solid rgba(74, 158, 255, 0.1);
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    transition: background 0.15s;
+
+    strong {
+        font-size: 0.84rem;
+        color: #e8f0ff;
+    }
+
+    span {
+        font-size: 0.72rem;
+        color: rgba(180, 200, 255, 0.55);
+    }
+
+    &:hover {
+        background: rgba(74, 158, 255, 0.12);
+    }
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.cv-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.cv-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    label {
+        font-size: .82rem;
+        font-weight: 500;
+        opacity: .8;
+    }
+
+    input, textarea, select {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,.15);
+        background: rgba(255,255,255,.06);
+        color: inherit;
+        font-size: .88rem;
+        font-family: inherit;
+        transition: border-color .2s;
+
+        &:focus {
+            outline: none;
+            border-color: var(--primary, #1976d2);
+        }
+    }
+
+    textarea { resize: vertical; }
+}
+
+.cv-field-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+
+    label { white-space: nowrap; margin-bottom: 0; }
+}
+
+// ── Opciones de respuesta ──────────────────────────────────────────────────
+.cv-opciones {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cv-opcion {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.12);
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+
+    input[type="radio"] {
+        margin-top: 3px;
+        accent-color: var(--primary, #1976d2);
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    &:hover { border-color: rgba(25,118,210,.5); background: rgba(25,118,210,.05); }
+
+    &.seleccionada {
+        border-color: var(--primary, #1976d2);
+        background: rgba(25,118,210,.1);
+    }
+}
+
+.cv-opcion-body { flex: 1; }
+
+.cv-opcion-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.cv-opcion-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary, #1976d2);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.cv-opcion-label {
+    font-weight: 600;
+    font-size: .9rem;
+    flex: 1;
+}
+
+.cv-opcion-pts {
+    font-size: .8rem;
+    font-weight: 700;
+    color: #64b5f6;
+    white-space: nowrap;
+}
+
+.cv-opcion-desc {
+    margin: 0;
+    font-size: .82rem;
+    opacity: .7;
+    line-height: 1.5;
+}
+
+// ── Botones ────────────────────────────────────────────────────────────────
+.cv-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.btn-save {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 22px;
+    background: var(--primary, #1976d2);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .9rem;
+    font-weight: 600;
+    transition: opacity .2s;
+
+    &:disabled { opacity: .5; cursor: not-allowed; }
+    &:not(:disabled):hover { opacity: .85; }
+}
+
+.btn-cancel {
+    padding: 9px 22px;
+    background: rgba(255,255,255,.1);
+    color: inherit;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .9rem;
+    transition: background .2s;
+
+    &:hover { background: rgba(255,255,255,.18); }
+}
+
+.cv-error {
+    padding: 12px 16px;
+    background: rgba(239,83,80,.15);
+    border: 1px solid #ef5350;
+    border-radius: 8px;
+    color: #ef9a9a;
+    font-size: .88rem;
+    margin-bottom: 12px;
+}
+
+// ── Panel de scoring ───────────────────────────────────────────────────────
+.cv-scoring-panel {
+    position: relative;
+}
+
+.cv-scoring-sticky {
+    position: sticky;
+    top: 20px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    padding: 20px;
+}
+
+.cv-scoring-title {
+    margin: 0 0 16px;
+    font-size: .95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    opacity: .8;
+}
+
+.cv-clasif-result {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.badge-clasif-lg {
+    display: inline-block;
+    padding: 8px 22px;
+    border-radius: 20px;
+    font-size: .95rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+}
+
+.badge-primaria   { background: rgba(66,165,245,.2);  color: #42a5f5; border: 2px solid #42a5f5; }
+.badge-secundaria { background: rgba(102,187,106,.2); color: #66bb6a; border: 2px solid #66bb6a; }
+.badge-terciaria  { background: rgba(255,167,38,.2);  color: #ffa726; border: 2px solid #ffa726; }
+
+// ── Barras de puntaje ─────────────────────────────────────────────────────
+.cv-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cv-bar-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 44px;
+    align-items: center;
+    gap: 8px;
+}
+
+.cv-bar-label {
+    font-size: .8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cv-bar-track {
+    height: 10px;
+    background: rgba(255,255,255,.1);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.cv-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width .4s ease;
+}
+
+.cv-bar-1 { background: #42a5f5; }
+.cv-bar-2 { background: #66bb6a; }
+.cv-bar-3 { background: #ffa726; }
+
+.cv-bar-pts {
+    font-size: .78rem;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+}
+
+// ── Resumen criterios ─────────────────────────────────────────────────────
+.cv-resumen-criterios {
+    border-top: 1px solid rgba(255,255,255,.1);
+    padding-top: 14px;
+    margin-bottom: 14px;
+
+    h4 {
+        margin: 0 0 10px;
+        font-size: .82rem;
+        text-transform: uppercase;
+        opacity: .6;
+        letter-spacing: .04em;
+    }
+}
+
+.cv-crit-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+
+    &:last-child { border-bottom: none; }
+}
+
+.cv-crit-icon {
+    font-size: 1rem;
+    opacity: .7;
+    flex-shrink: 0;
+}
+
+.cv-crit-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cv-crit-label {
+    font-size: .78rem;
+    font-weight: 600;
+    opacity: .8;
+}
+
+.cv-crit-opcion {
+    font-size: .74rem;
+    opacity: .55;
+    line-height: 1.3;
+}
+
+.cv-crit-pts {
+    font-size: .82rem;
+    font-weight: 700;
+    color: #64b5f6;
+    white-space: nowrap;
+}
+
+// ── Nota ──────────────────────────────────────────────────────────────────
+.cv-nota {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    background: rgba(255,255,255,.05);
+    border-radius: 8px;
+    padding: 10px;
+
+    .material-symbols-outlined { font-size: 1rem; opacity: .6; flex-shrink: 0; margin-top: 1px; }
+    p { margin: 0; font-size: .78rem; opacity: .65; line-height: 1.5; }
+}
+
+// ── Mapa / geovista (alineado a vía-tramos) ────────────────────────────────
+.coords-display {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    @media (max-width: 720px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.coord-item {
+    background: rgba(74, 158, 255, 0.04);
+    border: 1px solid rgba(74, 158, 255, 0.12);
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    &.set {
+        border-color: rgba(76, 175, 130, 0.35);
+        background: rgba(76, 175, 130, 0.06);
+    }
+}
+
+.coord-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: rgba(180, 200, 255, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.coord-val {
+    font-size: 0.8rem;
+    color: #7fd4a8;
+    font-weight: 600;
+
+    &.empty {
+        color: rgba(180, 200, 255, 0.35);
+        font-weight: 400;
+    }
+}
+
+.geo-preview-wrap {
+    margin-bottom: 0.85rem;
+}
+
+.geo-preview-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+    opacity: 0.75;
+}
+
+.geo-preview-map-el {
+    height: 220px;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(74, 158, 255, 0.2);
+}
+
+.btn-mapa {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #0d3380, #1a5fcc);
+    border: 1px solid rgba(74, 158, 255, 0.35);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+
+    &:hover {
+        box-shadow: 0 4px 18px rgba(74, 158, 255, 0.25);
+    }
+}
+
+.map-hint-ficha {
+    font-size: 0.76rem;
+    line-height: 1.55;
+    color: rgba(180, 200, 255, 0.5);
+    margin: 0 0 0.25rem;
+}
+
+.mapa-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.mapa-modal {
+    width: 92vw;
+    max-width: 900px;
+    height: 85vh;
+    background: #0a1428;
+    border: 1px solid rgba(74, 158, 255, 0.28);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.mapa-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: rgba(74, 158, 255, 0.08);
+    border-bottom: 1px solid rgba(74, 158, 255, 0.12);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.mapa-close {
+    background: rgba(224, 92, 92, 0.12);
+    border: 1px solid rgba(224, 92, 92, 0.35);
+    border-radius: 6px;
+    color: #e57373;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.leaflet-map {
+    flex: 1;
+    width: 100%;
+    min-height: 200px;
+}
+
+.mapa-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.65rem 1rem;
+    background: rgba(74, 158, 255, 0.05);
+    border-top: 1px solid rgba(74, 158, 255, 0.1);
+    flex-wrap: wrap;
+}
+
+.mapa-instruccion {
+    font-size: 0.8rem;
+    color: rgba(180, 200, 255, 0.65);
+}
+
+.btn-confirm-map {
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #1a5fcc, #4a9eff);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+    .cv-form-layout { grid-template-columns: 1fr; }
+    .cv-scoring-sticky { position: static; }
+}
+
+@media (max-width: 600px) {
+    .cv-grid-2 { grid-template-columns: 1fr; }
+}
+
+// ── Light mode ────────────────────────────────────────────────────────────
+:host-context(body.light-mode) {
+    .divipol-results {
+        background: #fff;
+        border-color: #cfd8dc;
+    }
+    button.divipol-item {
+        strong { color: #333; }
+        span { color: #666; }
+        &:hover { background: #f0f4ff; }
+    }
+    .cv-section { background: #fafafa; border-color: #e0e0e0; }
+    .cv-opcion  { border-color: #e0e0e0; &:hover { background: #f0f4ff; } &.seleccionada { background: #e3f2fd; } }
+    .cv-field input, .cv-field textarea { background: #fff; border-color: #ccc; color: #333; }
+    .cv-scoring-sticky { background: #fafafa; border-color: #e0e0e0; }
+    .cv-bar-track { background: #e0e0e0; }
+    .btn-cancel { background: #eee; color: #333; &:hover { background: #ddd; } }
+    .cv-nota { background: #f5f5f5; }
+    .coord-item { background: #f5f8fc; border-color: #dde4f0; }
+    .coord-label { color: #666; }
+    .coord-val { color: #2e7d32; &.empty { color: #999; } }
+    .map-hint-ficha { color: #666; }
+    .mapa-modal { background: #fff; border-color: #cfd8dc; }
+    .mapa-header { background: #eceff1; color: #333; }
+    .mapa-footer { background: #fafafa; }
+    .mapa-instruccion { color: #555; }
+}

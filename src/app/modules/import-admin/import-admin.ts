@@ -8,6 +8,7 @@ import {
     ImportService,
     ImportStatusPayload
 } from '../../core/services/import.service';
+import { ConfirmDialogService } from '../../shared/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-import-admin',
@@ -30,6 +31,7 @@ export class ImportAdminComponent implements OnInit, OnDestroy {
     constructor(
         private importService: ImportService,
         private authService: AuthService,
+        private confirmDialog: ConfirmDialogService,
         public router: Router
     ) {}
 
@@ -107,27 +109,34 @@ export class ImportAdminComponent implements OnInit, OnDestroy {
 
     rollback(): void {
         if (this.subiendo || this.revirtiendo) return;
-        if (
-            !confirm(
-                '¿Revertir la última importación real? Se eliminarán tramos y señales creados en esa operación (misma jornada y ventana de tiempo).'
-            )
-        ) {
-            return;
-        }
-        this.error = '';
-        this.mensaje = '';
-        this.revirtiendo = true;
-        this.importService
-            .rollbackLast()
-            .pipe(finalize(() => (this.revirtiendo = false)))
-            .subscribe({
-                next: (res: any) => {
-                    this.mensaje = res?.message || 'Rollback ejecutado.';
-                },
-                error: (err) => {
-                    this.error =
-                        err?.error?.message || 'No se pudo ejecutar el rollback.';
-                }
+        this.confirmDialog
+            .confirm({
+                title: '¿Revertir la última importación?',
+                message:
+                    'Se eliminarán tramos y señales creados en esa operación (misma jornada y ventana de tiempo). Esta acción no se puede deshacer.',
+                confirmText: 'Sí, revertir',
+                cancelText: 'Cancelar',
+                variant: 'danger',
+                icon: 'delete'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.error = '';
+                this.mensaje = '';
+                this.revirtiendo = true;
+                this.importService
+                    .rollbackLast()
+                    .pipe(finalize(() => (this.revirtiendo = false)))
+                    .subscribe({
+                        next: (res: any) => {
+                            this.mensaje = res?.message || 'Rollback ejecutado.';
+                        },
+                        error: (err) => {
+                            this.error =
+                                err?.error?.message ||
+                                'No se pudo ejecutar el rollback.';
+                        }
+                    });
             });
     }
 

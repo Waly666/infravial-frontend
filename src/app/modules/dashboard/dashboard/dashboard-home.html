@@ -58,6 +58,13 @@
             <div class="stat-label">Cajas inspección</div>
         </div>
     </div>
+    <div class="stat-card" data-stat="categorizacion-vial">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined stat-ic" aria-hidden="true">account_tree</span></div>
+        <div class="stat-info">
+            <div class="stat-value tab-figures">{{ stats.totalCategVial ?? 0 }}</div>
+            <div class="stat-label">Categorización vial</div>
+        </div>
+    </div>
 </div>
 
 <section class="quick-actions" *ngIf="usuario" aria-label="Accesos rápidos">

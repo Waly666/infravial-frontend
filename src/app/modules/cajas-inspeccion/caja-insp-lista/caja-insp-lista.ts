@@ -27,6 +27,7 @@ import {
     applyTableSort,
     type TableSortDirection
 } from '../../../shared/utils/table-sort';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-caja-insp-lista',
@@ -59,6 +60,7 @@ export class CajaInspListaComponent implements OnInit {
     constructor(
         private cajaInspService: CajaInspService,
         private jornadaService:  JornadaService,
+        private confirmDialog:   ConfirmDialogService,
         public  authService:     AuthService,
         public  router:          Router
     ) {}
@@ -253,11 +255,24 @@ export class CajaInspListaComponent implements OnInit {
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
 
     eliminar(id: string) {
-        if (!confirm('¿Eliminar esta caja de inspección?')) return;
-        this.cajaInspService.delete(id).subscribe({
-            next: () => this.loadRegistros(),
-            error: (err) => alert(err.error?.message || 'Error al eliminar')
-        });
+        this.confirmDialog
+            .confirm({
+                title: '¿Eliminar esta caja de inspección?',
+                message:
+                    'Se quitará del inventario. Esta acción no se puede deshacer.',
+                confirmText: 'Sí, eliminar',
+                cancelText: 'Cancelar',
+                variant: 'danger',
+                icon: 'delete'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.cajaInspService.delete(id).subscribe({
+                    next: () => this.loadRegistros(),
+                    error: (err) =>
+                        alert(err.error?.message || 'Error al eliminar')
+                });
+            });
     }
 }
 

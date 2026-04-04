@@ -29,6 +29,8 @@ import {
     applyTableSort,
     type TableSortDirection
 } from '../../../shared/utils/table-sort';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
+
 @Component({
     selector: 'app-via-tramo-lista',
     standalone: true,
@@ -63,6 +65,7 @@ export class ViaTramoListaComponent implements OnInit {
     constructor(
         private viaTramoService: ViaTramoService,
         private jornadaService:  JornadaService,
+        private confirmDialog:   ConfirmDialogService,
         public  authService:     AuthService,
         public  router:          Router
     ) {}
@@ -272,11 +275,23 @@ export class ViaTramoListaComponent implements OnInit {
     }
 
     eliminar(id: string, via: string) {
-        if (!confirm(`¿Eliminar el tramo "${via}"?`)) return;
-        this.viaTramoService.delete(id).subscribe({
-            next: () => this.loadTramos(),
-            error: (err) => alert(err.error?.message || 'Error al eliminar')
-        });
+        this.confirmDialog
+            .confirm({
+                title: '¿Eliminar este tramo?',
+                message: `Se eliminará el tramo «${via}» del inventario. Esta acción no se puede deshacer.`,
+                confirmText: 'Sí, eliminar',
+                cancelText: 'Cancelar',
+                variant: 'danger',
+                icon: 'delete'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.viaTramoService.delete(id).subscribe({
+                    next: () => this.loadTramos(),
+                    error: (err) =>
+                        alert(err.error?.message || 'Error al eliminar')
+                });
+            });
     }
     generarReporte(id: string) {
         this.router.navigate(['/via-tramos/reporte', id]);

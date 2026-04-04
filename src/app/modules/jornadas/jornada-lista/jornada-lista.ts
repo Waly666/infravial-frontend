@@ -10,6 +10,7 @@ import {
     badgeClassMunicipio,
     badgeClassZat
 } from '../../../shared/utils/geo-list-filters';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-jornada-lista',
@@ -33,7 +34,8 @@ export class JornadaListaComponent implements OnInit {
 
     constructor(
     private jornadaService:  JornadaService,
-    private catalogoService: CatalogoService,  // ← agregar
+    private catalogoService: CatalogoService,
+    private confirmDialog:   ConfirmDialogService,
     public  authService:     AuthService,
     public router:          Router
 ) {}
@@ -55,11 +57,24 @@ export class JornadaListaComponent implements OnInit {
     }
 
     finalizar(id: string) {
-        if (!confirm('¿Estás seguro de finalizar esta jornada?')) return;
-        this.jornadaService.finalizar(id).subscribe({
-            next: () => this.loadJornadas(),
-            error: (err) => alert(err.error?.message || 'Error al finalizar')
-        });
+        this.confirmDialog
+            .confirm({
+                title: '¿Finalizar esta jornada?',
+                message:
+                    'Pasará a estado finalizada. Revise que no queden registros pendientes de guardar.',
+                confirmText: 'Sí, finalizar',
+                cancelText: 'Cancelar',
+                variant: 'warning',
+                icon: 'flag'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.jornadaService.finalizar(id).subscribe({
+                    next: () => this.loadJornadas(),
+                    error: (err) =>
+                        alert(err.error?.message || 'Error al finalizar')
+                });
+            });
     }
 
     isAdmin(): boolean { return this.authService.isAdmin(); }

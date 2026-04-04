@@ -1,0 +1,124 @@
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Categorización red vial</h1>
+            <p class="page-sub">Clasificación según Ley 1228/2008 — Min. Transporte</p>
+        </div>
+        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+            <button type="button" class="btn-primary" (click)="nuevo()" [disabled]="!jornada">
+                ➕ Nueva categorización
+            </button>
+        </div>
+    </div>
+
+    <div class="alert-warning" *ngIf="!jornada">
+        ⚠️ No hay jornada activa para registrar categorizaciones.
+    </div>
+    <div class="alert-lista-usuario" *ngIf="authService.getNombreCompleto()">
+        <span class="alert-lista-usuario-label">Usuario en sesión</span>
+        <strong>{{ authService.getNombreCompleto() }}</strong>
+    </div>
+
+    <div class="alert-warning" *ngIf="error && !loading">{{ error }}</div>
+
+    <div class="search-bar">
+        <input type="text" [(ngModel)]="busqueda" (ngModelChange)="onBusquedaChange()"
+               placeholder="🔍 Texto o pegar ObjectId completo (24 hex)…" class="search-input">
+        <input type="text" [(ngModel)]="filtroId" (ngModelChange)="onFiltroIdChange()"
+               placeholder="🆔 ID exacto / prefijo 4+ hex (prioridad)" class="search-input search-input-id"
+               spellcheck="false" autocomplete="off">
+        <span class="total-badge">{{ registrosFiltrados.length }} registros</span>
+        <div class="pagination-controls">
+            <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
+                <option [ngValue]="30">30</option>
+                <option [ngValue]="50">50</option>
+                <option [ngValue]="100">100</option>
+            </select>
+            <button type="button" class="btn-pag" (click)="paginaAnterior()" [disabled]="currentPage === 1">← Anterior</button>
+            <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+            <button type="button" class="btn-pag" (click)="paginaSiguiente()" [disabled]="currentPage >= totalPages">Siguiente →</button>
+        </div>
+    </div>
+
+    <div class="filter-row">
+        <select class="filter-select" [(ngModel)]="filtroDepartamento" (ngModelChange)="onDepartamentoChange()">
+            <option value="">Todos los departamentos</option>
+            <option *ngFor="let dep of departamentosDisponibles" [value]="dep">{{ dep }}</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="filtroMunicipio" (ngModelChange)="onMunicipioChange()">
+            <option value="">Todos los municipios</option>
+            <option *ngFor="let mun of municipiosDisponibles" [value]="mun">{{ mun }}</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="filtroClasif" (ngModelChange)="onClasifChange()">
+            <option value="">Todas las clasificaciones</option>
+            <option *ngFor="let c of CLASIFICACIONES" [value]="c">{{ labelClasif(c) }}</option>
+        </select>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+    </div>
+
+    <div class="table-card" *ngIf="!loading">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="th-sortable col-object-id" [class.th-sort-active]="sortColumn === 'id'" (click)="ordenarPor('id')" title="ObjectId MongoDB">ObjectId<span class="sort-ind">{{ sortIndicador('id') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'via'" (click)="ordenarPor('via')" title="Ordenar">Vía<span class="sort-ind">{{ sortIndicador('via') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'departamento'" (click)="ordenarPor('departamento')" title="Ordenar">Departamento<span class="sort-ind">{{ sortIndicador('departamento') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'municipio'" (click)="ordenarPor('municipio')" title="Ordenar">Municipio<span class="sort-ind">{{ sortIndicador('municipio') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'longKm'" (click)="ordenarPor('longKm')" title="Longitud tramo (km)">Km tramo<span class="sort-ind">{{ sortIndicador('longKm') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'geoM'" (click)="ordenarPor('geoM')" title="Geodésica recta A–B (m)">m geodés.<span class="sort-ind">{{ sortIndicador('geoM') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'clasif'" (click)="ordenarPor('clasif')" title="Ordenar">Clasificación<span class="sort-ind">{{ sortIndicador('clasif') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'fechaClasif'" (click)="ordenarPor('fechaClasif')" title="Ordenar">F. clasif.<span class="sort-ind">{{ sortIndicador('fechaClasif') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'funcionario'" (click)="ordenarPor('funcionario')" title="Ordenar">Funcionario<span class="sort-ind">{{ sortIndicador('funcionario') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'entidad'" (click)="ordenarPor('entidad')" title="Ordenar">Entidad<span class="sort-ind">{{ sortIndicador('entidad') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'pts'" (click)="ordenarPor('pts')" title="Puntaje 1.er orden">Pts 1°<span class="sort-ind">{{ sortIndicador('pts') }}</span></th>
+                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'fechaCreacion'" (click)="ordenarPor('fechaCreacion')" title="Ordenar">Registrado<span class="sort-ind">{{ sortIndicador('fechaCreacion') }}</span></th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let r of registrosPaginados">
+                    <td class="td-id"><code class="cell-id">{{ r._id || "—" }}</code></td>
+                    <td><strong>{{ r.nombreVia || "—" }}</strong></td>
+                    <td class="td-id">
+                        <code class="cell-id cell-id--dep">{{ depTxt(r) }}</code>
+                    </td>
+                    <td class="td-id">
+                        <code class="cell-id cell-id--mun">{{ munTxt(r) }}</code>
+                    </td>
+                    <td>{{ r.longitud_km != null ? (r.longitud_km + ' km') : "—" }}</td>
+                    <td class="td-muted">{{ r.longitud_tramo_m != null ? (r.longitud_tramo_m + ' m') : "—" }}</td>
+                    <td>
+                        <span class="badge-clasif" *ngIf="r.clasificacion" [ngClass]="badgeClasif(r.clasificacion)">
+                            {{ labelClasif(r.clasificacion) }}
+                        </span>
+                        <span *ngIf="!r.clasificacion" class="td-muted">—</span>
+                    </td>
+                    <td class="td-muted">{{ r.fechaClasificacion ? (r.fechaClasificacion | date:'dd/MM/yyyy') : "—" }}</td>
+                    <td class="td-muted wrap-cell">{{ r.nombreFuncionario || "—" }}</td>
+                    <td class="td-muted wrap-cell">{{ r.entidadFuncionario || "—" }}</td>
+                    <td class="td-pts">
+                        <span class="pts pts-1">{{ r.ptsPrimerOrden ?? "—" }}</span> /
+                        <span class="pts pts-2">{{ r.ptsSegundoOrden ?? "—" }}</span> /
+                        <span class="pts pts-3">{{ r.ptsTercerOrden ?? "—" }}</span>
+                    </td>
+                    <td class="td-muted">{{ r.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                        <div class="actions-cell">
+                            <button type="button" class="btn-streetview-sm" *ngIf="tieneStreetView(r)" (click)="abrirStreetView(r)" title="Street View (Google Maps) — inicio del tramo">🧭</button>
+                            <button type="button" class="btn-edit-sm" (click)="editar(r._id)">✏️</button>
+                            <button type="button" class="btn-danger-sm" *ngIf="isAdmin() || isSupervisor()" (click)="eliminar(r._id)">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="registrosFiltrados.length === 0">
+                    <td colspan="13" class="empty-state">No hay categorizaciones registradas</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

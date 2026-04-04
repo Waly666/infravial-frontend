@@ -43,6 +43,7 @@ export const ALL_TABLES = [
     { key: 'semaforos',        label: 'Semáforos',          catalog: false },
     { key: 'control-semaforo', label: 'Control Semáforo',   catalog: false },
     { key: 'cajas-inspeccion', label: 'Cajas Inspección',   catalog: false },
+    { key: 'categorizacion-vial', label: 'Categorización Vial', catalog: false },
     { key: 'divipol',          label: 'Divipol',            catalog: true  },
     { key: 'zat',              label: 'ZAT',                catalog: true  },
     { key: 'comunas',          label: 'Comunas',            catalog: true  },

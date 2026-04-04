@@ -37,7 +37,8 @@ export class DataTransferComponent implements OnInit, OnDestroy {
     tablasSeleccionadas: Set<string> = new Set([
         'jornadas',
         'via-tramos', 'sen-verticales', 'sen-horizontales',
-        'semaforos', 'control-semaforo', 'cajas-inspeccion'
+        'semaforos', 'control-semaforo', 'cajas-inspeccion',
+        'categorizacion-vial'
     ]);
     exportando = false;
 

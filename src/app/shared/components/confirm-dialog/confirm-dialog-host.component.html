@@ -1,0 +1,42 @@
+<div
+    *ngIf="payload"
+    class="confirm-backdrop"
+    (click)="onBackdropClick($event)"
+    role="presentation"
+>
+    <div
+        class="confirm-panel"
+        [ngClass]="variantClass(payload.opts.variant)"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-labelledby]="'confirm-dialog-title'"
+        (click)="$event.stopPropagation()"
+    >
+        <div class="confirm-icon-block">
+            <div class="confirm-confetti" aria-hidden="true">
+                <span></span><span></span><span></span><span></span
+                ><span></span><span></span><span></span>
+            </div>
+            <div class="confirm-icon-circle">
+                <span class="material-symbols-outlined confirm-icon-glyph">{{ payload.opts.icon }}</span>
+            </div>
+        </div>
+
+        <h2 id="confirm-dialog-title" class="confirm-title">{{ payload.opts.title }}</h2>
+        <p *ngIf="payload.opts.message" class="confirm-message">{{ payload.opts.message }}</p>
+
+        <div class="confirm-actions">
+            <button
+                *ngIf="payload.opts.showCancel"
+                type="button"
+                class="confirm-btn confirm-btn--secondary"
+                (click)="cancel()"
+            >
+                {{ payload.opts.cancelText }}
+            </button>
+            <button type="button" class="confirm-btn confirm-btn--primary" (click)="confirm()">
+                {{ payload.opts.confirmText }}
+            </button>
+        </div>
+    </div>
+</div>

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-usuario-lista',
@@ -37,6 +38,7 @@ export class UsuarioListaComponent implements OnInit {
     constructor(
         private usuarioService: UsuarioService,
         private authService:    AuthService,
+        private confirmDialog:  ConfirmDialogService,
         public  router:         Router
     ) {}
 
@@ -117,11 +119,23 @@ export class UsuarioListaComponent implements OnInit {
     }
 
     eliminar(id: string, nombre: string) {
-        if (!confirm(`¿Eliminar al usuario "${nombre}"?`)) return;
-        this.usuarioService.delete(id).subscribe({
-            next: () => this.loadUsuarios(),
-            error: (err) => alert(err.error?.message || 'Error al eliminar')
-        });
+        this.confirmDialog
+            .confirm({
+                title: '¿Eliminar este usuario?',
+                message: `Se eliminará la cuenta de «${nombre}». Esta acción no se puede deshacer.`,
+                confirmText: 'Sí, eliminar',
+                cancelText: 'Cancelar',
+                variant: 'danger',
+                icon: 'delete'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.usuarioService.delete(id).subscribe({
+                    next: () => this.loadUsuarios(),
+                    error: (err) =>
+                        alert(err.error?.message || 'Error al eliminar')
+                });
+            });
     }
 
     cerrarModal() {

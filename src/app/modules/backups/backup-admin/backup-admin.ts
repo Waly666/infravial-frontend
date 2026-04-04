@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BackupService } from '../../../core/services/backup.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-backup-admin',
@@ -41,6 +42,7 @@ export class BackupAdminComponent implements OnInit {
     constructor(
         private backupService: BackupService,
         private authService: AuthService,
+        private confirmDialog: ConfirmDialogService,
         public router: Router
     ) {}
 
@@ -74,9 +76,30 @@ export class BackupAdminComponent implements OnInit {
         this.mensaje = '';
         this.backupService.createBackup().subscribe({
             next: (res: any) => {
-                this.mensaje = `Backup creado: ${res?.backup?.archivo || 'ok'}`;
                 this.creando = false;
                 this.loadLogs();
+                const b = res?.backup;
+                const archivo = b?.archivo || 'infravial-full-backup-….zip';
+                const extras: string[] = [];
+                if (b?.registros != null) {
+                    extras.push(`Documentos en la copia: ${b.registros}.`);
+                }
+                if (b?.colecciones != null) {
+                    extras.push(`Colecciones: ${b.colecciones}.`);
+                }
+                const extraTxt = extras.length ? `\n\n${extras.join(' ')}` : '';
+                this.confirmDialog
+                    .confirm({
+                        title: 'Backup ejecutado correctamente',
+                        message:
+                            `Se generó el archivo «${archivo}» (base de datos + carpeta uploads). ` +
+                            `Puedes descargarlo desde la tabla del historial cuando aparezca.${extraTxt}`,
+                        confirmText: 'Entendido',
+                        showCancel: false,
+                        variant: 'success',
+                        icon: 'check_circle'
+                    })
+                    .subscribe();
             },
             error: (err) => {
                 this.error = err?.error?.message || 'No se pudo generar el backup.';
@@ -92,11 +115,22 @@ export class BackupAdminComponent implements OnInit {
     restaurarBackup(): void {
         const archivo = this.archivoParaRestaurar();
         if (!archivo) return;
-        const ok = confirm(
-            `Vas a restaurar "${archivo}". Si es .zip se reemplaza la base de datos y la carpeta uploads/ (fotos) del servidor. Si es .json.gz antiguo, solo la base de datos. ¿Continuar?`
-        );
-        if (!ok) return;
+        this.confirmDialog
+            .confirm({
+                title: '¿Restaurar desde el servidor?',
+                message: `Se usará «${archivo}». Un archivo .zip reemplaza la base de datos y la carpeta uploads/ (fotos). Un .json.gz antiguo solo restaura la base de datos.`,
+                confirmText: 'Sí, restaurar',
+                cancelText: 'Cancelar',
+                variant: 'warning',
+                icon: 'upload'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.ejecutarRestaurarBackup(archivo);
+            });
+    }
 
+    private ejecutarRestaurarBackup(archivo: string): void {
         this.restaurando = true;
         this.error = '';
         this.mensaje = '';
@@ -115,15 +149,29 @@ export class BackupAdminComponent implements OnInit {
 
     restaurarDesdeArchivoLocal(): void {
         if (!this.archivoLocal) return;
-        const ok = confirm(
-            `Restaurar desde "${this.archivoLocal.name}". Un .zip reemplaza BD + uploads/. Un .json.gz solo la BD. ¿Continuar?`
-        );
-        if (!ok) return;
+        const nombre = this.archivoLocal.name;
+        this.confirmDialog
+            .confirm({
+                title: '¿Restaurar desde tu equipo?',
+                message: `Se subirá «${nombre}». Un .zip reemplaza la base de datos y uploads/. Un .json.gz solo la base de datos.`,
+                confirmText: 'Sí, restaurar',
+                cancelText: 'Cancelar',
+                variant: 'warning',
+                icon: 'upload'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.ejecutarRestaurarArchivoLocal();
+            });
+    }
 
+    private ejecutarRestaurarArchivoLocal(): void {
+        const file = this.archivoLocal;
+        if (!file) return;
         this.restaurandoArchivo = true;
         this.error = '';
         this.mensaje = '';
-        this.backupService.restoreFromUploadedFile(this.archivoLocal).subscribe({
+        this.backupService.restoreFromUploadedFile(file).subscribe({
             next: (res: any) => {
                 this.mensaje = `Restore desde archivo: ${res?.restore?.archivo || 'ok'}`;
                 this.restaurandoArchivo = false;
@@ -207,11 +255,22 @@ export class BackupAdminComponent implements OnInit {
     ejecutarPurge(): void {
         if (!this.puedePurgar()) return;
         const grupos = this.gruposPurgeSeleccionados();
-        const ok = confirm(
-            `Se eliminarán datos de: ${grupos.join(', ')}. Esta acción no se puede deshacer. ¿Seguro?`
-        );
-        if (!ok) return;
+        this.confirmDialog
+            .confirm({
+                title: '¿Ejecutar limpieza irreversible?',
+                message: `Se eliminarán datos de: ${grupos.join(', ')}. Esta acción no se puede deshacer.`,
+                confirmText: 'Sí, eliminar datos',
+                cancelText: 'Cancelar',
+                variant: 'danger',
+                icon: 'delete'
+            })
+            .subscribe((ok) => {
+                if (!ok) return;
+                this.ejecutarPurgeConfirmed(grupos);
+            });
+    }
 
+    private ejecutarPurgeConfirmed(grupos: string[]): void {
         this.purgando = true;
         this.error = '';
         this.mensaje = '';

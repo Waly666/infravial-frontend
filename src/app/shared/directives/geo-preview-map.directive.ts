@@ -27,6 +27,10 @@ export class GeoPreviewMapDirective implements OnChanges, AfterViewInit, OnDestr
     @Input() previewLng2: number | null | undefined = null;
     @Input() pointEmoji = '📍';
     @Input() previewZoom = 17;
+    /** Si aún no hay punto del tramo: centrar el mapa aquí (ej. municipio DIVIPOL). */
+    @Input() fallbackCenterLat: number | null | undefined = null;
+    @Input() fallbackCenterLng: number | null | undefined = null;
+    @Input() fallbackZoom = 12;
 
     private map: any = null;
     private layers: any[] = [];
@@ -86,11 +90,53 @@ export class GeoPreviewMapDirective implements OnChanges, AfterViewInit, OnDestr
         const has1 = lat1 != null && lng1 != null && Number.isFinite(nLat1) && Number.isFinite(nLng1);
         const has2 = has1 && lat2 != null && lng2 != null && Number.isFinite(nLat2) && Number.isFinite(nLng2);
 
+        const fbLat = this.fallbackCenterLat;
+        const fbLng = this.fallbackCenterLng;
+        const nFbLat = fbLat != null ? Number(fbLat) : NaN;
+        const nFbLng = fbLng != null ? Number(fbLng) : NaN;
+        const hasFallback =
+            !has1 &&
+            fbLat != null &&
+            fbLng != null &&
+            Number.isFinite(nFbLat) &&
+            Number.isFinite(nFbLng);
+
+        if (!has1 && hasFallback) {
+            el.classList.remove('geo-preview-map--empty');
+            if (el.querySelector('.geo-preview-map__placeholder')) {
+                el.innerHTML = '';
+            }
+            const z = Number.isFinite(Number(this.fallbackZoom)) ? Number(this.fallbackZoom) : 12;
+            if (!this.map) {
+                this.map = L.map(el, { zoomControl: true, attributionControl: true }).setView(
+                    [nFbLat, nFbLng],
+                    z,
+                );
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap',
+                }).addTo(this.map);
+                setTimeout(() => this.map?.invalidateSize(), 100);
+                setTimeout(() => this.map?.invalidateSize(), 400);
+            } else {
+                this.map.setView([nFbLat, nFbLng], z);
+            }
+            for (const layer of this.layers) {
+                try {
+                    this.map.removeLayer(layer);
+                } catch {
+                    /* ignore */
+                }
+            }
+            this.layers = [];
+            setTimeout(() => this.map?.invalidateSize(), 50);
+            return;
+        }
+
         if (!has1) {
             this.teardown();
             el.classList.add('geo-preview-map--empty');
             el.innerHTML =
-                '<span class="geo-preview-map__placeholder">Sin coordenadas. Usa el botón del mapa para fijar la ubicación.</span>';
+                '<span class="geo-preview-map__placeholder">Seleccione municipio (DIVIPOL) para ver el mapa del territorio y luego marque el tramo.</span>';
             return;
         }
 
