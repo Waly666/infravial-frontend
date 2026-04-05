@@ -107,6 +107,19 @@
                     </label>
                 </div>
             </div>
+
+            <div class="tables-group">
+                <div class="tables-group-label">SINC</div>
+                <div class="check-grid">
+                    <label class="check-opt" *ngFor="let t of sincTables">
+                        <input type="checkbox"
+                            [checked]="tablasSeleccionadas.has(t.key)"
+                            (change)="toggleTabla(t.key)"
+                            [disabled]="exportando">
+                        <span>{{ t.label }}</span>
+                    </label>
+                </div>
+            </div>
         </div>
 
         <div class="btn-row">

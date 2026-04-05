@@ -29,6 +29,7 @@ export class BackupAdminComponent implements OnInit {
 
     purge = {
         inventario: false,
+        sinc: false,
         catalogos: false,
         geograficos: false,
         jornadas: false,
@@ -235,6 +236,7 @@ export class BackupAdminComponent implements OnInit {
     gruposPurgeSeleccionados(): string[] {
         const g: string[] = [];
         if (this.purge.inventario) g.push('inventario');
+        if (this.purge.sinc) g.push('sinc');
         if (this.purge.catalogos) g.push('catalogos');
         if (this.purge.geograficos) g.push('geograficos');
         if (this.purge.jornadas) g.push('jornadas');

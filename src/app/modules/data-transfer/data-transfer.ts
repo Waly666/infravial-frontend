@@ -117,8 +117,9 @@ export class DataTransferComponent implements OnInit, OnDestroy {
         else     this.tablasSeleccionadas.clear();
     }
 
-    get operacionales() { return this.allTables.filter(t => !t.catalog); }
+    get operacionales() { return this.allTables.filter(t => !t.catalog && !t.key.startsWith('sinc-')); }
     get catalogos()     { return this.allTables.filter(t =>  t.catalog); }
+    get sincTables()    { return this.allTables.filter(t => t.key.startsWith('sinc-')); }
 
     // ── Archivo importación ───────────────────────────────────────────────────
     onFileChange(ev: Event): void {
