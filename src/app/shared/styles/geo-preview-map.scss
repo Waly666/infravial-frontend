@@ -37,5 +37,7 @@
 }
 
 .geo-preview-map-el .leaflet-container {
-    font-family: var(--font-sans, system-ui, sans-serif);
+    font-family: var(--font-sans);
+    font-variant-numeric: lining-nums;
+    font-feature-settings: "lnum" 1;
 }

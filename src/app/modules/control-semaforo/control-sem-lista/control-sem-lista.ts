@@ -34,11 +34,7 @@ import { ConfirmDialogService } from "../../../shared/services/confirm-dialog.se
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: "./control-sem-lista.html",
-    styleUrls: [
-        "../../../shared/styles/lista-object-id-column.scss",
-        "./control-sem-lista.scss",
-        "../../../shared/styles/geo-badges.scss"
-    ]
+    styleUrls: ["./control-sem-lista.scss", "../../../shared/styles/geo-badges.scss"]
 })
 export class ControlSemListaComponent implements OnInit {
 
@@ -186,21 +182,6 @@ export class ControlSemListaComponent implements OnInit {
         return this.registrosOrdenados.slice(start, start + this.pageSize);
     }
 
-    ordenarPor(col: string) {
-        if (this.sortColumn === col) {
-            this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
-        } else {
-            this.sortColumn = col;
-            this.sortDir = "asc";
-        }
-        this.currentPage = 1;
-    }
-
-    sortIndicador(col: string): string {
-        if (this.sortColumn !== col) return "";
-        return this.sortDir === "asc" ? " ↑" : " ↓";
-    }
-
     private valorOrden(r: any, c: string): unknown {
         switch (c) {
             case "id":
@@ -248,6 +229,24 @@ export class ControlSemListaComponent implements OnInit {
     }
 
     onFiltroIdChange() {
+        this.currentPage = 1;
+    }
+
+    get sortSelectValue(): string {
+        return this.sortColumn ?? "";
+    }
+
+    onOrdenSelect(value: string) {
+        this.sortColumn = value === "" ? null : value;
+        this.currentPage = 1;
+    }
+
+    limpiarFiltrosLista() {
+        this.busqueda = "";
+        this.filtroId = "";
+        this.filtroDepartamento = "";
+        this.filtroMunicipio = "";
+        this.filtroZat = "";
         this.currentPage = 1;
     }
 

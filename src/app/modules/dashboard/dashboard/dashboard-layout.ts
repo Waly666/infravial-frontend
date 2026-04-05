@@ -40,6 +40,7 @@ export class DashboardLayoutComponent implements OnInit {
         { kind: 'link', id: 'cajas-inspeccion', label: 'Cajas Inspección',     icon: 'inventory_2', roles: ['admin','supervisor','encuestador'] },
         { kind: 'link', id: 'mapa-inventario',    label: 'Mapa inventario',      icon: 'map', roles: ['admin','supervisor','encuestador'] },
         { kind: 'link', id: 'categorizacion-vial', label: 'Categorización Vial', icon: 'account_tree', roles: ['admin','supervisor','encuestador'] },
+        { kind: 'link', id: 'sinc',                 label: 'SINC',                icon: 'conversion_path', roles: ['admin','supervisor','encuestador'] },
         {
             kind: 'group',
             id: 'utils',
@@ -121,7 +122,9 @@ export class DashboardLayoutComponent implements OnInit {
     }
 
     navegarA(ruta: string) {
-        this.router.navigate([`/${ruta}`]);
+        // sinc es el id de sección; la ruta real es /sinc/ejes
+        const destino = ruta === 'sinc' ? '/sinc/ejes' : `/${ruta}`;
+        this.router.navigate([destino]);
     }
 
     isAdmin(): boolean { return this.authService.isAdmin(); }

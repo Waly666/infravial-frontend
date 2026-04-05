@@ -61,6 +61,13 @@ export const routes: Routes = [
                         loadComponent: () => import('./modules/via-tramos/via-tramo-form/via-tramo-form').then(m => m.ViaTramoFormComponent)
                     },
                     {
+                        path: 'via-tramos/:id/inventario',
+                        loadComponent: () =>
+                            import('./modules/via-tramos/via-tramo-inventario/via-tramo-inventario').then(
+                                m => m.ViaTramoInventarioComponent
+                            )
+                    },
+                    {
                         path: 'mapa-inventario',
                         canActivate: [roleGuard],
                         data: { roles: ['admin', 'supervisor', 'encuestador'] },
@@ -197,6 +204,22 @@ export const routes: Routes = [
                     {
                         path: 'categorizacion-vial/editar/:id',
                         loadComponent: () => import('./modules/categorizacion-vial/categ-form/categ-form').then(m => m.CategFormComponent)
+                    },
+                    {
+                        path: 'sinc/ejes',
+                        loadComponent: () => import('./modules/sinc/sinc-eje-lista/sinc-eje-lista').then(m => m.SincEjeListaComponent)
+                    },
+                    {
+                        path: 'sinc/ejes/nuevo',
+                        loadComponent: () => import('./modules/sinc/sinc-eje-form/sinc-eje-form').then(m => m.SincEjeFormComponent)
+                    },
+                    {
+                        path: 'sinc/ejes/editar/:id',
+                        loadComponent: () => import('./modules/sinc/sinc-eje-form/sinc-eje-form').then(m => m.SincEjeFormComponent)
+                    },
+                    {
+                        path: 'sinc/ejes/:id',
+                        loadComponent: () => import('./modules/sinc/sinc-eje-detalle/sinc-eje-detalle').then(m => m.SincEjeDetalleComponent)
                     },
                     {
                         path: 'reportes',

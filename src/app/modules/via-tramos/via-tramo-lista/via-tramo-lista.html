@@ -1,153 +1,250 @@
 <div class="page-container">
 
     <div class="page-header">
-        <div>
-            <h1 class="page-title">Vía Tramos</h1>
-            <p class="page-sub">Inventario de tramos viales</p>
+        <div class="page-header-left">
+            <h1 class="page-title">
+                <span class="material-symbols-outlined">alt_route</span>
+                Vía Tramos
+            </h1>
+            <p class="page-subtitle">Inventario de tramos viales</p>
         </div>
-        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-            <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
+        <div class="page-header-right">
+            <button type="button" class="btn-secondary" (click)="router.navigate(['/dashboard'])">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </button>
             <button type="button" class="btn-secondary" *ngIf="puedeVerEstadisticas()" [routerLink]="['/via-tramos/estadisticas']">
+                <span class="material-symbols-outlined">bar_chart</span>
                 Estadísticas
             </button>
-            <button class="btn-primary" (click)="nuevo()" [disabled]="!jornada">
-                ➕ Nuevo Tramo
+            <button type="button" class="btn-primary" (click)="nuevo()" [disabled]="!jornada">
+                <span class="material-symbols-outlined">add</span>
+                Nuevo Tramo
             </button>
         </div>
     </div>
 
     <div class="alert-warning" *ngIf="!jornada">
-        ⚠️ No hay jornada activa. Debe existir una jornada en proceso para registrar tramos.
+        <span class="material-symbols-outlined">warning</span>
+        No hay jornada activa. Debe existir una jornada en proceso para registrar tramos.
     </div>
     <div class="alert-lista-usuario" *ngIf="authService.getNombreCompleto()">
         <span class="alert-lista-usuario-label">Usuario en sesión</span>
         <strong>{{ authService.getNombreCompleto() }}</strong>
     </div>
 
-    <!-- Buscador + Paginación -->
-    <div class="search-bar">
-        <input
-            type="text"
-            [(ngModel)]="busqueda"
-            (ngModelChange)="onBusquedaChange()"
-            placeholder="🔍 Texto o pegar ObjectId completo (24 hex, Compass)…"
-            class="search-input"
-        >
-        <input
-            type="text"
-            [(ngModel)]="filtroIdTramo"
-            (ngModelChange)="onFiltroIdChange()"
-            placeholder="🆔 ID exacto / ObjectId(&quot;…&quot;) / 4+ hex → prioridad"
-            class="search-input search-input-id"
-            spellcheck="false"
-            autocomplete="off"
-        >
-        <span class="total-badge">{{ tramosFiltrados.length }} registros</span>
+    <div class="stat-strip" *ngIf="!loading && tramos.length > 0">
+        <div class="stat-card">
+            <span class="stat-value">{{ tramosFiltrados.length }}</span>
+            <span class="stat-label">Tramos (filtro actual)</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-card">
+            <span class="stat-value">{{ currentPage }}<span class="stat-of">/{{ totalPages }}</span></span>
+            <span class="stat-label">Página</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-card">
+            <span class="stat-value">{{ pageSize }}</span>
+            <span class="stat-label">Por página</span>
+        </div>
+    </div>
 
+    <div class="filtros-bar">
+        <div class="filtro-group filtro-search">
+            <span class="material-symbols-outlined filtro-icon">search</span>
+            <input
+                type="text"
+                [(ngModel)]="busqueda"
+                (ngModelChange)="onBusquedaChange()"
+                placeholder="Texto u ObjectId (24 hex)…"
+                class="filtro-input"
+            >
+            <button type="button" class="filtro-clear" *ngIf="busqueda" (click)="busqueda = ''; onBusquedaChange()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="filtro-group filtro-search filtro-id">
+            <span class="material-symbols-outlined filtro-icon">tag</span>
+            <input
+                type="text"
+                [(ngModel)]="filtroIdTramo"
+                (ngModelChange)="onFiltroIdChange()"
+                placeholder="ID exacto / prioridad por prefijo hex…"
+                class="filtro-input"
+                spellcheck="false"
+                autocomplete="off"
+            >
+        </div>
+        <div class="filtro-group">
+            <label class="filtro-label">Orden</label>
+            <select
+                class="filtro-select"
+                [ngModel]="sortSelectValue"
+                (ngModelChange)="onOrdenSelect($event)"
+            >
+                <option value="">Por defecto</option>
+                <option value="id">ObjectId</option>
+                <option value="via">Vía</option>
+                <option value="nomenclatura">Nomenclatura</option>
+                <option value="municipio">Municipio</option>
+                <option value="zat">ZAT</option>
+                <option value="calzada">Calzada</option>
+                <option value="diseno">Diseño</option>
+                <option value="tipoVia">Tipo vía</option>
+                <option value="estado">Estado</option>
+                <option value="clasNacional">Clas. nacional</option>
+                <option value="fecha">Fecha</option>
+            </select>
+        </div>
+        <div class="filtro-group">
+            <label class="filtro-label">Sentido</label>
+            <select class="filtro-select" [ngModel]="sortDir" (ngModelChange)="sortDir = $event; currentPage = 1">
+                <option value="asc">Ascendente</option>
+                <option value="desc">Descendente</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="filtros-bar filtros-bar--geo">
+        <div class="filtro-group">
+            <label class="filtro-label">Depto.</label>
+            <select class="filtro-select" [(ngModel)]="filtroDepartamento" (ngModelChange)="onDepartamentoChange()">
+                <option value="">Todos</option>
+                <option *ngFor="let dep of departamentosDisponibles" [value]="dep">{{ dep }}</option>
+            </select>
+        </div>
+        <div class="filtro-group">
+            <label class="filtro-label">Municipio</label>
+            <select class="filtro-select" [(ngModel)]="filtroMunicipio" (ngModelChange)="onMunicipioChange()">
+                <option value="">Todos</option>
+                <option *ngFor="let mun of municipiosDisponibles" [value]="mun">{{ mun }}</option>
+            </select>
+        </div>
+        <div class="filtro-group" *ngIf="filtroMunicipio">
+            <label class="filtro-label">ZAT</label>
+            <select class="filtro-select" [(ngModel)]="filtroZat" (ngModelChange)="onZatChange()">
+                <option value="">Todas</option>
+                <option *ngFor="let z of zatsDisponibles" [value]="z.value">{{ z.label }}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="search-bar search-bar--pag">
+        <span class="total-badge">{{ tramosFiltrados.length }} registros</span>
         <div class="pagination-controls">
             <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
                 <option [ngValue]="30">30</option>
                 <option [ngValue]="50">50</option>
                 <option [ngValue]="100">100</option>
             </select>
-            <button class="btn-pag" (click)="paginaAnterior()" [disabled]="currentPage === 1">← Anterior</button>
+            <button type="button" class="btn-pag" (click)="paginaAnterior()" [disabled]="currentPage === 1">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
             <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
-            <button class="btn-pag" (click)="paginaSiguiente()" [disabled]="currentPage >= totalPages">Siguiente →</button>
+            <button type="button" class="btn-pag" (click)="paginaSiguiente()" [disabled]="currentPage >= totalPages">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </button>
         </div>
     </div>
 
-    <div class="filter-row">
-        <select class="filter-select" [(ngModel)]="filtroDepartamento" (ngModelChange)="onDepartamentoChange()">
-            <option value="">Todos los departamentos</option>
-            <option *ngFor="let dep of departamentosDisponibles" [value]="dep">{{ dep }}</option>
-        </select>
-
-        <select class="filter-select" [(ngModel)]="filtroMunicipio" (ngModelChange)="onMunicipioChange()">
-            <option value="">Todos los municipios</option>
-            <option *ngFor="let mun of municipiosDisponibles" [value]="mun">{{ mun }}</option>
-        </select>
-
-        <select class="filter-select" *ngIf="filtroMunicipio" [(ngModel)]="filtroZat" (ngModelChange)="onZatChange()">
-            <option value="">Todas las ZAT</option>
-            <option *ngFor="let z of zatsDisponibles" [value]="z.value">{{ z.label }}</option>
-        </select>
-    </div>
-
-    <!-- Loading -->
     <div class="loading-state" *ngIf="loading">
-        <div class="spinner"></div>
-        <p>Cargando tramos...</p>
+        <span class="material-symbols-outlined spin">progress_activity</span>
+        Cargando tramos…
     </div>
 
-    <!-- Tabla -->
-    <div class="table-card" *ngIf="!loading">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th class="th-sortable col-object-id" [class.th-sort-active]="sortColumn === 'id'" (click)="ordenarPor('id')" title="ObjectId MongoDB">ObjectId<span class="sort-ind">{{ sortIndicador('id') }}</span></th>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'via'" (click)="ordenarPor('via')" title="Ordenar por vía">Vía<span class="sort-ind">{{ sortIndicador('via') }}</span></th>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'nomenclatura'" (click)="ordenarPor('nomenclatura')" title="Ordenar por nomenclatura">Nomenclatura<span class="sort-ind">{{ sortIndicador('nomenclatura') }}</span></th>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'municipio'" (click)="ordenarPor('municipio')" title="Ordenar por municipio">Municipio<span class="sort-ind">{{ sortIndicador('municipio') }}</span></th>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'zat'" (click)="ordenarPor('zat')" title="Ordenar por ZAT">ZAT<span class="sort-ind">{{ sortIndicador('zat') }}</span></th>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'calzada'" (click)="ordenarPor('calzada')" title="Ordenar por calzada">Calzada<span class="sort-ind">{{ sortIndicador('calzada') }}</span></th>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'diseno'" (click)="ordenarPor('diseno')" title="Ordenar por diseño">Diseño<span class="sort-ind">{{ sortIndicador('diseno') }}</span></th>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'tipoVia'" (click)="ordenarPor('tipoVia')" title="Ordenar por tipo vía">Tipo Vía<span class="sort-ind">{{ sortIndicador('tipoVia') }}</span></th>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'estado'" (click)="ordenarPor('estado')" title="Ordenar por estado">Estado<span class="sort-ind">{{ sortIndicador('estado') }}</span></th>
-                    <th class="th-sortable col-cn" [class.th-sort-active]="sortColumn === 'clasNacional'" (click)="ordenarPor('clasNacional')" title="Ordenar por clasificación nacional">CLASIFICACION<br>NACIONAL<span class="sort-ind">{{ sortIndicador('clasNacional') }}</span></th>
-                    <th class="th-sortable" [class.th-sort-active]="sortColumn === 'fecha'" (click)="ordenarPor('fecha')" title="Ordenar por fecha">Fecha<span class="sort-ind">{{ sortIndicador('fecha') }}</span></th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let t of tramosPaginados">
-                    <td class="td-id">
-                        <code class="cell-id">{{ t._id || '—' }}</code>
-                    </td>
-                    <td>
-                        <span class="badge" [ngClass]="viaBadge(t)">{{ t.via || '—' }}</span>
-                    </td>
-                    <td class="td-nomenclatura">{{ t.nomenclatura?.completa || '—' }}</td>
-                    <td>
-                        <span class="badge" [ngClass]="munBadge(t)">{{ t.municipio || '—' }}</span>
-                    </td>
-                    <td>
-                        <span class="badge" [ngClass]="zatBadge(t)">{{ zatTxt(t) }}</span>
-                    </td>
-                    <td>
-                        <span class="badge badge-calzada">{{ t.calzada || '—' }}</span>
-                    </td>
-                    <td class="td-muted">{{ t.tipoUbic || '—' }}</td>
-                    <td>{{ t.tipoVia || '—' }}</td>
-                    <td>
-                        <span class="badge"
-                            [ngClass]="{
-                                'badge-bueno':   t.estadoVia === 'Bueno',
-                                'badge-regular': t.estadoVia === 'Regular',
-                                'badge-malo':    t.estadoVia === 'Malo'
-                            }">
-                            {{ t.estadoVia || '—' }}
-                        </span>
-                    </td>
-                    <td class="col-cn">
-                        <span class="badge badge-cn" [ngClass]="badgeClasNacionalClass(t)">{{ t.clasNacional || '—' }}</span>
-                    </td>
-                    <td class="td-muted">{{ t.fechaCreacion | date:'dd/MM/yyyy' }}</td>
-                    <td>
-                        <div class="actions-cell">
-                        <button type="button" class="btn-streetview-sm" *ngIf="tieneStreetView(t)" (click)="abrirStreetView(t)" title="Street View (Google Maps)">🧭</button>
-                        <button class="btn-edit-sm" (click)="editar(t._id)" title="Editar">✏️</button>
-                        <button class="btn-report-sm" (click)="generarReporte(t._id)" title="Generar FE001">📄</button>
-                        <button class="btn-danger-sm"
-                            *ngIf="isAdmin() || isSupervisor()"
-                            (click)="eliminar(t._id, t.via)"
-                            title="Eliminar">🗑️</button>
-                    </div>
-                    </td>
-                </tr>
-                <tr *ngIf="tramosFiltrados.length === 0">
-                    <td colspan="12" class="empty-state">No hay tramos registrados</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="tramos-grid" *ngIf="!loading && tramosFiltrados.length > 0">
+        <article
+            class="tramo-card"
+            *ngFor="let t of tramosPaginados"
+            (click)="abrirDesdeCard(t._id)"
+        >
+            <div class="card-head">
+                <div class="card-badges">
+                    <span class="badge" [ngClass]="viaBadge(t)">{{ t.via || '—' }}</span>
+                    <span
+                        class="badge"
+                        *ngIf="t.estadoVia"
+                        [ngClass]="{
+                            'badge-bueno':   t.estadoVia === 'Bueno',
+                            'badge-regular': t.estadoVia === 'Regular',
+                            'badge-malo':    t.estadoVia === 'Malo'
+                        }">
+                        {{ t.estadoVia }}
+                    </span>
+                    <span class="badge badge-cn" [ngClass]="badgeClasNacionalClass(t)">{{ t.clasNacional || '—' }}</span>
+                </div>
+                <div class="card-acciones" (click)="$event.stopPropagation()">
+                    <button
+                        type="button"
+                        class="btn-icon"
+                        *ngIf="tieneStreetView(t)"
+                        (click)="abrirStreetView(t)"
+                        title="Street View">
+                        <span class="material-symbols-outlined">streetview</span>
+                    </button>
+                    <button type="button" class="btn-icon" (click)="inventario(t._id)" title="Inventario (capas)">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                    </button>
+                    <button type="button" class="btn-icon" (click)="editar(t._id)" title="Editar">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button type="button" class="btn-icon btn-icon-report" (click)="generarReporte(t._id)" title="Generar FE001">
+                        <span class="material-symbols-outlined">description</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="btn-icon btn-icon-danger"
+                        *ngIf="isAdmin() || isSupervisor()"
+                        (click)="eliminar(t._id, t.via)"
+                        title="Eliminar">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <code class="codigo-tramo">{{ t._id || '—' }}</code>
+                <p class="card-nomenclatura">{{ t.nomenclatura?.completa || '—' }}</p>
+            </div>
+
+            <div class="card-meta">
+                <span class="meta-item" *ngIf="t.municipio">
+                    <span class="material-symbols-outlined">location_on</span>
+                    {{ t.municipio }}
+                </span>
+                <span class="meta-item" *ngIf="t.departamento">
+                    <span class="material-symbols-outlined">map</span>
+                    {{ t.departamento }}
+                </span>
+                <span class="meta-item">
+                    <span class="material-symbols-outlined">grid_on</span>
+                    ZAT {{ zatTxt(t) }}
+                </span>
+                <span class="meta-item" *ngIf="t.calzada">
+                    <span class="material-symbols-outlined">view_week</span>
+                    {{ t.calzada }}
+                </span>
+            </div>
+
+            <div class="card-row-muted">
+                <span><strong>Diseño</strong> {{ t.tipoUbic || '—' }}</span>
+                <span><strong>Tipo vía</strong> {{ t.tipoVia || '—' }}</span>
+                <span><strong>Alta</strong> {{ t.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+            </div>
+        </article>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && tramosFiltrados.length === 0">
+        <span class="material-symbols-outlined empty-icon">alt_route</span>
+        <p *ngIf="tramos.length === 0">No hay tramos registrados.</p>
+        <p *ngIf="tramos.length > 0">No hay tramos que coincidan con los filtros.</p>
+        <button type="button" class="btn-primary" (click)="nuevo()" *ngIf="tramos.length === 0 && jornada">
+            <span class="material-symbols-outlined">add</span>
+            Registrar primer tramo
+        </button>
+        <button type="button" class="btn-secondary btn-sm" *ngIf="tramos.length > 0" (click)="limpiarFiltrosLista()">
+            Limpiar filtros
+        </button>
     </div>
 </div>

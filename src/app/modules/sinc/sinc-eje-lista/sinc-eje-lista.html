@@ -1,0 +1,161 @@
+<div class="page-container">
+
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1 class="page-title">
+                <span class="material-symbols-outlined">conversion_path</span>
+                SINC — Ejes Viales
+            </h1>
+            <p class="page-subtitle" *ngIf="jornada">
+                Jornada: {{ jornada.municipio }}, {{ jornada.dpto }}
+            </p>
+        </div>
+        <div class="page-header-right">
+            <button class="btn-primary" routerLink="/sinc/ejes/nuevo" *ngIf="puedeEditar">
+                <span class="material-symbols-outlined">add</span> Nuevo Eje
+            </button>
+        </div>
+    </div>
+
+    <!-- Stat strip -->
+    <div class="stat-strip" *ngIf="!loading && ejes.length > 0">
+        <div class="stat-card">
+            <span class="stat-value">{{ ejes.length }}</span>
+            <span class="stat-label">Ejes registrados</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-card">
+            <span class="stat-value">{{ totalKm | number:'1.0-1' }} <span class="stat-unit">km</span></span>
+            <span class="stat-label">Longitud total</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-card stat-card-clickable" [class.activo]="filtroNivel === 'basico'" (click)="filtroNivel = filtroNivel === 'basico' ? '' : 'basico'">
+            <span class="stat-value stat-bas">{{ countBasico }}</span>
+            <span class="stat-label">
+                <span class="material-symbols-outlined" style="font-size:13px">list_alt</span>
+                Nivel Básico
+            </span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-card stat-card-clickable" [class.activo]="filtroNivel === 'detallado'" (click)="filtroNivel = filtroNivel === 'detallado' ? '' : 'detallado'">
+            <span class="stat-value stat-det">{{ countDetallado }}</span>
+            <span class="stat-label">
+                <span class="material-symbols-outlined" style="font-size:13px">fact_check</span>
+                Nivel Detallado
+            </span>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-bar">
+        <div class="filtro-group filtro-search">
+            <span class="material-symbols-outlined filtro-icon">search</span>
+            <input type="text" [(ngModel)]="busqueda" placeholder="Buscar código o nombre de vía..." class="filtro-input">
+            <button class="filtro-clear" *ngIf="busqueda" (click)="busqueda = ''">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="filtro-group">
+            <label class="filtro-label">Red</label>
+            <select [(ngModel)]="filtroTipoRed" (change)="cargar()" class="filtro-select">
+                <option value="">Todas</option>
+                <option *ngFor="let t of tiposRed" [value]="t.v">{{ t.l }}</option>
+            </select>
+        </div>
+        <button class="btn-icon" title="Actualizar" (click)="cargar()">
+            <span class="material-symbols-outlined">refresh</span>
+        </button>
+    </div>
+
+    <!-- Chip de filtro activo -->
+    <div class="filtros-activos" *ngIf="filtroNivel">
+        <span class="chip-filtro" [class.chip-det]="filtroNivel === 'detallado'">
+            <span class="material-symbols-outlined">{{ filtroNivel === 'detallado' ? 'fact_check' : 'list_alt' }}</span>
+            {{ filtroNivel === 'detallado' ? 'Nivel Detallado' : 'Nivel Básico' }}
+            <button (click)="filtroNivel = ''"><span class="material-symbols-outlined">close</span></button>
+        </span>
+    </div>
+
+    <!-- Loading / Error -->
+    <div class="loading-state" *ngIf="loading">
+        <span class="material-symbols-outlined spin">progress_activity</span> Cargando ejes...
+    </div>
+    <div class="error-state" *ngIf="error && !loading">{{ error }}</div>
+
+    <!-- Grid de tarjetas -->
+    <div class="ejes-grid" *ngIf="!loading && !error && ejesFiltrados.length > 0">
+        <div class="eje-card" *ngFor="let eje of ejesFiltrados" (click)="verDetalle(eje._id)">
+
+            <!-- Cabecera de la tarjeta -->
+            <div class="card-head">
+                <div class="card-badges">
+                    <span class="badge badge-red-{{ eje.tipoRed }}">
+                        {{ labelDominio(dominios.tipoRed, eje.tipoRed) }}
+                    </span>
+                    <span class="badge-nivel" [class.det]="eje.nivelInventario === 'detallado'">
+                        <span class="material-symbols-outlined">{{ eje.nivelInventario === 'detallado' ? 'fact_check' : 'list_alt' }}</span>
+                        {{ eje.nivelInventario === 'detallado' ? 'Detallado' : 'Básico' }}
+                    </span>
+                </div>
+                <div class="card-acciones" (click)="$event.stopPropagation()">
+                    <button class="btn-icon" title="Ver detalle" (click)="verDetalle(eje._id)">
+                        <span class="material-symbols-outlined">visibility</span>
+                    </button>
+                    <button class="btn-icon" title="Editar" (click)="editar(eje._id)" *ngIf="puedeEditar">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button class="btn-icon btn-icon-danger" title="Eliminar" (click)="eliminar(eje)" *ngIf="esAdmin">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Código + Nombre -->
+            <div class="card-body">
+                <code class="codigo-via">{{ eje.codigoVia }}</code>
+                <p class="card-nombre">{{ eje.nomVia || '—' }}</p>
+            </div>
+
+            <!-- Métricas de la tarjeta -->
+            <div class="card-meta">
+                <span class="meta-item" *ngIf="eje.tipoEje != null">
+                    <span class="material-symbols-outlined">route</span>
+                    {{ labelDominio(dominios.tipoEje, eje.tipoEje) }}
+                </span>
+                <span class="meta-item" *ngIf="eje.sentido != null">
+                    <span class="material-symbols-outlined">swap_horiz</span>
+                    {{ labelDominio(dominios.sentido, eje.sentido) }}
+                </span>
+                <span class="meta-item" *ngIf="eje.idJornada?.municipio">
+                    <span class="material-symbols-outlined">location_on</span>
+                    {{ eje.idJornada.municipio }}
+                </span>
+            </div>
+
+            <!-- Barra de longitud -->
+            <div class="card-longitud" *ngIf="eje.longitud_m">
+                <div class="longitud-bar">
+                    <div class="longitud-fill" [style.width.%]="(eje.longitud_m / maxLongitud) * 100"></div>
+                </div>
+                <span class="longitud-label">{{ eje.longitud_m | number:'1.0-0' }} m</span>
+            </div>
+            <div class="card-sin-geo" *ngIf="!eje.longitud_m">
+                <span class="material-symbols-outlined">location_off</span> Sin geometría
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!loading && !error && ejesFiltrados.length === 0">
+        <span class="material-symbols-outlined empty-icon">conversion_path</span>
+        <p>{{ busqueda || filtroNivel || filtroTipoRed ? 'Sin resultados para los filtros aplicados.' : 'No hay ejes viales registrados.' }}</p>
+        <button class="btn-primary" routerLink="/sinc/ejes/nuevo" *ngIf="puedeEditar && !busqueda && !filtroNivel && !filtroTipoRed">
+            Registrar primer eje
+        </button>
+        <button class="btn-secondary btn-sm" (click)="busqueda=''; filtroNivel=''; filtroTipoRed=''; cargar()" *ngIf="busqueda || filtroNivel || filtroTipoRed">
+            Limpiar filtros
+        </button>
+    </div>
+
+</div>

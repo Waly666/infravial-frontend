@@ -28,17 +28,14 @@ import {
     type TableSortDirection
 } from '../../../shared/utils/table-sort';
 import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
+import { ListaValorBadgeClassPipe } from '../../../shared/pipes/lista-valor-badge-class.pipe';
 
 @Component({
     selector: 'app-caja-insp-lista',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, ListaValorBadgeClassPipe],
     templateUrl: './caja-insp-lista.html',
-    styleUrls: [
-        '../../../shared/styles/lista-object-id-column.scss',
-        './caja-insp-lista.scss',
-        '../../../shared/styles/geo-badges.scss'
-    ]
+    styleUrls: ['./caja-insp-lista.scss', '../../../shared/styles/geo-badges.scss', '../../../shared/styles/lista-valor-badges.scss']
 })
 export class CajaInspListaComponent implements OnInit {
 
@@ -120,6 +117,7 @@ export class CajaInspListaComponent implements OnInit {
                 nomenclaturaSearchText(r),
                 r.materialCaja,
                 r.estadoCaja,
+                r.fase,
                 z !== '—' ? z : ''
             ].join(' ');
             return textBlobMatchesQuery(blob, qRaw);
@@ -184,21 +182,6 @@ export class CajaInspListaComponent implements OnInit {
         return this.registrosOrdenados.slice(start, start + this.pageSize);
     }
 
-    ordenarPor(col: string) {
-        if (this.sortColumn === col) {
-            this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
-        } else {
-            this.sortColumn = col;
-            this.sortDir = 'asc';
-        }
-        this.currentPage = 1;
-    }
-
-    sortIndicador(col: string): string {
-        if (this.sortColumn !== col) return '';
-        return this.sortDir === 'asc' ? ' ↑' : ' ↓';
-    }
-
     private valorOrden(r: any, c: string): unknown {
         switch (c) {
             case 'id':
@@ -246,6 +229,24 @@ export class CajaInspListaComponent implements OnInit {
     }
 
     onFiltroIdChange() {
+        this.currentPage = 1;
+    }
+
+    get sortSelectValue(): string {
+        return this.sortColumn ?? '';
+    }
+
+    onOrdenSelect(value: string) {
+        this.sortColumn = value === '' ? null : value;
+        this.currentPage = 1;
+    }
+
+    limpiarFiltrosLista() {
+        this.busqueda = '';
+        this.filtroId = '';
+        this.filtroDepartamento = '';
+        this.filtroMunicipio = '';
+        this.filtroZat = '';
         this.currentPage = 1;
     }
 

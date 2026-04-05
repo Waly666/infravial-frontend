@@ -1,0 +1,145 @@
+<div class="vt-inv page-container" *ngIf="!loading && data as inv; else loadingTpl">
+    <!-- Cabecera alineada con SINC — detalle de eje -->
+    <div class="eje-header">
+        <button type="button" class="btn-back" (click)="router.navigate(['/via-tramos'])" title="Volver a la lista">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="eje-header-info">
+            <h1 class="eje-codigo">{{ idTramo }}</h1>
+            <p class="eje-nombre">{{ inv.tramo?.via || '—' }}</p>
+            <div class="eje-badges">
+                <span class="badge badge-via">{{ inv.tramo?.tipoVia || '—' }}</span>
+                <span class="badge badge-calz">{{ inv.tramo?.calzada || '—' }}</span>
+                <span class="badge badge-dis">{{ inv.tramo?.tipoUbic || '—' }}</span>
+                <span class="badge badge-zat">
+                    <span class="material-symbols-outlined" style="font-size:12px">grid_on</span>
+                    ZAT {{ zatLabel(inv.tramo) }}
+                </span>
+            </div>
+            <p class="eje-jornada" *ngIf="inv.tramo?.nomenclatura?.completa as nom">
+                <span class="material-symbols-outlined">signpost</span>
+                {{ nom }}
+            </p>
+            <p class="eje-jornada">
+                <span class="material-symbols-outlined">location_on</span>
+                {{ inv.tramo?.municipio || '—' }}, {{ inv.tramo?.departamento || '—' }}
+            </p>
+        </div>
+    </div>
+
+    <p class="vt-inv-lead">
+        Inventario por <strong>idViaTramo</strong>: señales verticales y horizontales, cajas de inspección, control semafórico y semáforos.
+        Use <strong>+ Agregar</strong> o <strong>Editar</strong> en cada tarjeta (asocie el tramo en el formulario al crear).
+    </p>
+
+    <div class="tab-chips">
+        <button
+            type="button"
+            *ngFor="let t of tabs"
+            class="tab-chip"
+            [class.active]="tabActiva === t.id"
+            [style.--chip-color]="t.color"
+            (click)="setTab(t.id)">
+            <span class="tab-chip-icon">
+                <span class="material-symbols-outlined" aria-hidden="true">{{ t.icon }}</span>
+            </span>
+            <span class="tab-chip-label">{{ t.label }}</span>
+            <span class="tab-chip-badge">{{ countTab(t.id) }}</span>
+        </button>
+    </div>
+
+    <div class="vt-inv-toolbar">
+        <a class="btn-primary vt-btn-add" [routerLink]="rutaNuevo()">
+            <span class="material-symbols-outlined" style="font-size:1.05rem">add</span>
+            Agregar
+        </a>
+    </div>
+
+    <h2 class="vt-capas-title">{{ tabLabelActiva }}</h2>
+
+    <div class="vt-inv-empty" *ngIf="itemsActuales.length === 0">
+        <span class="material-symbols-outlined">inventory_2</span>
+        <p>No hay registros en esta categoría para este tramo.</p>
+    </div>
+
+    <div class="sinc-item-cards" *ngIf="itemsActuales.length > 0">
+        <article class="sinc-item-card" *ngFor="let item of itemsActuales">
+            <div class="sinc-item-card__head">
+                <code class="sinc-item-card__id">{{ item._id }}</code>
+                <div class="sinc-item-card__actions">
+                    <a class="sinc-item-card__link" [routerLink]="rutaEditar(item)">
+                        <span class="material-symbols-outlined">edit</span>
+                    </a>
+                </div>
+            </div>
+
+            <ng-container [ngSwitch]="tabActiva">
+                <div class="sinc-item-card__row-with-thumb" *ngSwitchCase="'senVert'">
+                    <div class="sinc-item-card__metrics sinc-item-card__metrics--with-thumb">
+                        <div class="sinc-metric"><span class="sinc-metric__k">Código señal</span><span class="sinc-metric__v">{{ item.codSe || '—' }}</span></div>
+                        <div class="sinc-metric"><span class="sinc-metric__k">Estado</span><span class="sinc-metric__v">{{ item.estado || '—' }}</span></div>
+                        <div class="sinc-metric"><span class="sinc-metric__k">F. instalación</span><span class="sinc-metric__v">{{ item.fechaInst ? (item.fechaInst | date:'yyyy-MM-dd') : '—' }}</span></div>
+                        <div class="sinc-metric sinc-metric--wide"><span class="sinc-metric__k">Forma / orient.</span><span class="sinc-metric__v">{{ item.forma || '—' }} · {{ item.orientacion || '—' }}</span></div>
+                    </div>
+                    <div class="sinc-item-card__catalog-thumb" title="Referencia catálogo señal vertical">
+                        <img *ngIf="urlImgCatalogoSenVert(item) as uSv" [src]="uSv" [alt]="'Catálogo ' + (item.codSe || '')" loading="lazy" />
+                        <div *ngIf="!urlImgCatalogoSenVert(item)" class="sinc-item-card__catalog-placeholder">
+                            <span class="material-symbols-outlined">image_not_supported</span>
+                            <span>Sin imagen en catálogo</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="sinc-item-card__row-with-thumb" *ngSwitchCase="'senHor'">
+                    <div class="sinc-item-card__metrics sinc-item-card__metrics--with-thumb">
+                        <div class="sinc-metric"><span class="sinc-metric__k">Código</span><span class="sinc-metric__v">{{ item.codSeHor || '—' }}</span></div>
+                        <div class="sinc-metric"><span class="sinc-metric__k">Tipo demarcación</span><span class="sinc-metric__v">{{ item.tipoDem || '—' }}</span></div>
+                        <div class="sinc-metric"><span class="sinc-metric__k">Estado dem.</span><span class="sinc-metric__v">{{ item.estadoDem || '—' }}</span></div>
+                        <div class="sinc-metric"><span class="sinc-metric__k">Color</span><span class="sinc-metric__v">{{ item.color || '—' }}</span></div>
+                    </div>
+                    <div class="sinc-item-card__catalog-thumb" title="Referencia catálogo demarcación">
+                        <img *ngIf="urlImgCatalogoSenHor(item) as uSh" [src]="uSh" [alt]="'Catálogo ' + (item.codSeHor || '')" loading="lazy" />
+                        <div *ngIf="!urlImgCatalogoSenHor(item)" class="sinc-item-card__catalog-placeholder">
+                            <span class="material-symbols-outlined">image_not_supported</span>
+                            <span>Sin imagen en catálogo</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="sinc-item-card__metrics" *ngSwitchCase="'caja'">
+                    <div class="sinc-metric"><span class="sinc-metric__k">Material</span><span class="sinc-metric__v">{{ item.materialCaja || '—' }}</span></div>
+                    <div class="sinc-metric"><span class="sinc-metric__k">Fase</span><span class="sinc-metric__v">{{ item.fase || '—' }}</span></div>
+                    <div class="sinc-metric"><span class="sinc-metric__k">Estado caja</span><span class="sinc-metric__v">{{ item.estadoCaja || '—' }}</span></div>
+                </div>
+                <div class="sinc-item-card__metrics" *ngSwitchCase="'controlSem'">
+                    <div class="sinc-metric"><span class="sinc-metric__k">Nº externo</span><span class="sinc-metric__v">{{ item.numExterno ?? '—' }}</span></div>
+                    <div class="sinc-metric"><span class="sinc-metric__k">Tipo controlador</span><span class="sinc-metric__v">{{ item.tipoControlador || '—' }}</span></div>
+                    <div class="sinc-metric"><span class="sinc-metric__k">Estado</span><span class="sinc-metric__v">{{ item.estadoControlador || '—' }}</span></div>
+                    <div class="sinc-metric"><span class="sinc-metric__k">Fase</span><span class="sinc-metric__v">{{ item.fase || '—' }}</span></div>
+                </div>
+                <div class="sinc-item-card__metrics" *ngSwitchCase="'semaforo'">
+                    <div class="sinc-metric"><span class="sinc-metric__k">Nº externo</span><span class="sinc-metric__v">{{ item.numExterno ?? '—' }}</span></div>
+                    <div class="sinc-metric"><span class="sinc-metric__k">Sitio</span><span class="sinc-metric__v">{{ item.sitio || '—' }}</span></div>
+                    <div class="sinc-metric"><span class="sinc-metric__k">Clase</span><span class="sinc-metric__v">{{ item.claseSem || '—' }}</span></div>
+                    <div class="sinc-metric"><span class="sinc-metric__k">Fase</span><span class="sinc-metric__v">{{ item.fase || '—' }}</span></div>
+                </div>
+            </ng-container>
+
+            <div class="sinc-item-card__geo" *ngIf="item.ubicacion?.coordinates?.length >= 2">
+                <span class="material-symbols-outlined">my_location</span>
+                <code>{{ item.ubicacion.coordinates[1] | number:'1.5-5' }}, {{ item.ubicacion.coordinates[0] | number:'1.5-5' }}</code>
+            </div>
+        </article>
+    </div>
+</div>
+
+<ng-template #loadingTpl>
+    <div class="vt-inv page-container">
+        <div class="vt-inv-loading" *ngIf="loading">
+            <span class="material-symbols-outlined spin">progress_activity</span>
+            <p>Cargando inventario…</p>
+        </div>
+        <div class="vt-inv-error" *ngIf="!loading && error">
+            <p>{{ error }}</p>
+            <button type="button" class="btn-secondary" (click)="router.navigate(['/via-tramos'])">Volver a la lista</button>
+        </div>
+    </div>
+</ng-template>

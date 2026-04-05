@@ -125,7 +125,7 @@ Acceso también desde **Reportes** (`/reportes`) y, en los listados de vía tram
 ## Estilos globales
 
 - `src/styles.scss`: variables CSS, modo claro, tablas y badges en listas.
-- Fuentes: Syne, DM Serif Display, JetBrains Mono (según `styles.scss` y `index.html`).
+- Fuentes: Inter (UI), DM Serif Display (títulos), JetBrains Mono (monoespaciado) — ver `styles.scss` y `index.html`.
 
 ---
 

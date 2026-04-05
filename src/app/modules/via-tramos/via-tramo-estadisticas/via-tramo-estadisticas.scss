@@ -69,7 +69,6 @@
 
     select,
     input[type='date'] {
-        font-family: inherit;
         font-size: 0.82rem;
         padding: 0.45rem 0.6rem;
         border-radius: 8px;
@@ -102,7 +101,9 @@
 .btn-primary,
 .btn-secondary,
 .btn-tiny {
-    font-family: var(--font-sans, 'Syne', system-ui, sans-serif);
+    font-family: var(--font-sans);
+    font-variant-numeric: lining-nums;
+    font-feature-settings: "lnum" 1;
     font-weight: 600;
     border-radius: 10px;
     cursor: pointer;

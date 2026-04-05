@@ -33,6 +33,8 @@ import {
 } from "../../../shared/utils/table-sort";
 import { ListaValorBadgeClassPipe } from "../../../shared/pipes/lista-valor-badge-class.pipe";
 import { ConfirmDialogService } from "../../../shared/services/confirm-dialog.service";
+import { CatalogoService } from "../../../core/services/catalogo.service";
+import { environment } from "../../../../environments/environment";
 
 @Component({
     selector: "app-sen-vert-lista",
@@ -40,10 +42,9 @@ import { ConfirmDialogService } from "../../../shared/services/confirm-dialog.se
     imports: [CommonModule, FormsModule, RouterModule, ListaValorBadgeClassPipe],
     templateUrl: "./sen-vert-lista.html",
     styleUrls: [
-        "../../../shared/styles/lista-object-id-column.scss",
         "./sen-vert-lista.scss",
         "../../../shared/styles/geo-badges.scss",
-        "../../../shared/styles/street-view-list-btn.scss"
+        "../../../shared/styles/lista-valor-badges.scss"
     ]
 })
 export class SenVertListaComponent implements OnInit {
@@ -66,15 +67,22 @@ export class SenVertListaComponent implements OnInit {
     sortColumn: string | null = null;
     sortDir: TableSortDirection = "asc";
 
+    catalogoSenVert: any[] = [];
+    readonly apiUrl = environment.apiUrl;
+
     constructor(
         private senVertService: SenVertService,
         private jornadaService: JornadaService,
         private confirmDialog:  ConfirmDialogService,
+        private catalogoService: CatalogoService,
         public  authService:    AuthService,
         public  router:         Router
     ) {}
 
     ngOnInit() {
+        this.catalogoService.getSenVertscat().subscribe({
+            next: (res: any) => { this.catalogoSenVert = res?.datos ?? []; }
+        });
         this.loadJornada();
         this.loadRegistros();
     }
@@ -283,6 +291,39 @@ export class SenVertListaComponent implements OnInit {
 
     onFiltroIdChange() {
         this.currentPage = 1;
+    }
+
+    get sortSelectValue(): string {
+        return this.sortColumn ?? "";
+    }
+
+    onOrdenSelect(value: string) {
+        this.sortColumn = value === "" ? null : value;
+        this.currentPage = 1;
+    }
+
+    limpiarFiltrosLista() {
+        this.busqueda = "";
+        this.filtroId = "";
+        this.filtroDepartamento = "";
+        this.filtroMunicipio = "";
+        this.filtroZat = "";
+        this.filtroCodigo = "";
+        this.currentPage = 1;
+    }
+
+    private static normCod(c: string | null | undefined): string {
+        return (c ?? "").trim().toUpperCase();
+    }
+
+    urlImgCatalogoSenVert(r: any): string {
+        const c = SenVertListaComponent.normCod(r?.codSe);
+        if (!c) return "";
+        const row = this.catalogoSenVert.find(
+            (s: any) => SenVertListaComponent.normCod(s?.codSenVert) === c
+        );
+        const path = row?.urlImgSenVert;
+        return path ? `${this.apiUrl}${path}` : "";
     }
 
     nuevo()            { this.router.navigate(["/sen-verticales/nuevo"]); }

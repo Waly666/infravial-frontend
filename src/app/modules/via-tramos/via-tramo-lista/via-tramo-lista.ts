@@ -36,12 +36,7 @@ import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.se
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './via-tramo-lista.html',
-    styleUrls: [
-        '../../../shared/styles/lista-object-id-column.scss',
-        './via-tramo-lista.scss',
-        '../../../shared/styles/geo-badges.scss',
-        '../../../shared/styles/street-view-list-btn.scss'
-    ]
+    styleUrls: ['./via-tramo-lista.scss', '../../../shared/styles/geo-badges.scss']
 })
 export class ViaTramoListaComponent implements OnInit {
 
@@ -213,6 +208,30 @@ export class ViaTramoListaComponent implements OnInit {
         this.currentPage = 1;
     }
 
+    /** Valor del `<select>` de ordenación (`''` = orden por defecto del backend / tabla). */
+    get sortSelectValue(): string {
+        return this.sortColumn ?? '';
+    }
+
+    onOrdenSelect(value: string) {
+        this.sortColumn = value === '' ? null : value;
+        this.currentPage = 1;
+    }
+
+    /** Clic en la tarjeta: mismo destino que “ver” inventario por capas (estilo SINC → detalle). */
+    abrirDesdeCard(id: string) {
+        this.inventario(id);
+    }
+
+    limpiarFiltrosLista() {
+        this.busqueda = '';
+        this.filtroIdTramo = '';
+        this.filtroDepartamento = '';
+        this.filtroMunicipio = '';
+        this.filtroZat = '';
+        this.currentPage = 1;
+    }
+
     get departamentosDisponibles(): string[] {
         return geoDepartamentos(this.tramos);
     }
@@ -268,6 +287,9 @@ export class ViaTramoListaComponent implements OnInit {
 
     nuevo()          { this.router.navigate(['/via-tramos/nuevo']); }
     editar(id: string) { this.router.navigate(['/via-tramos/editar', id]); }
+    inventario(id: string) {
+        this.router.navigate(['/via-tramos', id, 'inventario']);
+    }
     isAdmin():    boolean { return this.authService.isAdmin(); }
     isSupervisor(): boolean { return this.authService.isSupervisor(); }
     puedeVerEstadisticas(): boolean {

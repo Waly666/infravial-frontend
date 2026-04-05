@@ -1,0 +1,271 @@
+<div class="page-container">
+
+    <div class="page-header">
+        <div class="page-header-top">
+            <h1 class="page-title">
+                <span class="material-symbols-outlined">conversion_path</span>
+                {{ modoEdicion ? 'Editar Eje Vial' : 'Nuevo Eje Vial' }} — SINC
+            </h1>
+            <button type="button" class="btn-help" (click)="mostrarAyuda = true" title="Ayuda sobre el formulario">
+                <span class="material-symbols-outlined">help</span>
+                <span class="btn-help-label">Ayuda SINC</span>
+            </button>
+        </div>
+        <p class="page-subtitle" *ngIf="jornada">
+            Jornada: {{ jornada.municipio }}, {{ jornada.dpto }}
+        </p>
+    </div>
+
+    <div class="error-banner" *ngIf="error" tabindex="-1" role="alert">
+        <span class="material-symbols-outlined">error</span> {{ error }}
+    </div>
+
+    <form class="sinc-form" (ngSubmit)="guardar()" #f="ngForm">
+
+        <!-- ── DATOS GENERALES ────────────────────────────────────────────── -->
+        <div class="form-section">
+            <h2 class="section-title">Identificación del eje</h2>
+            <div class="form-grid-2">
+
+                <div class="form-field required">
+                    <label>Código de Vía (CODIGOVIA)</label>
+                    <input type="text" [(ngModel)]="form.codigoVia" name="codigoVia"
+                           placeholder="Ej: 05001-SEC-001" required>
+                    <small>Único por entidad territorial (Res. 339/1999 MinTransporte)</small>
+                </div>
+
+                <div class="form-field">
+                    <label>Código Vía Intersección (CODIGOVIA1)</label>
+                    <input type="text" [(ngModel)]="form.codigoVia1" name="codigoVia1"
+                           placeholder="Ej: 05001-SEC-002">
+                    <small>Código de la vía que intersecta o da continuidad a este eje</small>
+                </div>
+
+                <div class="form-field">
+                    <label>Nombre de la Vía (NOMVIA)</label>
+                    <input type="text" [(ngModel)]="form.nomVia" name="nomVia"
+                           placeholder="Ej: Calle 80 / Vía Armenia-Calarcá">
+                </div>
+
+                <div class="form-field">
+                    <label>Tipo de Red</label>
+                    <select [(ngModel)]="form.tipoRed" name="tipoRed" (change)="onTipoRedChange()">
+                        <option [ngValue]="null">Seleccione...</option>
+                        <option *ngFor="let t of dominios.tipoRed" [value]="t.v">{{ t.l }}</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label>Tipo de Eje</label>
+                    <select [(ngModel)]="form.tipoEje" name="tipoEje">
+                        <option [ngValue]="null">Seleccione...</option>
+                        <option *ngFor="let t of dominios.tipoEje" [value]="t.v">{{ t.l }}</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label>Sentido</label>
+                    <select [(ngModel)]="form.sentido" name="sentido">
+                        <option [ngValue]="null">Seleccione...</option>
+                        <option *ngFor="let t of dominios.sentido" [value]="t.v">{{ t.l }}</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label>Categoría</label>
+                    <select [(ngModel)]="form.categoria" name="categoria">
+                        <option [ngValue]="null">Seleccione...</option>
+                        <option *ngFor="let t of dominios.categoria" [value]="t.v">{{ t.l }}</option>
+                    </select>
+                </div>
+
+                <div class="form-field form-field-inline">
+                    <label>¿Es vía en concesión?</label>
+                    <label class="toggle">
+                        <input type="checkbox" [(ngModel)]="form.concesion" name="concesion" (change)="onConcesionChange()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-field" *ngIf="form.concesion">
+                    <label>Código de Concesión</label>
+                    <input type="text" [(ngModel)]="form.codigoConcesion" name="codigoConcesion">
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── NIVEL DE INVENTARIO SINC ──────────────────────────────────── -->
+        <div class="form-section">
+            <h2 class="section-title">Nivel de Inventario SINC</h2>
+
+            <!-- Sugerencia automática -->
+            <div class="nivel-sugerencia" *ngIf="nivelSugerido && nivelSugerido !== form.nivelInventario">
+                <span class="material-symbols-outlined">info</span>
+                <span>Para vías <strong>{{ nivelSugerido === 'detallado' ? 'primarias o en concesión' : 'secundarias/terciarias' }}</strong>
+                se recomienda el nivel <strong>{{ nivelSugerido === 'detallado' ? 'Detallado' : 'Básico' }}</strong>.</span>
+                <button type="button" class="btn-secondary btn-sm" (click)="aplicarNivelSugerido()">Aplicar sugerencia</button>
+            </div>
+
+            <div class="nivel-selector">
+                <label class="nivel-opcion" [class.activo]="form.nivelInventario === 'basico'">
+                    <input type="radio" [(ngModel)]="form.nivelInventario" name="nivelInventario" value="basico">
+                    <div class="nivel-card">
+                        <span class="material-symbols-outlined">list_alt</span>
+                        <strong>Nivel Básico</strong>
+                        <small>9 capas — Vías secundarias y terciarias no concesionadas</small>
+                    </div>
+                </label>
+                <label class="nivel-opcion" [class.activo]="form.nivelInventario === 'detallado'">
+                    <input type="radio" [(ngModel)]="form.nivelInventario" name="nivelInventario" value="detallado">
+                    <div class="nivel-card">
+                        <span class="material-symbols-outlined">fact_check</span>
+                        <strong>Nivel Detallado</strong>
+                        <small>15 capas — Vías primarias, INVIAS y concesiones ANI</small>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- ── GEOMETRÍA ─────────────────────────────────────────────────── -->
+        <div class="form-section">
+            <h2 class="section-title">Geometría del eje</h2>
+
+            <div class="geo-status" [class.geo-ok]="tieneGeometria">
+                <span class="material-symbols-outlined">{{ tieneGeometria ? 'check_circle' : 'location_off' }}</span>
+                <span>{{ tieneGeometria
+                    ? 'Eje dibujado — ' + (form.ubicacion?.coordinates?.length || 0) + ' puntos · ' + (form.longitud_m | number:'1.0-0') + ' m'
+                    : 'Sin geometría definida' }}</span>
+                <button type="button" class="btn-secondary btn-sm" (click)="abrirMapa()">
+                    <span class="material-symbols-outlined">edit_location</span>
+                    {{ tieneGeometria ? 'Redibujar' : 'Dibujar en mapa' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- ── FOTOS ──────────────────────────────────────────────────────── -->
+        <div class="form-section">
+            <h2 class="section-title">Fotos del tramo</h2>
+            <div class="fotos-upload">
+                <label class="btn-upload">
+                    <span class="material-symbols-outlined">add_photo_alternate</span>
+                    Agregar fotos
+                    <input type="file" accept="image/*" multiple (change)="onFotoSeleccionada($event)" hidden>
+                </label>
+                <div class="fotos-grid" *ngIf="fotosPreview.length > 0">
+                    <div class="foto-thumb" *ngFor="let f of fotosPreview; let i = index">
+                        <img [src]="f.url" [alt]="f.nombre">
+                        <button type="button" class="foto-remove" (click)="eliminarFoto(i)">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── OBSERVACIONES ─────────────────────────────────────────────── -->
+        <div class="form-section">
+            <div class="form-field">
+                <label>Observaciones</label>
+                <textarea [(ngModel)]="form.obs" name="obs" rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- ── ACCIONES ──────────────────────────────────────────────────── -->
+        <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="cancelar()" [disabled]="loading">
+                Cancelar
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="loading">
+                <span class="material-symbols-outlined spin" *ngIf="loading">progress_activity</span>
+                {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<!-- ── MODAL MAPA ─────────────────────────────────────────────────────────── -->
+<div class="mapa-overlay" *ngIf="mapaAbierto">
+    <div class="mapa-panel">
+        <div class="mapa-header">
+            <h3>Dibujar eje vial</h3>
+            <small>Haz clic en el mapa para agregar puntos al eje</small>
+        </div>
+        <div id="sinc-mapa" class="mapa-contenedor"></div>
+        <div class="mapa-toolbar">
+            <span class="mapa-info">{{ marcadores.length }} punto(s)</span>
+            <button type="button" class="btn-secondary btn-sm" (click)="deshacerUltimoPunto()" [disabled]="!marcadores.length">
+                <span class="material-symbols-outlined">undo</span> Deshacer
+            </button>
+            <button type="button" class="btn-secondary btn-sm" (click)="limpiarLinea()">
+                <span class="material-symbols-outlined">delete</span> Limpiar
+            </button>
+            <button type="button" class="btn-secondary" (click)="cerrarMapa()">Cancelar</button>
+            <button type="button" class="btn-primary" (click)="confirmarGeometria()" [disabled]="marcadores.length < 2">
+                <span class="material-symbols-outlined">check</span> Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Panel lateral de ayuda — Eje Vial SINC -->
+<div class="ayuda-overlay" *ngIf="mostrarAyuda" (click)="mostrarAyuda = false">
+    <aside class="ayuda-panel" (click)="$event.stopPropagation()">
+        <div class="ayuda-header" [style.--ayuda-color]="ayuda.color">
+            <div class="ayuda-header-left">
+                <span class="ayuda-emoji">{{ ayuda.emoji }}</span>
+                <div>
+                    <h3 class="ayuda-titulo">{{ ayuda.titulo }}</h3>
+                    <span class="ayuda-ref-badge">{{ ayuda.refManual }}</span>
+                </div>
+            </div>
+            <button class="btn-icon" (click)="mostrarAyuda = false" title="Cerrar">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="ayuda-body">
+            <section class="ayuda-section">
+                <h4><span class="material-symbols-outlined">info</span> Definición</h4>
+                <p class="ayuda-definicion">{{ ayuda.definicion }}</p>
+            </section>
+            <section class="ayuda-section ayuda-nivel-det-section" *ngIf="ayuda.nivelEspecificidadDetallado">
+                <h4><span class="material-symbols-outlined">fact_check</span> Nivel de especificidad detallado</h4>
+                <p class="ayuda-definicion ayuda-nivel-det-text">{{ ayuda.nivelEspecificidadDetallado }}</p>
+            </section>
+            <section class="ayuda-section ayuda-geo-section">
+                <h4><span class="material-symbols-outlined">location_on</span> Geometría</h4>
+                <div class="ayuda-geo-row">
+                    <span class="ayuda-geo-badge" [style.--ayuda-color]="ayuda.color">
+                        <span class="material-symbols-outlined">timeline</span>
+                        {{ ayuda.geometria }}
+                    </span>
+                    <span class="ayuda-geo-desc">{{ ayuda.geoDesc }}</span>
+                </div>
+            </section>
+            <section class="ayuda-section">
+                <h4><span class="material-symbols-outlined">table_chart</span> Campos del formulario</h4>
+                <div class="ayuda-campos-table">
+                    <div class="ayuda-campo-row ayuda-campo-header">
+                        <span>Campo</span><span>Descripción</span><span>Req.</span>
+                    </div>
+                    <div class="ayuda-campo-row" *ngFor="let c of ayuda.campos">
+                        <span class="campo-nombre">{{ c.nombre }}<span class="campo-dominio" *ngIf="c.dominio"> · {{ c.dominio }}</span></span>
+                        <span class="campo-desc">{{ c.desc }}</span>
+                        <span class="campo-req" [class.req-si]="c.oblig" [class.req-no]="!c.oblig">{{ c.oblig ? '✓' : '—' }}</span>
+                    </div>
+                </div>
+            </section>
+            <section class="ayuda-section" *ngIf="ayuda.tips?.length">
+                <h4><span class="material-symbols-outlined">tips_and_updates</span> Consejos de campo</h4>
+                <ul class="ayuda-tips">
+                    <li *ngFor="let tip of ayuda.tips">{{ tip }}</li>
+                </ul>
+            </section>
+            <div class="ayuda-ref">
+                <span class="material-symbols-outlined">menu_book</span>
+                <span>Metodología SINC v5 — <em>{{ ayuda.refManual }}</em></span>
+            </div>
+        </div>
+    </aside>
+</div>

@@ -3,54 +3,70 @@
     <div class="bg-overlay"></div>
     <div class="bg-overlay"></div>
 
-    <div class="login-card">
-        <div class="logo-section">
-            <img src="logos/logo_fondo_dark.png" alt="INFRAVIAL" class="logo">
-            <p class="logo-sub">TRACKING DE INFRAESTRUCTURA VIAL</p>
+    <div class="login-split-wrap">
+        <div class="login-split-card">
+            <section class="login-panel form-panel" aria-labelledby="login-heading">
+                <h2 id="login-heading" class="form-title">Iniciar sesión</h2>
+
+                <div class="form-group">
+                    <label for="login-user">Cédula / documento</label>
+                    <div class="input-wrapper">
+                        <input
+                            id="login-user"
+                            type="text"
+                            [(ngModel)]="user"
+                            placeholder="Ingresa tu cédula"
+                            (keyup.enter)="login()"
+                            autocomplete="username"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="login-pass">Contraseña</label>
+                    <div class="input-wrapper">
+                        <input
+                            id="login-pass"
+                            [type]="showPass ? 'text' : 'password'"
+                            [(ngModel)]="password"
+                            placeholder="Ingresa tu contraseña"
+                            (keyup.enter)="login()"
+                            autocomplete="current-password"
+                        >
+                        <button class="toggle-pass" (click)="showPass = !showPass" type="button" [attr.aria-label]="showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                            {{ showPass ? '🙈' : '👁️' }}
+                        </button>
+                    </div>
+                </div>
+
+                <p class="forgot-hint">¿Problemas de acceso? Contacta al administrador de tu entidad.</p>
+
+                <div class="error-msg" *ngIf="error">
+                    ⚠️ {{ error }}
+                </div>
+
+                <button class="btn-login" type="button" (click)="login()" [disabled]="loading">
+                    <span *ngIf="!loading">Ingresar</span>
+                    <span *ngIf="loading">Cargando...</span>
+                </button>
+            </section>
+
+            <aside class="login-panel welcome-panel" aria-label="Bienvenida">
+                <div class="welcome-inner">
+                    <img src="logos/logo_fondo_dark.png" alt="" class="welcome-logo" width="140">
+                    <h3 class="welcome-title">¡Hola!</h3>
+                    <p class="welcome-copy">
+                        Accede al inventario vial, mapa y exportación SIG. Las cuentas son gestionadas por tu organización.
+                    </p>
+                    <a class="btn-ghost" href="https://infravial.cloud/landing/" target="_blank" rel="noopener noreferrer">
+                        Conocer INFRAVIAL
+                    </a>
+                </div>
+            </aside>
         </div>
 
-        <div class="form-section">
-            <h2 class="form-title">Iniciar Sesión</h2>
-
-            <div class="form-group">
-                <label>Cédula / Documento</label>
-                <div class="input-wrapper">
-                    <input
-                        type="text"
-                        [(ngModel)]="user"
-                        placeholder="Ingresa tu cédula"
-                        (keyup.enter)="login()"
-                    >
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Contraseña</label>
-                <div class="input-wrapper">
-                    <input
-                        [type]="showPass ? 'text' : 'password'"
-                        [(ngModel)]="password"
-                        placeholder="Ingresa tu contraseña"
-                        (keyup.enter)="login()"
-                    >
-                    <button class="toggle-pass" (click)="showPass = !showPass" type="button">
-                        {{ showPass ? '🙈' : '👁️' }}
-                    </button>
-                </div>
-            </div>
-
-            <div class="error-msg" *ngIf="error">
-                ⚠️ {{ error }}
-            </div>
-
-            <button class="btn-login" (click)="login()" [disabled]="loading">
-                <span *ngIf="!loading">Ingresar</span>
-                <span *ngIf="loading">Cargando...</span>
-            </button>
-        </div>
-
-        <div class="login-card-footer">
+        <p class="login-page-footer">
             © INFRAVIAL — DESARROLLADOR - WALTER AGUILAR
-        </div>
+        </p>
     </div>
 </div>

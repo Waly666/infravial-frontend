@@ -11,6 +11,15 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { catchError, forkJoin, of } from 'rxjs';
+
+/* Marcador por defecto de Leaflet: sin esto el bundle resuelve mal las URLs de las imágenes. */
+const _LEAFLET_ICON_BASE = 'https://unpkg.com/leaflet@1.9.4/dist/images';
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: `${_LEAFLET_ICON_BASE}/marker-icon-2x.png`,
+    iconUrl: `${_LEAFLET_ICON_BASE}/marker-icon.png`,
+    shadowUrl: `${_LEAFLET_ICON_BASE}/marker-shadow.png`,
+});
 import { ViaTramoService } from '../../core/services/via-tramo.service';
 import { SenVertService } from '../../core/services/sen-vert.service';
 import { SenHorService } from '../../core/services/sen-hor.service';

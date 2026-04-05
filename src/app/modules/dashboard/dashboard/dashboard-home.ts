@@ -247,7 +247,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         this.destroyCharts();
 
         const t = this.theme();
-        const font = getComputedStyle(document.body).fontFamily || "'Syne', sans-serif";
+        const font = getComputedStyle(document.body).fontFamily || "'Inter', sans-serif";
         const fontNum = this.fontNumeric();
 
         const invLabels = ['Vía tramos', 'Señ. V.', 'Señ. H.', 'Semáforos', 'Ctrl sem.', 'Cajas', 'Cat. vial'];

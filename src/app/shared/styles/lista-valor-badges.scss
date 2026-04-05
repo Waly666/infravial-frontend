@@ -1,5 +1,6 @@
 /* Pills Fase / Acción: un color fijo por valor (lista-valor-badge-class.ts) */
-.data-table .badge.badge-tag {
+.data-table .badge.badge-tag,
+.tramo-card .badge.badge-tag {
     display: inline-block;
     max-width: min(16rem, 100%);
     overflow: hidden;

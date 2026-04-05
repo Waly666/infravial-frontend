@@ -4,12 +4,12 @@
     box-sizing: border-box;
 }
 
-/* Tipografías (mismo stack que https://engineerssoftware.github.io/web/) */
+/* Tipografías: sans/UI = Inter (cifras lining en texto y datos) */
 /* ── VARIABLES MODO OSCURO (default) ── */
 :root {
-    --font-sans:    'Syne', system-ui, sans-serif;
+    --font-sans:    'Inter', 'Segoe UI', system-ui, sans-serif;
     --font-mono:    'JetBrains Mono', ui-monospace, monospace;
-    /* Listas/tablas y cifras: dígitos claros y alineación estable (tabular nums) */
+    /* Misma pila que --font-sans; nombre explícito para tablas/códigos */
     --font-list-data: 'Inter', 'Segoe UI', system-ui, sans-serif;
     --font-display: 'DM Serif Display', Georgia, serif;
     --bg-primary:     #070c1a;
@@ -31,6 +31,8 @@ html, body {
     width: 100%;
     overflow: hidden;
     font-family: var(--font-sans);
+    font-variant-numeric: lining-nums;
+    font-feature-settings: "lnum" 1;
     color: var(--text-primary);
     background-attachment: fixed;
     background-image:
@@ -39,6 +41,20 @@ html, body {
         radial-gradient(ellipse 70% 50% at 50% 100%, rgba(74, 158, 255, 0.12) 0%, transparent 50%),
         linear-gradient(165deg, #030712 0%, #0a0f1f 22%, #0d1528 45%, #0f172a 72%, #080c18 100%);
     background-color: #050816;
+}
+
+/* Campos editables: tabular + lining para alineación en formularios */
+textarea,
+select,
+.form-input,
+.form-select,
+.form-textarea,
+.filter-select,
+.search-input,
+input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]) {
+    font-family: var(--font-list-data);
+    font-variant-numeric: lining-nums tabular-nums;
+    font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
 .page-title,
@@ -94,7 +110,7 @@ code, kbd, pre, samp {
     letter-spacing: 0.02em;
 }
 
-/* Tablas de inventario / listas: números más legibles que con Syne */
+/* Tablas de inventario / listas */
 .data-table th,
 .data-table td {
     font-family: var(--font-list-data);

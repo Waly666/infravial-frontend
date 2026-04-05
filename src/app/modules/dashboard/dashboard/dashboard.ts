@@ -116,7 +116,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (!this.stats) return;
 
         const t = this.theme();
-        const font = getComputedStyle(document.body).fontFamily || "'Syne', sans-serif";
+        const font = getComputedStyle(document.body).fontFamily || "'Inter', sans-serif";
         const fontNum = this.fontNumeric();
 
         const barEl = document.getElementById('chart-inventario') as HTMLCanvasElement | null;

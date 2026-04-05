@@ -39,12 +39,7 @@ import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.se
     standalone: true,
     imports: [CommonModule, FormsModule, ListaValorBadgeClassPipe],
     templateUrl: './semaforo-lista.html',
-    styleUrls: [
-        '../../../shared/styles/lista-object-id-column.scss',
-        './semaforo-lista.scss',
-        '../../../shared/styles/geo-badges.scss',
-        '../../../shared/styles/street-view-list-btn.scss'
-    ]
+    styleUrls: ['./semaforo-lista.scss', '../../../shared/styles/geo-badges.scss', '../../../shared/styles/lista-valor-badges.scss']
 })
 export class SemaforoListaComponent implements OnInit {
 
@@ -120,7 +115,10 @@ export class SemaforoListaComponent implements OnInit {
         const qRaw = this.busqueda.trim();
         const list = base.filter((r) => {
             const z = rowZatLabel(r);
-            const ne = r.numExterno != null ? String(r.numExterno) : '';
+            const ne =
+                r.idControSem?.numExterno != null
+                    ? String(r.idControSem.numExterno)
+                    : '';
             const blob = [
                 rowMongoIdString(r),
                 ne,
@@ -198,21 +196,6 @@ export class SemaforoListaComponent implements OnInit {
         return this.registrosOrdenados.slice(start, start + this.pageSize);
     }
 
-    ordenarPor(col: string) {
-        if (this.sortColumn === col) {
-            this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
-        } else {
-            this.sortColumn = col;
-            this.sortDir = 'asc';
-        }
-        this.currentPage = 1;
-    }
-
-    sortIndicador(col: string): string {
-        if (this.sortColumn !== col) return '';
-        return this.sortDir === 'asc' ? ' ↑' : ' ↓';
-    }
-
     private valorOrden(r: any, c: string): unknown {
         switch (c) {
             case 'id':
@@ -262,6 +245,24 @@ export class SemaforoListaComponent implements OnInit {
     }
 
     onFiltroIdChange() {
+        this.currentPage = 1;
+    }
+
+    get sortSelectValue(): string {
+        return this.sortColumn ?? '';
+    }
+
+    onOrdenSelect(value: string) {
+        this.sortColumn = value === '' ? null : value;
+        this.currentPage = 1;
+    }
+
+    limpiarFiltrosLista() {
+        this.busqueda = '';
+        this.filtroId = '';
+        this.filtroDepartamento = '';
+        this.filtroMunicipio = '';
+        this.filtroZat = '';
         this.currentPage = 1;
     }
 

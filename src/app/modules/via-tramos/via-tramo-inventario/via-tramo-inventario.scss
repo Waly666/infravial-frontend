@@ -1,0 +1,510 @@
+// Layout alineado con SINC — detalle de eje (cabecera, chips, tarjetas ítem)
+
+.vt-inv.page-container {
+    padding: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+// ── Cabecera (mismas clases que sinc-eje-detalle) ─────────────────────────────
+.eje-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1.1rem 1.25rem;
+    background: rgba(10, 18, 40, 0.85);
+    border: 1px solid rgba(74, 158, 255, 0.1);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, #4a9eff, #1a5fcc);
+        border-radius: 0 2px 2px 0;
+    }
+}
+
+.eje-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem;
+    background: rgba(74, 158, 255, 0.08);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 6px;
+    color: #4a9eff;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:hover {
+        background: rgba(74, 158, 255, 0.15);
+    }
+
+    .material-symbols-outlined {
+        font-size: 1.2rem;
+    }
+}
+
+.eje-codigo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: #4a9eff;
+    letter-spacing: 0.02em;
+    word-break: break-all;
+    line-height: 1.35;
+}
+
+.eje-nombre {
+    font-size: 1.05rem;
+    color: rgba(180, 200, 255, 0.85);
+    margin: 0 0 0.55rem;
+    font-weight: 600;
+}
+
+.eje-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(74, 158, 255, 0.1);
+    color: #4a9eff;
+    border: 1px solid rgba(74, 158, 255, 0.2);
+}
+
+.badge-via {
+    background: rgba(106, 27, 154, 0.2);
+    color: #ce93d8;
+    border-color: rgba(106, 27, 154, 0.35);
+}
+
+.badge-calz {
+    background: rgba(74, 158, 255, 0.12);
+    color: #64b5f6;
+    border-color: rgba(74, 158, 255, 0.28);
+}
+
+.badge-dis {
+    background: rgba(0, 105, 92, 0.18);
+    color: #80cbc4;
+    border-color: rgba(0, 105, 92, 0.32);
+}
+
+.badge-zat {
+    background: rgba(63, 81, 181, 0.18);
+    color: #9fa8da;
+    border-color: rgba(92, 107, 192, 0.35);
+    text-transform: none;
+}
+
+.eje-jornada {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    color: rgba(180, 200, 255, 0.42);
+    margin: 0.25rem 0 0;
+
+    .material-symbols-outlined {
+        font-size: 0.95rem;
+    }
+}
+
+// ── Chips de capas (como .tab-chips en SINC) ──────────────────────────────────
+.tab-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.tab-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem 0.4rem 0.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(180, 200, 255, 0.5);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.15s;
+    min-width: 0;
+
+    .tab-chip-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        border-radius: 6px;
+        background: color-mix(in srgb, var(--chip-color) 18%, transparent);
+        color: var(--chip-color);
+        overflow: hidden;
+        position: relative;
+        isolation: isolate;
+
+        .material-symbols-outlined {
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            letter-spacing: 0;
+            white-space: nowrap;
+            /* Evita que glifos anchos (p. ej. traffic_light) invadan la etiqueta */
+            overflow: hidden;
+            text-align: center;
+            user-select: none;
+        }
+    }
+
+    .tab-chip-label {
+        flex: 1 1 auto;
+        min-width: 0;
+        text-align: left;
+    }
+
+    .tab-chip-badge {
+        flex-shrink: 0;
+        min-width: 1.25rem;
+        text-align: center;
+        padding: 2px 7px;
+        border-radius: 8px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    &:hover:not(.active) {
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #e8f0ff;
+    }
+
+    &.active {
+        border-color: color-mix(in srgb, var(--chip-color) 45%, transparent);
+        background: color-mix(in srgb, var(--chip-color) 12%, rgba(10, 18, 40, 0.5));
+        color: #e8f0ff;
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--chip-color) 35%, transparent);
+    }
+}
+
+.vt-inv-lead {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: rgba(180, 200, 255, 0.75);
+    margin-bottom: 1rem;
+}
+
+.vt-inv-toolbar {
+    margin-bottom: 0.85rem;
+}
+
+.vt-btn-add {
+    text-decoration: none;
+}
+
+.vt-capas-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: rgba(150, 175, 220, 0.45);
+    margin: 0 0 0.65rem;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.1rem;
+    background: linear-gradient(135deg, #1a5fcc, #4a9eff);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover {
+        box-shadow: 0 4px 14px rgba(74, 158, 255, 0.35);
+    }
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1rem;
+    background: rgba(74, 158, 255, 0.07);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 6px;
+    color: #4a9eff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover {
+        background: rgba(74, 158, 255, 0.14);
+    }
+}
+
+// ── Tarjetas de ítems (subset de sinc-eje-detalle) ─────────────────────────────
+.sinc-item-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 0.85rem;
+}
+
+.sinc-item-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.85rem 1rem;
+    background: rgba(10, 18, 40, 0.88);
+    border: 1px solid rgba(74, 158, 255, 0.12);
+    border-radius: 10px;
+    border-left: 3px solid rgba(74, 158, 255, 0.45);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+.sinc-item-card__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.sinc-item-card__id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: rgba(160, 195, 255, 0.75);
+    word-break: break-all;
+    line-height: 1.35;
+    flex: 1;
+    min-width: 0;
+}
+
+.sinc-item-card__actions {
+    flex-shrink: 0;
+}
+
+.sinc-item-card__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid rgba(74, 158, 255, 0.25);
+    background: rgba(74, 158, 255, 0.08);
+    color: #4a9eff;
+    text-decoration: none;
+    transition: background 0.15s;
+
+    .material-symbols-outlined {
+        font-size: 1.05rem;
+    }
+
+    &:hover {
+        background: rgba(74, 158, 255, 0.18);
+    }
+}
+
+.sinc-item-card__row-with-thumb {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.sinc-item-card__metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem 0.65rem;
+
+    &--with-thumb {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+.sinc-item-card__catalog-thumb {
+    flex-shrink: 0;
+    width: 118px;
+    height: 92px;
+    border-radius: 8px;
+    border: 1px solid rgba(74, 158, 255, 0.18);
+    background: rgba(0, 0, 0, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+    }
+}
+
+.sinc-item-card__catalog-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.35rem;
+    text-align: center;
+    font-size: 0.62rem;
+    line-height: 1.25;
+    color: rgba(150, 175, 220, 0.38);
+
+    .material-symbols-outlined {
+        font-size: 1.5rem;
+        opacity: 0.45;
+    }
+}
+
+@media (max-width: 520px) {
+    .sinc-item-card__row-with-thumb {
+        flex-direction: column;
+    }
+
+    .sinc-item-card__catalog-thumb {
+        width: 100%;
+        height: 100px;
+    }
+}
+
+.sinc-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    padding: 0.35rem 0.45rem;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(74, 158, 255, 0.08);
+
+    &--wide {
+        grid-column: 1 / -1;
+    }
+}
+
+.sinc-metric__k {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(150, 175, 220, 0.42);
+}
+
+.sinc-metric__v {
+    font-size: 0.78rem;
+    color: rgba(220, 230, 255, 0.92);
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.sinc-item-card__geo {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.76rem;
+    color: rgba(130, 200, 170, 0.9);
+
+    .material-symbols-outlined {
+        font-size: 1rem;
+        opacity: 0.85;
+    }
+
+    code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.74rem;
+        color: rgba(180, 210, 255, 0.75);
+        background: rgba(0, 0, 0, 0.2);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+    }
+}
+
+.vt-inv-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: rgba(180, 200, 255, 0.35);
+    border: 1px dashed rgba(74, 158, 255, 0.2);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+
+    .material-symbols-outlined {
+        font-size: 2.5rem;
+        opacity: 0.5;
+    }
+}
+
+.vt-inv-loading,
+.vt-inv-error {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: rgba(180, 200, 255, 0.55);
+}
+
+.vt-inv-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.vt-inv-error p {
+    color: #e57373;
+    margin-bottom: 1rem;
+}
