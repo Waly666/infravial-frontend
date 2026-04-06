@@ -93,20 +93,40 @@
 }
 
 .jornada-dot {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: #4caf82;
-    box-shadow: 0 0 12px rgba(76, 175, 130, 0.7);
-    animation: blink 1.5s infinite;
     flex-shrink: 0;
+    animation: pingVerdeDash 1.8s ease-out infinite;
 
-    &.inactive { background: #e05c5c; animation: none; box-shadow: none; }
+    &.inactive {
+        background: #e05c5c;
+        animation: pingRojoDash 2.4s ease-out infinite;
+    }
 }
 
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0.35; }
+@keyframes pingVerdeDash {
+    0%   { box-shadow: 0 0 0 0   rgba(76,175,130,0.75); }
+    70%  { box-shadow: 0 0 0 9px rgba(76,175,130,0); }
+    100% { box-shadow: 0 0 0 0   rgba(76,175,130,0); }
+}
+
+@keyframes pingRojoDash {
+    0%   { box-shadow: 0 0 0 0   rgba(224,92,92,0.7); }
+    70%  { box-shadow: 0 0 0 9px rgba(224,92,92,0); }
+    100% { box-shadow: 0 0 0 0   rgba(224,92,92,0); }
+}
+
+@keyframes pulsoCajita {
+    0%, 100% {
+        border-color: rgba(76,175,130,0.28);
+        box-shadow: 0 0 0 0 rgba(76,175,130,0);
+    }
+    50% {
+        border-color: rgba(76,175,130,0.7);
+        box-shadow: 0 0 14px rgba(76,175,130,0.3);
+    }
 }
 
 .jornada-txt {
@@ -186,22 +206,90 @@
     font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
-.nav-item[data-nav='dashboard']        .nav-icon-wrap { background: linear-gradient(145deg, #38bdf8 0%, #6366f1 100%); }
-.nav-item[data-nav='jornadas']         .nav-icon-wrap { background: linear-gradient(145deg, #fbbf24 0%, #f97316 100%); }
-.nav-item[data-nav='via-tramos']       .nav-icon-wrap { background: linear-gradient(145deg, #34d399 0%, #0d9488 100%); }
-.nav-item[data-nav='mapa-inventario']  .nav-icon-wrap { background: linear-gradient(145deg, #2dd4bf 0%, #0f766e 100%); }
-.nav-item[data-nav='sen-verticales']   .nav-icon-wrap { background: linear-gradient(145deg, #a78bfa 0%, #c026d3 100%); }
-.nav-item[data-nav='sen-horizontales'] .nav-icon-wrap { background: linear-gradient(145deg, #60a5fa 0%, #2563eb 100%); }
-.nav-item[data-nav='semaforos']        .nav-icon-wrap { background: linear-gradient(145deg, #f87171 0%, #dc2626 100%); }
-.nav-item[data-nav='control-semaforo'] .nav-icon-wrap { background: linear-gradient(145deg, #f472b6 0%, #db2777 100%); }
-.nav-item[data-nav='cajas-inspeccion'] .nav-icon-wrap { background: linear-gradient(145deg, #facc15 0%, #ca8a04 100%); }
-.nav-item[data-nav='catalogos']        .nav-icon-wrap { background: linear-gradient(145deg, #2dd4bf 0%, #0e7490 100%); }
-.nav-item[data-nav='usuarios']         .nav-icon-wrap { background: linear-gradient(145deg, #93c5fd 0%, #4f46e5 100%); }
-.nav-item[data-nav='auditoria']        .nav-icon-wrap { background: linear-gradient(145deg, #4ade80 0%, #15803d 100%); }
-.nav-item[data-nav='respaldos']        .nav-icon-wrap { background: linear-gradient(145deg, #f59e0b 0%, #b45309 100%); }
-.nav-item[data-nav='importacion']      .nav-icon-wrap { background: linear-gradient(145deg, #22d3ee 0%, #0369a1 100%); }
-.nav-item[data-nav='reportes']         .nav-icon-wrap { background: linear-gradient(145deg, #fb923c 0%, #c2410c 100%); }
-.nav-item[data-nav='utils']            .nav-icon-wrap { background: linear-gradient(145deg, #f87171 0%, #b91c1c 100%); }
+// ── ÍCONOS individuales ───────────────────────────────────────────────────────
+// Dashboard — azul
+.nav-item[data-nav='dashboard']        .nav-icon-wrap { background: linear-gradient(145deg, #60a5fa 0%, #1d4ed8 100%); }
+// Jornadas — amarillo
+.nav-item[data-nav='jornadas']         .nav-icon-wrap { background: linear-gradient(145deg, #fde68a 0%, #f59e0b 100%); }
+// Inventario Vial Urbano (grupo) — fucsia
+.nav-item[data-nav='inventario']       .nav-icon-wrap { background: linear-gradient(145deg, #f0abfc 0%, #c026d3 100%); }
+// Subitems de Inventario Vial Urbano — cada uno único
+.nav-item[data-nav='via-tramos']          .nav-icon-wrap { background: linear-gradient(145deg, #38bdf8 0%, #0369a1 100%); } // azul cielo
+.nav-item[data-nav='sen-verticales']      .nav-icon-wrap { background: linear-gradient(145deg, #a78bfa 0%, #6d28d9 100%); } // violeta
+.nav-item[data-nav='sen-horizontales']    .nav-icon-wrap { background: linear-gradient(145deg, #34d399 0%, #0d9488 100%); } // esmeralda
+.nav-item[data-nav='semaforos']           .nav-icon-wrap { background: linear-gradient(145deg, #f87171 0%, #b91c1c 100%); } // rojo
+.nav-item[data-nav='control-semaforo']    .nav-icon-wrap { background: linear-gradient(145deg, #fb923c 0%, #c2410c 100%); } // naranja
+.nav-item[data-nav='cajas-inspeccion']    .nav-icon-wrap { background: linear-gradient(145deg, #facc15 0%, #a16207 100%); } // amarillo
+.nav-item[data-nav='mapa-inventario']     .nav-icon-wrap { background: linear-gradient(145deg, #2dd4bf 0%, #0f766e 100%); } // teal
+// Inventario Carreteras (grupo) — verde
+.nav-item[data-nav='carreteras']          .nav-icon-wrap { background: linear-gradient(145deg, #86efac 0%, #15803d 100%); }
+// Subitems de Inventario Carreteras — cada uno único
+.nav-item[data-nav='categorizacion-vial'] .nav-icon-wrap { background: linear-gradient(145deg, #fda4af 0%, #be123c 100%); } // rosa
+.nav-item[data-nav='sinc']                .nav-icon-wrap { background: linear-gradient(145deg, #93c5fd 0%, #1d4ed8 100%); } // azul rey
+// Utils — rojo
+.nav-item[data-nav='utils']               .nav-icon-wrap { background: linear-gradient(145deg, #fca5a5 0%, #b91c1c 100%); }
+// Subitems de Utils — cada uno único
+.nav-item[data-nav='data-transfer']       .nav-icon-wrap { background: linear-gradient(145deg, #67e8f9 0%, #0e7490 100%); } // cian
+.nav-item[data-nav='catalogos']           .nav-icon-wrap { background: linear-gradient(145deg, #86efac 0%, #166534 100%); } // verde bosque
+.nav-item[data-nav='usuarios']            .nav-icon-wrap { background: linear-gradient(145deg, #c4b5fd 0%, #5b21b6 100%); } // índigo
+.nav-item[data-nav='auditoria']           .nav-icon-wrap { background: linear-gradient(145deg, #fcd34d 0%, #b45309 100%); } // ámbar
+.nav-item[data-nav='respaldos']           .nav-icon-wrap { background: linear-gradient(145deg, #f9a8d4 0%, #9d174d 100%); } // fucsia oscuro
+// Reportes — zapote (#e8572a tono calabaza/zapote)
+.nav-item[data-nav='reportes']         .nav-icon-wrap { background: linear-gradient(145deg, #fb923c 0%, #e8572a 100%); }
+
+// ── GRUPO INVENTARIO VIAL URBANO — fucsia ─────────────────────────────────────
+.nav-item[data-nav='inventario'] {
+    background: linear-gradient(90deg, rgba(217,70,239,0.12) 0%, rgba(162,28,175,0.06) 100%);
+    border: 1px solid rgba(217,70,239,0.22);
+    border-radius: 9px;
+    margin-bottom: 0.1rem;
+
+    .nav-label { color: #f0abfc; font-weight: 700; letter-spacing: 0.02em; }
+
+    &.active, &:hover {
+        background: linear-gradient(90deg, rgba(217,70,239,0.22) 0%, rgba(162,28,175,0.12) 100%);
+        border-color: rgba(217,70,239,0.5);
+    }
+}
+.nav-group:has([data-nav='inventario']) .nav-group-children {
+    border-left-color: rgba(217,70,239,0.3);
+}
+
+// ── GRUPO INVENTARIO CARRETERAS — verde ──────────────────────────────────────
+.nav-item[data-nav='carreteras'] {
+    background: linear-gradient(90deg, rgba(134,239,172,0.12) 0%, rgba(21,128,61,0.06) 100%);
+    border: 1px solid rgba(134,239,172,0.22);
+    border-radius: 9px;
+    margin-bottom: 0.1rem;
+
+    .nav-label { color: #86efac; font-weight: 700; letter-spacing: 0.02em; }
+
+    &.active, &:hover {
+        background: linear-gradient(90deg, rgba(134,239,172,0.22) 0%, rgba(21,128,61,0.12) 100%);
+        border-color: rgba(134,239,172,0.5);
+    }
+}
+.nav-group:has([data-nav='carreteras']) .nav-group-children {
+    border-left-color: rgba(134,239,172,0.3);
+}
+
+// ── GRUPO UTILS — rojo ────────────────────────────────────────────────────────
+.nav-item[data-nav='utils'] {
+    background: linear-gradient(90deg, rgba(248,113,113,0.12) 0%, rgba(185,28,28,0.06) 100%);
+    border: 1px solid rgba(248,113,113,0.22);
+    border-radius: 9px;
+    margin-bottom: 0.1rem;
+
+    .nav-label { color: #fca5a5; font-weight: 700; letter-spacing: 0.02em; }
+
+    &.active, &:hover {
+        background: linear-gradient(90deg, rgba(248,113,113,0.22) 0%, rgba(185,28,28,0.12) 100%);
+        border-color: rgba(248,113,113,0.5);
+    }
+}
+.nav-group:has([data-nav='utils']) .nav-group-children {
+    border-left-color: rgba(248,113,113,0.3);
+}
 
 .nav-group {
     margin-bottom: 0.15rem;
@@ -1064,10 +1152,20 @@
     border: 1px solid rgba(76, 175, 130, 0.28);
     border-radius: 10px;
     display: flex;
-    align-items: flex-start;
-    gap: 0.45rem;
+    align-items: center;
+    gap: 0.5rem;
     font-family: var(--font-sans);
     line-height: 1.35;
+    animation: pulsoCajita 2.4s ease-in-out infinite;
+
+    .jornada-dot {
+        flex-shrink: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #4caf82;
+        animation: pingVerdeDash 1.8s ease-out infinite;
+    }
 
     &.warn {
         color: #ffd38a;
@@ -1482,4 +1580,62 @@
 
 :host-context(body.light-mode) .donut-3d canvas {
     filter: drop-shadow(0 8px 10px rgba(37, 99, 235, 0.12));
+}
+
+// ── MODO CLARO — grupos de nav coloreados ─────────────────────────────────────
+:host-context(body.light-mode) .nav-item[data-nav='inventario'] {
+    background: linear-gradient(90deg, rgba(217,70,239,0.08) 0%, rgba(162,28,175,0.04) 100%);
+    border-color: rgba(217,70,239,0.25);
+    .nav-label { color: #a21caf; }
+    &.active, &:hover {
+        background: linear-gradient(90deg, rgba(217,70,239,0.14) 0%, rgba(162,28,175,0.08) 100%);
+        border-color: rgba(217,70,239,0.45);
+    }
+}
+:host-context(body.light-mode) .nav-group:has([data-nav='inventario']) .nav-group-children {
+    border-left-color: rgba(162,28,175,0.25);
+}
+
+:host-context(body.light-mode) .nav-item[data-nav='carreteras'] {
+    background: linear-gradient(90deg, rgba(22,163,74,0.08) 0%, rgba(21,128,61,0.04) 100%);
+    border-color: rgba(22,163,74,0.25);
+    .nav-label { color: #166534; }
+    &.active, &:hover {
+        background: linear-gradient(90deg, rgba(22,163,74,0.14) 0%, rgba(21,128,61,0.08) 100%);
+        border-color: rgba(22,163,74,0.45);
+    }
+}
+:host-context(body.light-mode) .nav-group:has([data-nav='carreteras']) .nav-group-children {
+    border-left-color: rgba(22,163,74,0.25);
+}
+
+:host-context(body.light-mode) .nav-item[data-nav='utils'] {
+    background: linear-gradient(90deg, rgba(220,38,38,0.08) 0%, rgba(185,28,28,0.04) 100%);
+    border-color: rgba(220,38,38,0.22);
+    .nav-label { color: #b91c1c; }
+    &.active, &:hover {
+        background: linear-gradient(90deg, rgba(220,38,38,0.14) 0%, rgba(185,28,28,0.08) 100%);
+        border-color: rgba(220,38,38,0.4);
+    }
+}
+:host-context(body.light-mode) .nav-group:has([data-nav='utils']) .nav-group-children {
+    border-left-color: rgba(220,38,38,0.22);
+}
+
+// ── MODO CLARO — jornada-badge sidebar ───────────────────────────────────────
+:host-context(body.light-mode) .jornada-badge {
+    background: linear-gradient(90deg, rgba(22,163,74,0.1) 0%, rgba(22,163,74,0.04) 100%);
+    border-bottom-color: rgba(22,163,74,0.15);
+}
+:host-context(body.light-mode) .jornada-badge.inactive {
+    background: linear-gradient(90deg, rgba(220,38,38,0.08) 0%, rgba(220,38,38,0.03) 100%);
+}
+
+// ── MODO CLARO — welcome-jornada blinkeo ─────────────────────────────────────
+:host-context(body.light-mode) .welcome-jornada {
+    animation: pulsoCajitaLight 2.4s ease-in-out infinite;
+}
+@keyframes pulsoCajitaLight {
+    0%, 100% { border-color: rgba(34,197,94,0.3); box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+    50%       { border-color: rgba(34,197,94,0.65); box-shadow: 0 0 10px rgba(34,197,94,0.2); }
 }

@@ -133,6 +133,16 @@ export class CategListaComponent implements OnInit {
         return sortListByMongoIdPrefix(list, this.filtroId);
     }
 
+    get countPrimaria():   number { return this.registros.filter(r => r.clasificacion === 'PRIMARIA').length; }
+    get countSecundaria(): number { return this.registros.filter(r => r.clasificacion === 'SECUNDARIA').length; }
+    get countTerciaria():  number { return this.registros.filter(r => r.clasificacion === 'TERCIARIA').length; }
+
+    /** Porcentaje para la barra de longitud (relativo al máximo del conjunto filtrado). */
+    lonBarPct(r: CategorizacionVial): number {
+        const maxKm = Math.max(...this.registrosPaginados.map(x => x.longitud_km ?? 0), 1);
+        return Math.min(((r.longitud_km ?? 0) / maxKm) * 100, 100);
+    }
+
     get departamentosDisponibles(): string[] {
         return geoDepartamentos(this.registros);
     }

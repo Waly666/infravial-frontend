@@ -47,22 +47,22 @@
                     <div
                         class="nav-item nav-group-header"
                         [attr.data-nav]="entry.id"
-                        [class.active]="isUtilsSectionActive()"
+                        [class.active]="isGroupSectionActive(entry.id)"
                         role="button"
                         tabindex="0"
-                        [attr.aria-expanded]="utilsChildrenVisible"
-                        (click)="toggleUtilsMenu()"
-                        (keydown.enter)="toggleUtilsMenu()"
-                        (keydown.space)="$event.preventDefault(); toggleUtilsMenu()">
+                        [attr.aria-expanded]="isGroupVisible(entry.id)"
+                        (click)="toggleGroup(entry.id)"
+                        (keydown.enter)="toggleGroup(entry.id)"
+                        (keydown.space)="$event.preventDefault(); toggleGroup(entry.id)">
                         <span class="nav-icon-wrap" aria-hidden="true">
                             <span class="material-symbols-outlined nav-icon">{{ entry.icon }}</span>
                         </span>
                         <span class="nav-label">{{ entry.label }}</span>
                         <span class="nav-chevron" aria-hidden="true">
-                            <span class="material-symbols-outlined">{{ utilsChevronIcon() }}</span>
+                            <span class="material-symbols-outlined">{{ groupChevron(entry.id) }}</span>
                         </span>
                     </div>
-                    <div class="nav-group-children" *ngIf="utilsChildrenVisible">
+                    <div class="nav-group-children" *ngIf="isGroupVisible(entry.id)">
                         <div
                             *ngFor="let child of entry.children"
                             class="nav-item nav-subitem"
@@ -101,6 +101,7 @@
                 </div>
                 <div class="welcome-sub">Sistema de Inventario Vial — INFRAVIAL</div>
                 <div class="welcome-jornada" *ngIf="jornada">
+                    <span class="jornada-dot"></span>
                     <strong>Jornada activa:</strong>
                     {{ jornada.municipio }}, {{ jornada.dpto }} —
                     Supervisor: {{ jornada.supervisor }}

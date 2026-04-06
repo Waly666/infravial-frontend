@@ -29,6 +29,7 @@
         No hay jornada activa. Debe existir una jornada en proceso para registrar tramos.
     </div>
     <div class="alert-lista-usuario" *ngIf="authService.getNombreCompleto()">
+        <span class="usuario-dot"></span>
         <span class="alert-lista-usuario-label">Usuario en sesión</span>
         <strong>{{ authService.getNombreCompleto() }}</strong>
     </div>

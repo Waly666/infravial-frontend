@@ -173,8 +173,15 @@ export class SenVertFormComponent implements OnInit {
 
     loadTramos() {
         this.viaTramoService.getAll().subscribe({
-            next: (res) => this.tramos = res.tramos,
-            error: ()   => this.tramos = []
+            next: (res) => {
+                this.tramos = res.tramos;
+                const idTramoParam = this.route.snapshot.queryParamMap.get('idTramo');
+                if (!this.modoEdicion && idTramoParam) {
+                    const t = this.tramos.find(x => x._id === idTramoParam);
+                    if (t) { this.form.idViaTramo = t._id; this.tramoSeleccionado = t; }
+                }
+            },
+            error: () => this.tramos = []
         });
     }
 

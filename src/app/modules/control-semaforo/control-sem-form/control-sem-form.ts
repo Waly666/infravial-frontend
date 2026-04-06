@@ -147,6 +147,11 @@ export class ControlSemFormComponent implements OnInit {
                         t => t._id === this.form.idViaTramo || t._id === this.form.idViaTramo?._id
                     );
                 }
+                const idTramoParam = this.route.snapshot.queryParamMap.get('idTramo');
+                if (!this.modoEdicion && idTramoParam) {
+                    const t = this.tramos.find(x => x._id === idTramoParam);
+                    if (t) { this.form.idViaTramo = t._id; this.tramoSeleccionado = t; }
+                }
             },
             error: () => this.tramos = []
         });

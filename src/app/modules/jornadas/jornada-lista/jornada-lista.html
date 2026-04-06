@@ -1,178 +1,213 @@
 <div class="page-container">
 
     <div class="page-header">
-        <div>
-            <h1 class="page-title">Jornadas</h1>
-            <p class="page-sub">Gestión de jornadas de inventario vial</p>
+        <div class="page-header-left">
+            <h1 class="page-title">
+                <span class="material-symbols-outlined">event_note</span>
+                Jornadas
+            </h1>
+            <p class="page-subtitle">Gestión de jornadas de inventario vial</p>
         </div>
-        <div style="display:flex; gap:0.75rem;">
-            <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">
-                ← Dashboard
-            </button>
+        <div class="page-header-right">
+            <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">← Dashboard</button>
             <button class="btn-primary" *ngIf="isAdmin()" (click)="nueva()">
-                ➕ Nueva Jornada
+                <span class="material-symbols-outlined">add</span> Nueva Jornada
             </button>
         </div>
     </div>
 
+    <!-- Stat strip -->
+    <div class="stat-strip" *ngIf="!loading && jornadas.length > 0">
+        <div class="stat-card">
+            <span class="stat-value">{{ jornadas.length }}</span>
+            <span class="stat-label">Total jornadas</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-card stat-card-clickable" [class.activo]="filtroEstado === 'EN PROCESO'" (click)="filtroEstado = filtroEstado === 'EN PROCESO' ? '' : 'EN PROCESO'">
+            <span class="stat-value stat-activa">{{ countEnProceso }}</span>
+            <span class="stat-label">
+                <span class="material-symbols-outlined">pending</span>
+                En Proceso
+            </span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-card stat-card-clickable" [class.activo]="filtroEstado === 'FINALIZADO'" (click)="filtroEstado = filtroEstado === 'FINALIZADO' ? '' : 'FINALIZADO'">
+            <span class="stat-value stat-final">{{ countFinalizado }}</span>
+            <span class="stat-label">
+                <span class="material-symbols-outlined">check_circle</span>
+                Finalizadas
+            </span>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-bar">
+        <div class="filtro-group filtro-search">
+            <span class="material-symbols-outlined filtro-icon">search</span>
+            <input type="text" [(ngModel)]="busqueda" placeholder="Buscar municipio, departamento, supervisor…" class="filtro-input">
+            <button class="filtro-clear" *ngIf="busqueda" (click)="busqueda = ''">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <button class="btn-icon" title="Actualizar" (click)="loadJornadas()">
+            <span class="material-symbols-outlined">refresh</span>
+        </button>
+    </div>
+
+    <!-- Chip filtro estado activo -->
+    <div class="filtros-activos" *ngIf="filtroEstado">
+        <span class="chip-filtro" [class.chip-final]="filtroEstado === 'FINALIZADO'">
+            <span class="material-symbols-outlined">{{ filtroEstado === 'FINALIZADO' ? 'check_circle' : 'pending' }}</span>
+            {{ filtroEstado === 'FINALIZADO' ? 'Finalizadas' : 'En Proceso' }}
+            <button (click)="filtroEstado = ''"><span class="material-symbols-outlined">close</span></button>
+        </span>
+    </div>
+
     <div class="alert-lista-usuario" *ngIf="authService.getNombreCompleto()">
+        <span class="usuario-dot"></span>
         <span class="alert-lista-usuario-label">Usuario en sesión</span>
         <strong>{{ authService.getNombreCompleto() }}</strong>
     </div>
 
-    <!-- Loading -->
+    <!-- Loading / Error -->
     <div class="loading-state" *ngIf="loading">
-        <div class="spinner"></div>
-        <p>Cargando jornadas...</p>
+        <span class="material-symbols-outlined spin">progress_activity</span> Cargando jornadas...
     </div>
+    <div class="error-state" *ngIf="error && !loading">{{ error }}</div>
 
-    <!-- Error -->
-    <div class="error-state" *ngIf="error">⚠️ {{ error }}</div>
+    <!-- Grid de tarjetas -->
+    <div class="jornadas-grid" *ngIf="!loading && !error && jornadasFiltradas.length > 0">
+        <div class="jornada-card" [class.card-en-proceso]="j.estado === 'EN PROCESO'" *ngFor="let j of jornadasFiltradas">
 
-    <!-- Tabla -->
-    <div class="table-card" *ngIf="!loading && !error">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Municipio</th>
-                    <th>Departamento</th>
-                    <th>Fecha</th>
-                    <th>Supervisor</th>
-                    <th>Localidad</th>
-                    <th>Estado</th>
-                    <th *ngIf="isAdmin()">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr
-                    *ngFor="let j of jornadas; let ri = index"
-                    class="jornada-row"
-                    [style.animation-delay.ms]="ri * 42">
-                    <td>
-                        <span class="badge jorn-pill" [ngClass]="munClass(j)">{{ j.municipio || "—" }}</span>
-                    </td>
-                    <td>
-                        <span class="badge jorn-pill" [ngClass]="deptoClass(j)">{{ j.dpto || "—" }}</span>
-                    </td>
-                    <td class="td-fecha">{{ j.fechaJornada | date:'dd/MM/yyyy HH:mm' }}</td>
-                    <td>
-                        <span class="badge jorn-pill" [ngClass]="supClass(j)">{{ j.supervisor || "—" }}</span>
-                    </td>
-                    <td>{{ j.localidad }}</td>
-                    <td>
-                        <span class="badge" [ngClass]="getEstadoClass(j.estado)">
-                            {{ j.estado }}
-                        </span>
-                    </td>
-                    <td *ngIf="isAdmin()">
-                         <div class="actions-cell">
-                            <button
-                                class="btn-edit-sm"
-                                *ngIf="j.estado === 'EN PROCESO'"
-                                (click)="editar(j)">
-                                ✏️ Editar
-                            </button>
-                            <button
-                                class="btn-danger-sm"
-                                *ngIf="j.estado === 'EN PROCESO'"
-                                (click)="finalizar(j._id)">
-                                🔒 Finalizar
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr *ngIf="jornadas.length === 0">
-                    <td colspan="7" class="empty-state">
-                        No hay jornadas registradas
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <!-- MODAL EDITAR -->
-<div class="modal-overlay" *ngIf="editando" (click)="cerrarModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3>✏️ Editar Jornada</h3>
-            <button class="modal-close" (click)="cerrarModal()">✕</button>
-        </div>
-        <div class="modal-body">
-
-            <!-- Ubicación -->
-            <h4 class="section-title">📍 Ubicación</h4>
-            <div class="form-group">
-                <label>Municipio</label>
-                <input type="text" [(ngModel)]="jornadaEdit.municipio" class="form-input">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Departamento</label>
-                    <input type="text" [(ngModel)]="jornadaEdit.dpto" class="form-input">
+            <div class="card-head">
+                <span class="estado-dot" [class.dot-proceso]="j.estado === 'EN PROCESO'" [class.dot-final]="j.estado !== 'EN PROCESO'"></span>
+                <div class="card-badges">
+                    <span class="badge" [ngClass]="getEstadoClass(j.estado)">
+                        <span class="material-symbols-outlined badge-icon">{{ j.estado === 'EN PROCESO' ? 'pending' : 'check_circle' }}</span>
+                        {{ j.estado }}
+                    </span>
+                    <span class="badge badge-mun" [ngClass]="munClass(j)">{{ j.municipio || '—' }}</span>
                 </div>
-                <!-- Municipio con búsqueda DIVIPOL -->
+                <div class="card-acciones" (click)="$event.stopPropagation()">
+                    <button class="btn-icon" title="Editar" (click)="editar(j)" *ngIf="isAdmin() && j.estado === 'EN PROCESO'">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button class="btn-icon btn-icon-danger" title="Finalizar jornada" (click)="finalizar(j._id)" *ngIf="isAdmin() && j.estado === 'EN PROCESO'">
+                        <span class="material-symbols-outlined">lock</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <p class="card-titulo">{{ j.municipio || '—' }}</p>
+                <p class="card-dpto">{{ j.dpto || '—' }}</p>
+            </div>
+
+            <div class="card-meta">
+                <span class="meta-item" *ngIf="j.supervisor">
+                    <span class="material-symbols-outlined">manage_accounts</span>
+                    {{ j.supervisor }}
+                </span>
+                <span class="meta-item" *ngIf="j.localidad">
+                    <span class="material-symbols-outlined">location_on</span>
+                    {{ j.localidad }}
+                </span>
+                <span class="meta-item" *ngIf="j.fechaJornada">
+                    <span class="material-symbols-outlined">calendar_today</span>
+                    {{ j.fechaJornada | date:'dd/MM/yyyy' }}
+                </span>
+                <span class="meta-item" *ngIf="j.contratante">
+                    <span class="material-symbols-outlined">business</span>
+                    {{ j.contratante }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!loading && !error && jornadasFiltradas.length === 0">
+        <span class="material-symbols-outlined empty-icon">event_note</span>
+        <p>{{ busqueda || filtroEstado ? 'Sin resultados para los filtros aplicados.' : 'No hay jornadas registradas.' }}</p>
+        <button class="btn-primary" (click)="nueva()" *ngIf="isAdmin() && !busqueda && !filtroEstado">
+            Crear primera jornada
+        </button>
+        <button class="btn-secondary btn-sm" (click)="busqueda=''; filtroEstado=''" *ngIf="busqueda || filtroEstado">
+            Limpiar filtros
+        </button>
+    </div>
+
+    <!-- MODAL EDITAR -->
+    <div class="modal-overlay" *ngIf="editando" (click)="cerrarModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>✏️ Editar Jornada</h3>
+                <button class="modal-close" (click)="cerrarModal()">✕</button>
+            </div>
+            <div class="modal-body">
+
+                <h4 class="section-title">📍 Ubicación</h4>
                 <div class="form-group">
                     <label>Municipio</label>
-                    <div class="search-wrapper" style="position:relative">
-                        <input
-                            type="text"
-                            [(ngModel)]="busquedaDivipolEdit"
-                            (input)="buscarDivipolEdit()"
-                            placeholder="Buscar municipio..."
-                            class="form-input"
-                        >
-                        <span *ngIf="buscandoEdit">⏳</span>
-
-                        <div class="divipol-results" *ngIf="mostrarDivipolEdit && resultadosDivipolEdit.length">
-                            <div
-                                class="divipol-item"
-                                *ngFor="let item of resultadosDivipolEdit"
-                                (click)="seleccionarMunicipioEdit(item)">
-                                <strong>{{ item.divipolMunicipio }}</strong>
-                                <span>{{ item.divipolDepto }} — Cód: {{ item.divipolMunCod }}</span>
+                    <input type="text" [(ngModel)]="jornadaEdit.municipio" class="form-input">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Departamento</label>
+                        <input type="text" [(ngModel)]="jornadaEdit.dpto" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Municipio (DIVIPOL)</label>
+                        <div class="search-wrapper" style="position:relative">
+                            <input type="text" [(ngModel)]="busquedaDivipolEdit" (input)="buscarDivipolEdit()"
+                                placeholder="Buscar municipio..." class="form-input">
+                            <span *ngIf="buscandoEdit">⏳</span>
+                            <div class="divipol-results" *ngIf="mostrarDivipolEdit && resultadosDivipolEdit.length">
+                                <div class="divipol-item" *ngFor="let item of resultadosDivipolEdit"
+                                    (click)="seleccionarMunicipioEdit(item)">
+                                    <strong>{{ item.divipolMunicipio }}</strong>
+                                    <span>{{ item.divipolDepto }} — Cód: {{ item.divipolMunCod }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Localidad</label>
+                        <input type="text" [(ngModel)]="jornadaEdit.localidad" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo Localidad</label>
+                        <select [(ngModel)]="jornadaEdit.tipoLocalidad" class="form-input">
+                            <option value="">Seleccionar...</option>
+                            <option *ngFor="let t of tiposLocalidad" [value]="t">{{ t }}</option>
+                        </select>
+                    </div>
+                </div>
 
-
-
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Localidad</label>
-                    <input type="text" [(ngModel)]="jornadaEdit.localidad" class="form-input">
+                <h4 class="section-title">📋 Datos Generales</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Contratante</label>
+                        <input type="text" [(ngModel)]="jornadaEdit.contratante" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Entidad Responsable Vía</label>
+                        <input type="text" [(ngModel)]="jornadaEdit.entidadResVia" class="form-input">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Tipo Localidad</label>
-                    <select [(ngModel)]="jornadaEdit.tipoLocalidad" class="form-input">
-                        <option value="">Seleccionar...</option>
-                        <option *ngFor="let t of tiposLocalidad" [value]="t">{{ t }}</option>
-                    </select>
+                    <label>Supervisor *</label>
+                    <input type="text" [(ngModel)]="jornadaEdit.supervisor" class="form-input">
                 </div>
-            </div>
 
-            <!-- Datos generales -->
-            <h4 class="section-title">📋 Datos Generales</h4>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Contratante</label>
-                    <input type="text" [(ngModel)]="jornadaEdit.contratante" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Entidad Responsable Vía</label>
-                    <input type="text" [(ngModel)]="jornadaEdit.entidadResVia" class="form-input">
-                </div>
             </div>
-            <div class="form-group">
-                <label>Supervisor *</label>
-                <input type="text" [(ngModel)]="jornadaEdit.supervisor" class="form-input">
+            <div class="modal-footer">
+                <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+                <button class="btn-primary" (click)="guardarEdicion()">💾 Guardar</button>
             </div>
-
-        </div>
-        <div class="modal-footer">
-            <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
-            <button class="btn-primary" (click)="guardarEdicion()">💾 Guardar</button>
         </div>
     </div>
-</div>
+
 </div>

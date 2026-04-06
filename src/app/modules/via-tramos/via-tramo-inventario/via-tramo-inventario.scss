@@ -508,3 +508,81 @@
     color: #e57373;
     margin-bottom: 1rem;
 }
+
+// ── MODO CLARO ────────────────────────────────────────────────────────────────
+:host-context(body.light-mode) {
+
+    // Cabecera del tramo
+    .eje-header {
+        background: #ffffff;
+        border-color: rgba(37,99,235,0.14);
+        box-shadow: 0 2px 12px rgba(37,99,235,0.07);
+    }
+    .eje-codigo { color: #1d4ed8; }
+    .eje-nombre { color: #1a2540; }
+    .eje-jornada { color: rgba(26,37,64,0.45); }
+
+    // Badges de la cabecera
+    .badge         { background: rgba(37,99,235,0.08);  color: #1d4ed8;  border-color: rgba(37,99,235,0.2); }
+    .badge-via     { background: rgba(147,51,234,0.1);  color: #7e22ce;  border-color: rgba(147,51,234,0.25); }
+    .badge-calz    { background: rgba(37,99,235,0.1);   color: #1d4ed8;  border-color: rgba(37,99,235,0.25); }
+    .badge-dis     { background: rgba(5,150,105,0.1);   color: #047857;  border-color: rgba(5,150,105,0.25); }
+    .badge-zat     { background: rgba(99,102,241,0.1);  color: #4338ca;  border-color: rgba(99,102,241,0.25); }
+
+    // Botón volver
+    .btn-back {
+        background: rgba(37,99,235,0.07);
+        border-color: rgba(37,99,235,0.2);
+        color: #1d4ed8;
+        &:hover { background: rgba(37,99,235,0.14); }
+    }
+
+    // Chips de capas
+    .tab-chip {
+        border-color: rgba(26,37,64,0.1);
+        background: rgba(26,37,64,0.03);
+        color: rgba(26,37,64,0.55);
+        .tab-chip-badge { background: rgba(26,37,64,0.06); border-color: rgba(26,37,64,0.1); color: rgba(26,37,64,0.6); }
+        &:hover:not(.active) { border-color: rgba(26,37,64,0.2); color: #1a2540; }
+        &.active { color: #1a2540; background: color-mix(in srgb, var(--chip-color) 10%, #ffffff); }
+    }
+
+    // Lead text y título de capas
+    .vt-inv-lead { color: rgba(26,37,64,0.6); }
+    .vt-capas-title { color: rgba(26,37,64,0.4); }
+
+    // Cards de items (señales, semáforos, etc.)
+    .sinc-item-card {
+        background: #ffffff;
+        border-color: rgba(37,99,235,0.12);
+        border-left-color: rgba(37,99,235,0.4);
+        box-shadow: 0 2px 8px rgba(37,99,235,0.06);
+    }
+    .sinc-item-card__id { color: rgba(26,37,64,0.5); }
+    .sinc-item-card__link {
+        border-color: rgba(37,99,235,0.2);
+        background: rgba(37,99,235,0.06);
+        color: #1d4ed8;
+        &:hover { background: rgba(37,99,235,0.12); }
+    }
+    .sinc-item-card__catalog-thumb {
+        background: rgba(37,99,235,0.04);
+        border-color: rgba(37,99,235,0.12);
+    }
+    .sinc-item-card__catalog-placeholder { color: rgba(26,37,64,0.3); }
+    .sinc-item-card__geo { color: #166534; code { color: rgba(26,37,64,0.6); background: rgba(37,99,235,0.06); } }
+
+    // Métricas
+    .sinc-metric { background: rgba(37,99,235,0.03); border-color: rgba(37,99,235,0.08); }
+    .sinc-metric__k { color: rgba(26,37,64,0.4); }
+    .sinc-metric__v { color: #1a2540; }
+
+    // Empty / loading / error
+    .vt-inv-empty {
+        color: rgba(26,37,64,0.35);
+        border-color: rgba(37,99,235,0.18);
+        .material-symbols-outlined { opacity: 0.4; }
+    }
+    .vt-inv-loading { color: rgba(26,37,64,0.45); }
+    .vt-inv-error p { color: #b91c1c; }
+}

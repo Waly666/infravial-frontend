@@ -24,6 +24,10 @@ export class JornadaListaComponent implements OnInit {
     jornadas:  any[]  = [];
     loading:   boolean = true;
     error:     string  = '';
+
+    busqueda    = '';
+    filtroEstado = '';
+
     editando:     boolean = false;
     jornadaEdit:  any     = null; 
     tiposLocalidad = ['Cabecera Municipal', 'Corregimiento', 'Inspección', 'Centro Poblado'];
@@ -75,6 +79,27 @@ export class JornadaListaComponent implements OnInit {
                         alert(err.error?.message || 'Error al finalizar')
                 });
             });
+    }
+
+    get jornadasFiltradas(): any[] {
+        let list = this.jornadas;
+        if (this.filtroEstado) {
+            list = list.filter(j => j.estado === this.filtroEstado);
+        }
+        const q = this.busqueda.trim().toLowerCase();
+        if (q) {
+            list = list.filter(j => [j.municipio, j.dpto, j.supervisor, j.localidad, j.contratante]
+                .some(v => v && String(v).toLowerCase().includes(q)));
+        }
+        return list;
+    }
+
+    get countEnProceso(): number {
+        return this.jornadas.filter(j => j.estado === 'EN PROCESO').length;
+    }
+
+    get countFinalizado(): number {
+        return this.jornadas.filter(j => j.estado === 'FINALIZADO').length;
     }
 
     isAdmin(): boolean { return this.authService.isAdmin(); }

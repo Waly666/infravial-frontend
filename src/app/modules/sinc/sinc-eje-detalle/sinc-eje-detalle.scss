@@ -1579,3 +1579,141 @@
     }
     em { color: rgba(195, 210, 255, 0.82); font-style: normal; font-weight: 500; }
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MODO CLARO
+// ══════════════════════════════════════════════════════════════════════════════
+:host-context(body.light-mode) {
+
+    // ── Cabecera ──────────────────────────────────────────────────────────────
+    .eje-header {
+        background: #ffffff;
+        border-color: rgba(37,99,235,0.14);
+        box-shadow: 0 2px 12px rgba(37,99,235,0.07);
+    }
+    .eje-codigo { color: #1d4ed8; }
+    .eje-nombre { color: #1a2540; }
+    .eje-jornada { color: rgba(26,37,64,0.45); }
+
+    .btn-back {
+        background: rgba(37,99,235,0.07); border-color: rgba(37,99,235,0.2); color: #1d4ed8;
+        &:hover { background: rgba(37,99,235,0.14); }
+    }
+
+    // Badges cabecera
+    .badge        { background: rgba(37,99,235,0.08);  color: #1d4ed8;  border-color: rgba(37,99,235,0.2); }
+    .badge-red    { background: rgba(21,101,192,0.1);  color: #1d4ed8;  border-color: rgba(21,101,192,0.25); }
+    .badge-tipo   { background: rgba(107,33,168,0.1);  color: #7e22ce;  border-color: rgba(107,33,168,0.25); }
+    .badge-sentido{ background: rgba(5,150,105,0.1);   color: #047857;  border-color: rgba(5,150,105,0.25); }
+
+    // ── Secciones básico/detallado ────────────────────────────────────────────
+    .seccion-card {
+        background: #ffffff;
+        border-color: rgba(37,99,235,0.12);
+        box-shadow: 0 2px 8px rgba(37,99,235,0.05);
+    }
+    .seccion-card-det {
+        background: #ffffff;
+        border-color: rgba(103,58,183,0.15);
+        box-shadow: 0 2px 8px rgba(103,58,183,0.06);
+    }
+
+    // ── Tab chips ─────────────────────────────────────────────────────────────
+    .tab-chip {
+        border-color: rgba(26,37,64,0.1);
+        background: rgba(26,37,64,0.03);
+        color: rgba(26,37,64,0.55);
+        .tab-chip-badge { background: rgba(26,37,64,0.06); border-color: rgba(26,37,64,0.1); color: rgba(26,37,64,0.6); }
+        &:hover:not(.active) { border-color: rgba(26,37,64,0.2); color: #1a2540; }
+        &.active { color: #1a2540; background: color-mix(in srgb, var(--chip-color) 10%, #ffffff); }
+    }
+
+    // ── Toolbar y títulos de panel ────────────────────────────────────────────
+    .tab-title    { color: #1a2540; }
+    .tab-toolbar  { border-bottom-color: rgba(37,99,235,0.1); }
+    .vt-capas-title, .mapa-header { color: rgba(26,37,64,0.55); }
+
+    // ── Formularios inline ────────────────────────────────────────────────────
+    .sub-form-panel {
+        background: #f8faff;
+        border-color: rgba(37,99,235,0.12);
+    }
+    .form-field {
+        label { color: rgba(26,37,64,0.5); }
+        input, select, textarea {
+            background: #ffffff; border-color: rgba(37,99,235,0.18); color: #1a2540;
+            &:focus { border-color: rgba(37,99,235,0.5); }
+            &::placeholder { color: rgba(26,37,64,0.3); }
+        }
+    }
+    .form-hint { color: rgba(26,37,64,0.45); }
+    .input-muted { color: rgba(26,37,64,0.45); }
+    .geo-ok-small { color: #15803d; }
+    .error-banner { background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.2); color: #b91c1c; }
+
+    // ── Tabla de datos ────────────────────────────────────────────────────────
+    .data-table {
+        background: #ffffff;
+        th { background: rgba(37,99,235,0.05); color: #1a2540; border-color: rgba(37,99,235,0.1); }
+        td { color: #1a2540; border-color: rgba(37,99,235,0.07); }
+        tbody tr:hover { background: rgba(37,99,235,0.04); }
+    }
+    .mono-cell { color: #1d4ed8; }
+
+    // ── Cards de ítems Mc ─────────────────────────────────────────────────────
+    [class*="sinc-item-card--mc-"] {
+        background: #ffffff !important;
+        border-color: rgba(37,99,235,0.12) !important;
+        box-shadow: 0 2px 8px rgba(37,99,235,0.06) !important;
+    }
+    .sinc-item-card__id  { color: rgba(26,37,64,0.45); }
+    .sinc-item-card__link {
+        background: rgba(37,99,235,0.06); border-color: rgba(37,99,235,0.2); color: #1d4ed8;
+        &:hover { background: rgba(37,99,235,0.12); }
+    }
+    .sinc-metric  { background: rgba(37,99,235,0.03); border-color: rgba(37,99,235,0.07); }
+    .sinc-metric__k { color: rgba(26,37,64,0.4); }
+    .sinc-metric__v { color: #1a2540; }
+    .sinc-item-card__geo { color: #166534; code { background: rgba(37,99,235,0.05); color: rgba(26,37,64,0.6); } }
+    .sinc-item-card__catalog-thumb { background: rgba(37,99,235,0.04); border-color: rgba(37,99,235,0.12); }
+
+    // ── Fotos strip ───────────────────────────────────────────────────────────
+    .fotos-strip { border-color: rgba(37,99,235,0.1); }
+    .foto-thumb-sm { border-color: rgba(37,99,235,0.15); }
+    .btn-upload-sm {
+        background: rgba(37,99,235,0.06); border-color: rgba(37,99,235,0.2); color: #1d4ed8;
+        &:hover { background: rgba(37,99,235,0.12); }
+    }
+    .sub-form-actions { border-top-color: rgba(37,99,235,0.1); }
+
+    // ── Catálogo overlay ──────────────────────────────────────────────────────
+    .catalogo-panel { background: #ffffff; border-color: rgba(37,99,235,0.15); }
+    .catalogo-header { background: #f8faff; border-bottom-color: rgba(37,99,235,0.1); color: #1a2540; }
+    .catalogo-search input { background: #f0f4ff; border-color: rgba(37,99,235,0.2); color: #1a2540; }
+    .catalogo-card { background: #f8faff; border-color: rgba(37,99,235,0.12); &:hover { border-color: rgba(37,99,235,0.35); } }
+    .catalogo-card-body { color: #1a2540; }
+    .catalogo-clasif { color: rgba(26,37,64,0.5); }
+    .catalogo-empty { color: rgba(26,37,64,0.4); }
+
+    // ── Panel de ayuda ────────────────────────────────────────────────────────
+    .ayuda-panel { background: #ffffff; border-color: rgba(37,99,235,0.15); }
+    .ayuda-header { background: linear-gradient(135deg, #f0f4ff, #e8efff); border-bottom-color: rgba(37,99,235,0.1); }
+    .ayuda-titulo { color: #1a2540; }
+    .ayuda-body   { color: rgba(26,37,64,0.7); }
+    .ayuda-section-title { color: #1d4ed8; border-bottom-color: rgba(37,99,235,0.1); }
+    .ayuda-definicion-card { background: #f8faff; border-color: rgba(37,99,235,0.1); }
+    .ayuda-definicion { color: rgba(26,37,64,0.7); }
+    .ayuda-geo-card { background: #f0f4ff; border-color: rgba(37,99,235,0.12); }
+    .ayuda-geo-badge { background: rgba(37,99,235,0.1); color: #1d4ed8; border-color: rgba(37,99,235,0.2); }
+    .ayuda-geo-desc { color: rgba(26,37,64,0.65); }
+    .ayuda-campos-table { border-color: rgba(37,99,235,0.1); }
+    .ayuda-campo-row { border-bottom-color: rgba(37,99,235,0.08); color: rgba(26,37,64,0.7); &:hover { background: rgba(37,99,235,0.04); } }
+    .campo-nombre { color: #1a2540; }
+    .campo-req-pill { background: rgba(220,38,38,0.08); color: #b91c1c; border-color: rgba(220,38,38,0.2); }
+    .ayuda-ref-badge { background: rgba(37,99,235,0.08); color: #1d4ed8; border-color: rgba(37,99,235,0.2); }
+    .ayuda-btn-cerrar { color: rgba(26,37,64,0.45); &:hover { color: #1a2540; } }
+
+    // ── Loading / empty ───────────────────────────────────────────────────────
+    .loading-state { color: rgba(26,37,64,0.4); }
+    .vt-inv-empty  { color: rgba(26,37,64,0.35); border-color: rgba(37,99,235,0.18); }
+}

@@ -741,6 +741,68 @@
 }
 
 :host-context(body.light-mode) {
+
+    // ── Cabecera ──────────────────────────────────────────────────────────────
+    .page-title { color: #1a2540 !important; .material-symbols-outlined { color: #2563eb !important; } }
+    .page-subtitle { color: rgba(26,37,64,0.5) !important; }
+
+    // ── Stat strip ────────────────────────────────────────────────────────────
+    .stat-strip { background: #ffffff !important; border-color: rgba(37,99,235,0.12) !important; box-shadow: 0 2px 10px rgba(37,99,235,0.05) !important; }
+    .stat-value { color: #1a2540 !important; }
+    .stat-label { color: rgba(26,37,64,0.5) !important; }
+    .stat-divider { background: rgba(37,99,235,0.1) !important; }
+
+    // ── Filtros ───────────────────────────────────────────────────────────────
+    .filtro-group { background: rgba(37,99,235,0.04) !important; border-color: rgba(37,99,235,0.15) !important; }
+    .filtro-input { color: #1a2540 !important; &::placeholder { color: rgba(26,37,64,0.35) !important; } }
+    .filtro-select { color: #1a2540 !important; option { background: #fff !important; color: #1a2540 !important; } }
+    .filtro-label { color: rgba(26,37,64,0.5) !important; }
+    .filtro-icon { color: rgba(26,37,64,0.4) !important; }
+    .filtro-clear { color: rgba(26,37,64,0.35) !important; &:hover { color: #1a2540 !important; } }
+
+    // ── Paginación ────────────────────────────────────────────────────────────
+    .total-badge { background: rgba(37,99,235,0.06) !important; border-color: rgba(37,99,235,0.15) !important; color: #1d4ed8 !important; }
+    .page-size-select { background: rgba(37,99,235,0.05) !important; border-color: rgba(37,99,235,0.15) !important; color: #1a2540 !important; option { background: #fff !important; color: #1a2540 !important; } }
+    .btn-pag { background: rgba(37,99,235,0.06) !important; border-color: rgba(37,99,235,0.18) !important; color: #1d4ed8 !important; &:hover:not(:disabled) { background: rgba(37,99,235,0.12) !important; } }
+    .page-info { color: rgba(26,37,64,0.5) !important; }
+
+    // ── Cards ─────────────────────────────────────────────────────────────────
+    .tramo-card {
+        background: #ffffff !important;
+        border-color: rgba(37,99,235,0.12) !important;
+        box-shadow: 0 2px 8px rgba(37,99,235,0.06) !important;
+        &:hover {
+            border-color: rgba(37,99,235,0.3) !important;
+            box-shadow: 0 6px 20px rgba(37,99,235,0.1) !important;
+        }
+    }
+    .card-nomenclatura { color: #0f172a !important; }
+    .codigo-tramo { color: #1d4ed8 !important; background: rgba(37,99,235,0.06) !important; border-color: rgba(37,99,235,0.15) !important; }
+    .meta-item { color: rgba(26,37,64,0.5) !important; }
+    .card-row-muted { color: rgba(26,37,64,0.4) !important; border-top-color: rgba(37,99,235,0.08) !important; strong { color: rgba(26,37,64,0.55) !important; } }
+
+    // ── Thumbnail ─────────────────────────────────────────────────────────────
+    .lista-card-catalog-thumb { background: rgba(37,99,235,0.04) !important; border-color: rgba(37,99,235,0.15) !important; }
+    .lista-card-catalog-ph { color: rgba(26,37,64,0.3) !important; }
+
+    // ── Badges estado ─────────────────────────────────────────────────────────
+    .badge-bueno   { background: rgba(22,163,74,0.1) !important;  color: #15803d !important; border-color: rgba(22,163,74,0.25) !important; }
+    .badge-regular { background: rgba(202,138,4,0.1) !important;  color: #a16207 !important; border-color: rgba(202,138,4,0.25) !important; }
+    .badge-malo    { background: rgba(220,38,38,0.1) !important;  color: #b91c1c !important; border-color: rgba(220,38,38,0.25) !important; }
+    .badge-calzada { background: rgba(37,99,235,0.1) !important;  color: #1d4ed8 !important; border-color: rgba(37,99,235,0.25) !important; }
+    .badge-estado-neutral { background: rgba(100,116,139,0.1) !important; color: #475569 !important; border-color: rgba(100,116,139,0.25) !important; }
+    .badge-codigo  { background: rgba(5,150,105,0.1) !important;  color: #047857 !important; border-color: rgba(5,150,105,0.3) !important; }
+
+    // ── Botones ───────────────────────────────────────────────────────────────
+    .btn-icon { background: rgba(37,99,235,0.06) !important; border-color: rgba(37,99,235,0.2) !important; color: #1d4ed8 !important; &:hover { background: rgba(37,99,235,0.12) !important; } }
+    .btn-icon-danger { background: rgba(220,38,38,0.06) !important; border-color: rgba(220,38,38,0.2) !important; color: #b91c1c !important; &:hover { background: rgba(220,38,38,0.12) !important; } }
+    .btn-icon-report { background: rgba(22,163,74,0.06) !important; border-color: rgba(22,163,74,0.2) !important; color: #15803d !important; &:hover { background: rgba(22,163,74,0.12) !important; } }
+
+    // ── Estados ───────────────────────────────────────────────────────────────
+    .loading-state { color: rgba(26,37,64,0.4) !important; }
+    .empty-state   { color: rgba(26,37,64,0.35) !important; }
+    .alert-warning { background: rgba(202,138,4,0.08) !important; border-color: rgba(202,138,4,0.25) !important; color: #92400e !important; }
+
     .card-nomenclatura {
         color: #0f172a !important;
     }
@@ -811,3 +873,4 @@
         border-color: rgba(220, 38, 38, 0.35);
     }
 }
+
