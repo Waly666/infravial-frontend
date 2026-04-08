@@ -8,6 +8,7 @@ import { JornadaService } from '../../../core/services/jornada.service';
 const UTILS_ROUTE_IDS       = ['data-transfer', 'catalogos', 'usuarios', 'auditoria', 'respaldos'] as const;
 const INVENTARIO_ROUTE_IDS  = ['via-tramos', 'sen-verticales', 'sen-horizontales', 'semaforos', 'control-semaforo', 'cajas-inspeccion', 'mapa-inventario'] as const;
 const CARRETERAS_ROUTE_IDS  = ['categorizacion-vial', 'sinc'] as const;
+const CONTEOS_ROUTE_IDS     = ['conteos-proyectos', 'conteos-estaciones', 'conteos-conteos', 'conteos-sesion', 'conteos-panel'] as const;
 
 type MenuLink = { id: string; label: string; icon: string };
 type MenuEntry =
@@ -32,6 +33,7 @@ export class DashboardLayoutComponent implements OnInit {
     private groupOpen: Record<string, boolean> = {
         inventario: false,
         carreteras: false,
+        conteos: false,
         utils: false,
     };
 
@@ -64,6 +66,18 @@ export class DashboardLayoutComponent implements OnInit {
                 { id: 'categorizacion-vial', label: 'Clasificación Vías', icon: 'account_tree' },
                 { id: 'sinc',                label: 'SINC',               icon: 'conversion_path' },
             ],
+        },
+        {
+            kind: 'group',
+            id: 'conteos',
+            label: 'Conteos Vehiculares',
+            icon: 'traffic',
+            roles: ['admin','supervisor','encuestador'],
+            children: [
+                { id: 'conteos-proyectos',  label: 'Proyectos',   icon: 'work' },
+                { id: 'conteos-estaciones', label: 'Estaciones',  icon: 'location_on' },
+                { id: 'conteos-conteos',    label: 'Conteos',     icon: 'bar_chart' },
+            ]
         },
         {
             kind: 'group',
@@ -106,13 +120,22 @@ export class DashboardLayoutComponent implements OnInit {
 
     private syncSeccionActiva(url: string) {
         const clean = (url || '').split('?')[0].split('#')[0];
-        const seg   = clean.replace(/^\//, '').split('/')[0] || 'dashboard';
-        this.seccionActiva = seg === '' ? 'dashboard' : seg;
+        const parts = clean.replace(/^\//, '').split('/');
+        const seg0  = parts[0] || 'dashboard';
+        const seg1  = parts[1] || '';
+
+        // Para grupos con subrutas, construir id compuesto (ej: /conteos/proyectos → 'conteos-proyectos')
+        if (seg0 === 'conteos' && seg1) {
+            this.seccionActiva = `conteos-${seg1}`;
+        } else {
+            this.seccionActiva = seg0 === '' ? 'dashboard' : seg0;
+        }
 
         // Abrir automáticamente el grupo cuya ruta está activa
         this.groupOpen['utils']      = (UTILS_ROUTE_IDS      as readonly string[]).includes(this.seccionActiva);
         this.groupOpen['inventario'] = (INVENTARIO_ROUTE_IDS as readonly string[]).includes(this.seccionActiva);
         this.groupOpen['carreteras'] = (CARRETERAS_ROUTE_IDS as readonly string[]).includes(this.seccionActiva);
+        this.groupOpen['conteos']    = this.seccionActiva.startsWith('conteos-');
     }
 
     // ── Grupo genérico ──────────────────────────────────────────────────────────
@@ -125,6 +148,7 @@ export class DashboardLayoutComponent implements OnInit {
         if (id === 'utils')      return (UTILS_ROUTE_IDS      as readonly string[]).includes(this.seccionActiva);
         if (id === 'inventario') return (INVENTARIO_ROUTE_IDS as readonly string[]).includes(this.seccionActiva);
         if (id === 'carreteras') return (CARRETERAS_ROUTE_IDS as readonly string[]).includes(this.seccionActiva);
+        if (id === 'conteos')    return this.seccionActiva.startsWith('conteos-');
         return false;
     }
 
@@ -161,7 +185,13 @@ export class DashboardLayoutComponent implements OnInit {
     }
 
     navegarA(ruta: string) {
-        const destino = ruta === 'sinc' ? '/sinc/ejes' : `/${ruta}`;
+        let destino: string;
+        if      (ruta === 'sinc')               destino = '/sinc/ejes';
+        else if (ruta === 'conteos')            destino = '/conteos/proyectos';
+        else if (ruta === 'conteos-proyectos')  destino = '/conteos/proyectos';
+        else if (ruta === 'conteos-estaciones') destino = '/conteos/estaciones';
+        else if (ruta === 'conteos-conteos')    destino = '/conteos/conteos';
+        else                                    destino = `/${ruta}`;
         this.router.navigate([destino]);
     }
 

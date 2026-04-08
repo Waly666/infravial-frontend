@@ -1,0 +1,118 @@
+<div class="sesion-container">
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <span class="material-symbols-outlined spin">progress_activity</span>
+        <p>Cargando…</p>
+    </div>
+
+    <ng-container *ngIf="!loading && conteo">
+
+        <!-- Header -->
+        <div class="sesion-header">
+            <div class="sesion-header-left">
+                <button class="btn-back" (click)="router.navigate(['/conteos/conteos'], { queryParams: { idEstacion: conteo.idEstacion?._id || conteo.idEstacion, nomEstacion: conteo.idEstacion?.nomenclatura } })">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <div>
+                    <div class="sesion-titulo">{{ conteo.idEstacion?.nomenclatura || 'Estación' }}</div>
+                    <div class="sesion-sub">
+                        {{ conteo.fecha | date:'dd/MM/yyyy' }} &bull;
+                        {{ formatHora(conteo.horaIni) }} – {{ formatHora(conteo.horaFin) }} &bull;
+                        {{ conteo.condClim }}
+                    </div>
+                </div>
+            </div>
+            <div class="sesion-header-right">
+                <span class="estado-badge" [ngClass]="conteo.estado === 'EN PROCESO' ? 'badge-proceso' : 'badge-completado'">
+                    {{ conteo.estado }}
+                </span>
+                <div class="mi-total" *ngIf="miSesion">
+                    <span class="mi-total-num">{{ totalMio }}</span>
+                    <span class="mi-total-label">mis registros</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="error-banner" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+        <!-- CONTEO NO EN PROCESO -->
+        <div class="info-banner" *ngIf="!estaEnProceso()">
+            <span class="material-symbols-outlined">info</span>
+            Este conteo está {{ conteo.estado }}. No se pueden registrar vehículos.
+        </div>
+
+        <!-- SIN SENTIDO: selector -->
+        <ng-container *ngIf="estaEnProceso() && !miSesion">
+            <div class="section-title">
+                <span class="material-symbols-outlined">directions</span>
+                Selecciona tu sentido de conteo
+            </div>
+            <div class="sentidos-grid">
+                <div class="sentido-card"
+                    *ngFor="let s of sentidos"
+                    [class.ocupado]="sentidoOcupado(s)"
+                    [class.libre]="!sentidoOcupado(s)"
+                    (click)="!sentidoOcupado(s) && tomarSentido(s._id)">
+                    <div class="sentido-img-wrap">
+                        <img *ngIf="s.urlSentImg" [src]="imgUrl(s.urlSentImg)" [alt]="s.sentido" class="sentido-img" (error)="s._imgErr=true" [style.display]="s._imgErr ? 'none' : 'block'">
+                        <span class="sentido-icon-fallback" *ngIf="!s.urlSentImg || s._imgErr">
+                            <span class="material-symbols-outlined">directions</span>
+                        </span>
+                    </div>
+                    <div class="sentido-info">
+                        <div class="sentido-cod">{{ s.codSentido }}</div>
+                        <div class="sentido-nombre">{{ s.sentido }}</div>
+                        <div class="sentido-ocupante" *ngIf="sentidoOcupado(s)">
+                            <span class="material-symbols-outlined">person</span>
+                            {{ sentidoOcupadoPor(s) }}
+                        </div>
+                        <div class="sentido-libre-label" *ngIf="!sentidoOcupado(s)">Libre — seleccionar</div>
+                    </div>
+                </div>
+            </div>
+            <div class="loading-state" *ngIf="tomando">
+                <span class="material-symbols-outlined spin">progress_activity</span>
+                <p>Tomando sentido…</p>
+            </div>
+        </ng-container>
+
+        <!-- CON SENTIDO: pantalla de conteo -->
+        <ng-container *ngIf="estaEnProceso() && miSesion">
+
+            <div class="mi-sentido-bar">
+                <div class="mi-sentido-info">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Contando en:
+                    <strong>{{ miSesion.idSentido?.sentido || miSesion.idSentido?.codSentido || '—' }}</strong>
+                </div>
+                <div class="mi-sentido-actions">
+                    <button class="btn-undo" (click)="deshacer()" title="Deshacer último registro">
+                        <span class="material-symbols-outlined">undo</span> Deshacer
+                    </button>
+                    <button class="btn-liberar" (click)="liberarSentido()" [disabled]="liberando">
+                        <span class="material-symbols-outlined">logout</span>
+                        {{ liberando ? 'Liberando...' : 'Liberar sentido' }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="cats-grid">
+                <button class="cat-btn" *ngFor="let cat of cats" (click)="registrar(cat)" [disabled]="contando">
+                    <div class="cat-img-wrap">
+                        <img *ngIf="cat.urlCatCont" [src]="imgUrl(cat.urlCatCont)" [alt]="cat.catCont" class="cat-img"
+                            (error)="cat._imgErr=true" [style.display]="cat._imgErr ? 'none' : 'block'">
+                        <span class="cat-icon-fallback" *ngIf="!cat.urlCatCont || cat._imgErr">
+                            <span class="material-symbols-outlined">directions_car</span>
+                        </span>
+                    </div>
+                    <div class="cat-nombre">{{ cat.catCont }}</div>
+                    <div class="cat-count">{{ misTotales[cat.catCont] || 0 }}</div>
+                </button>
+            </div>
+
+        </ng-container>
+
+    </ng-container>
+
+</div>

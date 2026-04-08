@@ -1,0 +1,194 @@
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span class="material-symbols-outlined">traffic</span>
+                Estaciones de Conteo
+            </h1>
+            <p class="page-sub">Puntos de aforo vehicular registrados</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">
+                <span class="material-symbols-outlined">arrow_back</span> Dashboard
+            </button>
+            <button class="btn-primary" (click)="abrirCrear()" *ngIf="isSupervisor()">
+                <span class="material-symbols-outlined">add</span> Nueva Estación
+            </button>
+        </div>
+    </div>
+
+    <!-- Búsqueda -->
+    <div class="filtros-bar">
+        <div class="filtro-group">
+            <span class="material-symbols-outlined filtro-icon">search</span>
+            <input type="text" class="filtro-input" [(ngModel)]="busqueda" placeholder="Buscar estación...">
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <span class="material-symbols-outlined spin">progress_activity</span>
+        <p>Cargando estaciones…</p>
+    </div>
+
+    <!-- Grid de cards -->
+    <div class="estaciones-grid" *ngIf="!loading">
+        <div class="estacion-card" *ngFor="let e of filtradas" (click)="verConteos(e)">
+            <div class="estacion-card-icon">
+                <span class="material-symbols-outlined">traffic</span>
+            </div>
+            <div class="estacion-card-body">
+                <h3 class="estacion-nombre">{{ e.nomenclatura }}</h3>
+                <p class="estacion-loc">
+                    <span class="material-symbols-outlined">location_on</span>
+                    {{ e.municipio || '—' }}, {{ e.departamento || '—' }}
+                </p>
+                <p class="estacion-loc" *ngIf="e.localidad">
+                    <span class="material-symbols-outlined">domain</span>
+                    {{ e.localidad }}
+                </p>
+                <p class="estacion-sup" *ngIf="e.supervisor">
+                    <span class="material-symbols-outlined">person</span>
+                    {{ e.supervisor }}
+                </p>
+                <p class="estacion-poli" *ngIf="e.poligono?.length >= 3">
+                    <span class="material-symbols-outlined">pentagon</span>
+                    Polígono: {{ e.poligono.length }} puntos
+                </p>
+            </div>
+            <div class="estacion-card-footer" (click)="$event.stopPropagation()">
+                <button class="btn-icon" (click)="verConteos(e)" title="Ver conteos">
+                    <span class="material-symbols-outlined">bar_chart</span>
+                </button>
+                <button class="btn-icon" (click)="abrirEditar(e)" title="Editar" *ngIf="isSupervisor()">
+                    <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button class="btn-icon danger" (click)="eliminar(e)" title="Eliminar estación" *ngIf="isSupervisor()">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="empty-state" *ngIf="filtradas.length === 0">
+            <span class="material-symbols-outlined">traffic</span>
+            <p>No hay estaciones registradas</p>
+            <button class="btn-primary" (click)="abrirCrear()" *ngIf="isSupervisor()">+ Nueva Estación</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ MODAL ════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="modal" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>{{ modoEdicion ? 'Editar' : 'Nueva' }} Estación</h3>
+            <button class="modal-close" (click)="cerrarModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="error-banner" *ngIf="errorModal">{{ errorModal }}</div>
+
+            <!-- ── NOMENCLATURA ─────────────────────────────────────────────── -->
+            <div class="section-label">
+                <span class="material-symbols-outlined">route</span>
+                Nomenclatura
+            </div>
+
+            <div class="nomenclatura-builder">
+                <select [(ngModel)]="nom.tipoVia1" class="nom-select" (change)="actualizarNomenclatura()">
+                    <option value="">Tipo vía</option>
+                    <option *ngFor="let t of tiposNom" [value]="t">{{ t }}</option>
+                </select>
+                <input type="text" [(ngModel)]="nom.numero1" class="nom-input" placeholder="Núm / Letra" (input)="actualizarNomenclatura()">
+
+                <select [(ngModel)]="nom.conector" class="nom-select-sm" (change)="actualizarNomenclatura()">
+                    <option value="">—</option>
+                    <option *ngFor="let c of conectores" [value]="c">{{ c }}</option>
+                </select>
+
+                <select [(ngModel)]="nom.tipoVia2" class="nom-select" (change)="actualizarNomenclatura()">
+                    <option value="">Tipo vía</option>
+                    <option *ngFor="let t of tiposNom" [value]="t">{{ t }}</option>
+                </select>
+                <input type="text" [(ngModel)]="nom.numero2" class="nom-input" placeholder="Núm / Letra" (input)="actualizarNomenclatura()">
+
+                <select [(ngModel)]="nom.conector2" class="nom-select-sm" (change)="actualizarNomenclatura()">
+                    <option value="">—</option>
+                    <option value="y">y</option>
+                </select>
+
+                <select [(ngModel)]="nom.tipoVia3" class="nom-select" (change)="actualizarNomenclatura()">
+                    <option value="">Tipo vía</option>
+                    <option *ngFor="let t of tiposNom" [value]="t">{{ t }}</option>
+                </select>
+                <input type="text" [(ngModel)]="nom.numero3" class="nom-input" placeholder="Núm / Letra" (input)="actualizarNomenclatura()">
+            </div>
+
+            <div class="nom-preview" *ngIf="nom.completa">
+                <span class="material-symbols-outlined">location_on</span>
+                {{ nom.completa }}
+            </div>
+
+            <!-- ── DATOS ────────────────────────────────────────────────────── -->
+            <div class="section-label" style="margin-top:1rem">
+                <span class="material-symbols-outlined">info</span>
+                Datos de la estación
+            </div>
+
+            <div class="form-grid">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Departamento</label>
+                        <input type="text" [(ngModel)]="form.departamento" placeholder="Ej: Cundinamarca">
+                    </div>
+                    <div class="form-field">
+                        <label>Municipio</label>
+                        <input type="text" [(ngModel)]="form.municipio" placeholder="Ej: Bogotá">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Localidad / Barrio</label>
+                    <input type="text" [(ngModel)]="form.localidad" placeholder="Ej: Chapinero">
+                </div>
+                <div class="form-field">
+                    <label>Responsable / Supervisor</label>
+                    <input type="text" [(ngModel)]="form.supervisor" placeholder="Nombre del responsable">
+                </div>
+            </div>
+
+            <!-- ── POLÍGONO ─────────────────────────────────────────────────── -->
+            <div class="section-label" style="margin-top:1rem">
+                <span class="material-symbols-outlined">pentagon</span>
+                Polígono de la estación
+                <span class="poli-hint">Haz clic en el mapa para agregar puntos</span>
+            </div>
+
+            <div class="poli-actions">
+                <button class="btn-poli-action" (click)="quitarUltimoPunto()" [disabled]="poligonoCoords.length === 0">
+                    <span class="material-symbols-outlined">undo</span> Quitar último
+                </button>
+                <button class="btn-poli-action danger" (click)="limpiarPoligono()" [disabled]="poligonoCoords.length === 0">
+                    <span class="material-symbols-outlined">delete</span> Limpiar
+                </button>
+                <span class="poli-count">
+                    {{ poligonoCoords.length }} punto{{ poligonoCoords.length !== 1 ? 's' : '' }}
+                    <ng-container *ngIf="poligonoCoords.length >= 3"> — polígono válido</ng-container>
+                    <ng-container *ngIf="poligonoCoords.length > 0 && poligonoCoords.length < 3"> — mínimo 3</ng-container>
+                </span>
+            </div>
+
+            <div id="mapa-poligono-el" class="mapa-poligono"></div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+            <button class="btn-primary" (click)="guardar()" [disabled]="guardando">
+                <span class="material-symbols-outlined spin" *ngIf="guardando">progress_activity</span>
+                {{ guardando ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>

@@ -227,6 +227,27 @@ export const routes: Routes = [
                         data: { roles: ['admin', 'supervisor'] },
                         loadComponent: () => import('./modules/reportes/reporte-lista/reporte-lista').then(m => m.ReporteListaComponent)
                     },
+                    // ── Conteos Vehiculares ────────────────────────────────────
+                    {
+                        path: 'conteos/proyectos',
+                        loadComponent: () => import('./modules/conteos/proyecto-lista/proyecto-lista').then(m => m.ProyectoListaComponent)
+                    },
+                    {
+                        path: 'conteos/estaciones',
+                        loadComponent: () => import('./modules/conteos/estacion-lista/estacion-lista').then(m => m.EstacionListaComponent)
+                    },
+                    {
+                        path: 'conteos/conteos',
+                        loadComponent: () => import('./modules/conteos/conteo-lista/conteo-lista').then(m => m.ConteoListaComponent)
+                    },
+                    {
+                        path: 'conteos/sesion/:idConteo',
+                        loadComponent: () => import('./modules/conteos/conteo-sesion/conteo-sesion').then(m => m.ConteoSesionComponent)
+                    },
+                    {
+                        path: 'conteos/panel/:idConteo',
+                        loadComponent: () => import('./modules/conteos/conteo-panel/conteo-panel').then(m => m.ConteoPanelComponent)
+                    },
                     {
                         path: '',
                         redirectTo: 'dashboard',

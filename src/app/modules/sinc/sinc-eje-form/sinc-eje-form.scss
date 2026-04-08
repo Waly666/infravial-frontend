@@ -530,8 +530,46 @@
     border-radius: 8px;
     border-left: 3px solid color-mix(in srgb, var(--ayuda-color, #4a9eff) 70%, transparent);
     background: rgba(74, 158, 255, 0.06);
-    .ayuda-nivel-det-text { margin: 0; }
+    .ayuda-nivel-det-text { margin: 0 0 0.75rem; }
 }
+
+// Tabla de capas nivel detallado
+.capas-tabla-wrap {
+    margin-top: 0.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(74,158,255,0.18);
+}
+.capas-tabla {
+    width: 100%; border-collapse: collapse; font-size: 0.8rem;
+    thead tr {
+        background: rgba(74,158,255,0.15);
+        th {
+            padding: 0.45rem 0.75rem; text-align: left;
+            font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em;
+            text-transform: uppercase; color: rgba(180,200,255,0.85);
+            border-bottom: 1px solid rgba(74,158,255,0.2);
+        }
+    }
+    tbody tr {
+        border-bottom: 1px solid rgba(74,158,255,0.07);
+        &:last-child { border-bottom: none; }
+        &:nth-child(even) { background: rgba(74,158,255,0.04); }
+        &:hover { background: rgba(74,158,255,0.08); }
+    }
+    td { padding: 0.4rem 0.75rem; color: rgba(200,215,255,0.85); vertical-align: middle; }
+}
+.td-no   { font-weight: 700; color: rgba(74,158,255,0.7) !important; width: 36px; text-align: center; }
+.td-capa { font-family: monospace; font-size: 0.75rem; font-weight: 700; color: #4a9eff !important; white-space: nowrap; }
+.td-geo  { white-space: nowrap; }
+.geo-badge {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 20px;
+    .material-symbols-outlined { font-size: 0.85rem; }
+    &.geo-punto { background: rgba(80,200,120,0.12); color: #50c878; border: 1px solid rgba(80,200,120,0.25); }
+    &.geo-linea { background: rgba(74,158,255,0.12); color: #4a9eff; border: 1px solid rgba(74,158,255,0.25); }
+}
+
 .ayuda-geo-row { display: flex; align-items: flex-start; gap: 0.75rem; }
 .ayuda-geo-badge {
     display: inline-flex;
@@ -746,6 +784,12 @@
     .ayuda-definicion { color: #334155; }
     .ayuda-nivel-det-section { background: rgba(74,158,255,0.04); }
     .ayuda-nivel-det-text { color: #334155; }
+    .capas-tabla-wrap { border-color: rgba(37,99,235,0.2); }
+    .capas-tabla thead tr { background: rgba(37,99,235,0.1); th { color: #1e3a6e; } }
+    .capas-tabla tbody tr { border-bottom-color: rgba(37,99,235,0.08); &:nth-child(even) { background: rgba(37,99,235,0.04); } &:hover { background: rgba(37,99,235,0.08); } }
+    .capas-tabla td { color: #2a3a60; }
+    .td-no   { color: rgba(37,99,235,0.7) !important; }
+    .td-capa { color: #1d4ed8 !important; }
     .ayuda-geo-desc { color: #475569; }
     .ayuda-campos-table { border-color: #e2e8f0; }
     .ayuda-campo-row {

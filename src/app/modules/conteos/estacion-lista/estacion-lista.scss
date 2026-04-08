@@ -1,0 +1,278 @@
+.page-container { padding: 0; }
+
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e8f0ff;
+    margin: 0 0 0.2rem;
+    .material-symbols-outlined { font-size: 1.4rem; color: #4a9eff; }
+}
+
+.page-sub { font-size: 0.78rem; color: rgba(180,200,255,0.5); margin: 0; }
+
+.header-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+.filtros-bar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    background: rgba(10,18,40,0.7);
+    border: 1px solid rgba(74,158,255,0.1);
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+}
+
+.filtro-group { display: flex; align-items: center; gap: 0.5rem; flex: 1; }
+.filtro-icon  { font-size: 1rem; color: rgba(180,200,255,0.4); }
+.filtro-input {
+    background: none; border: none; outline: none;
+    color: #e8f0ff; font-size: 0.85rem; flex: 1;
+    &::placeholder { color: rgba(180,200,255,0.3); }
+}
+
+.loading-state {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.75rem; padding: 3rem; color: rgba(180,200,255,0.5);
+    .material-symbols-outlined { font-size: 2rem; }
+}
+
+.estaciones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 1rem;
+}
+
+.estacion-card {
+    display: flex; flex-direction: column;
+    background: rgba(10,18,40,0.85); border: 1px solid rgba(74,158,255,0.12);
+    border-left: 3px solid #4a9eff; border-radius: 10px;
+    overflow: hidden; cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
+    &:hover { border-color: rgba(74,158,255,0.4); box-shadow: 0 4px 20px rgba(74,158,255,0.15); }
+}
+
+.estacion-card-icon {
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.25rem 1rem 0.5rem;
+    .material-symbols-outlined { font-size: 2.5rem; color: rgba(74,158,255,0.35); }
+}
+
+.estacion-card-body { padding: 0.5rem 1rem 0.75rem; flex: 1; }
+
+.estacion-nombre { font-size: 0.92rem; font-weight: 700; color: #e8f0ff; margin: 0 0 0.5rem; }
+
+.estacion-loc, .estacion-sup, .estacion-poli {
+    display: flex; align-items: center; gap: 0.3rem;
+    font-size: 0.75rem; color: rgba(180,200,255,0.55); margin: 0.15rem 0;
+    .material-symbols-outlined { font-size: 0.9rem; }
+}
+
+.estacion-card-footer {
+    display: flex; justify-content: flex-end; gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid rgba(74,158,255,0.08);
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.75rem; padding: 3rem; color: rgba(180,200,255,0.35);
+    .material-symbols-outlined { font-size: 3rem; opacity: 0.4; }
+    p { margin: 0; font-size: 0.9rem; }
+}
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+.btn-primary {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.6rem 1.1rem;
+    background: linear-gradient(135deg,#1a5fcc,#4a9eff);
+    border: none; border-radius: 6px;
+    color: #fff; font-size: 0.82rem; font-weight: 700; cursor: pointer;
+    &:hover { box-shadow: 0 4px 14px rgba(74,158,255,0.35); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    background: rgba(74,158,255,0.07); border: 1px solid rgba(74,158,255,0.2);
+    border-radius: 6px; color: #4a9eff; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    &:hover { background: rgba(74,158,255,0.14); }
+}
+.btn-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 6px;
+    border: 1px solid rgba(74,158,255,0.2); background: rgba(74,158,255,0.07);
+    color: #4a9eff; cursor: pointer;
+    .material-symbols-outlined { font-size: 1rem; }
+    &:hover { background: rgba(74,158,255,0.18); }
+    &.danger {
+        border-color: rgba(224,92,92,0.25); background: rgba(224,92,92,0.07); color: #e05c5c;
+        &:hover { background: rgba(224,92,92,0.18); }
+    }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    z-index: 200; display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.modal {
+    background: #0d1e3d; border: 1px solid rgba(74,158,255,0.2);
+    border-radius: 12px; width: min(96vw, 700px); max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+}
+.modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(74,158,255,0.1);
+    position: sticky; top: 0; background: #0d1e3d; z-index: 1;
+    h3 { font-size: 1rem; color: #e8f0ff; margin: 0; font-weight: 700; }
+}
+.modal-close {
+    background: none; border: none; color: rgba(180,200,255,0.5); cursor: pointer;
+    .material-symbols-outlined { font-size: 1.2rem; }
+    &:hover { color: #e8f0ff; }
+}
+.modal-body { padding: 1.5rem; }
+.modal-footer {
+    display: flex; justify-content: flex-end; gap: 0.75rem;
+    padding: 1rem 1.5rem; border-top: 1px solid rgba(74,158,255,0.08);
+    position: sticky; bottom: 0; background: #0d1e3d;
+}
+
+// ── Sección labels ────────────────────────────────────────────────────────────
+.section-label {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.07em; color: rgba(180,200,255,0.5);
+    margin-bottom: 0.65rem;
+    .material-symbols-outlined { font-size: 0.95rem; color: #4a9eff; }
+}
+
+// ── Nomenclatura builder ──────────────────────────────────────────────────────
+.nomenclatura-builder {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+    background: rgba(74,158,255,0.04); border: 1px solid rgba(74,158,255,0.15);
+    border-radius: 8px; padding: 0.65rem 0.85rem; margin-bottom: 0.6rem;
+}
+.nom-select {
+    background: rgba(74,158,255,0.06); border: 1px solid rgba(74,158,255,0.18);
+    border-radius: 5px; padding: 0.4rem 0.6rem; color: #e8f0ff; font-size: 0.8rem;
+    outline: none; min-width: 110px; max-width: 160px;
+    option { background: #0d1e3d; }
+    &:focus { border-color: rgba(74,158,255,0.45); }
+}
+.nom-select-sm {
+    @extend .nom-select;
+    min-width: 70px; max-width: 85px;
+}
+.nom-input {
+    background: rgba(74,158,255,0.06); border: 1px solid rgba(74,158,255,0.18);
+    border-radius: 5px; padding: 0.4rem 0.55rem; color: #e8f0ff; font-size: 0.8rem;
+    outline: none; width: 80px;
+    &::placeholder { color: rgba(180,200,255,0.3); }
+    &:focus { border-color: rgba(74,158,255,0.45); }
+}
+.nom-preview {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: rgba(74,158,255,0.08); border: 1px solid rgba(74,158,255,0.2);
+    border-radius: 6px; padding: 0.55rem 0.85rem;
+    font-size: 0.9rem; font-weight: 700; color: #e8f0ff; margin-bottom: 0.25rem;
+    .material-symbols-outlined { font-size: 1rem; color: #4a9eff; }
+}
+
+// ── Form campos ───────────────────────────────────────────────────────────────
+.form-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+.form-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.form-field {
+    display: flex; flex-direction: column; gap: 0.25rem;
+    label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(180,200,255,0.5); }
+    input {
+        background: rgba(74,158,255,0.05); border: 1px solid rgba(74,158,255,0.18);
+        border-radius: 6px; padding: 0.55rem 0.8rem; color: #e8f0ff; font-size: 0.85rem; outline: none;
+        &:focus { border-color: rgba(74,158,255,0.5); }
+    }
+}
+
+// ── Polígono ──────────────────────────────────────────────────────────────────
+.poli-hint {
+    font-size: 0.7rem; color: rgba(180,200,255,0.35); font-weight: 400;
+    text-transform: none; letter-spacing: 0; margin-left: 0.4rem;
+}
+.poli-actions {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+}
+.btn-poli-action {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.38rem 0.75rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    background: rgba(74,158,255,0.08); border: 1px solid rgba(74,158,255,0.2); color: #4a9eff;
+    .material-symbols-outlined { font-size: 0.9rem; }
+    &:hover:not(:disabled) { background: rgba(74,158,255,0.16); }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+    &.danger {
+        background: rgba(224,92,92,0.07); border-color: rgba(224,92,92,0.2); color: #e05c5c;
+        &:hover:not(:disabled) { background: rgba(224,92,92,0.15); }
+    }
+}
+.poli-count {
+    font-size: 0.78rem; color: rgba(180,200,255,0.5); margin-left: auto;
+}
+.mapa-poligono {
+    width: 100%;
+    height: 320px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(74,158,255,0.2);
+    z-index: 0;
+    // Las capas de Leaflet necesitan position relative en el contenedor
+    position: relative;
+}
+
+// ── Misc ──────────────────────────────────────────────────────────────────────
+.error-banner {
+    background: rgba(224,92,92,0.08); border: 1px solid rgba(224,92,92,0.25);
+    border-radius: 6px; padding: 0.65rem 1rem; color: #e05c5c; font-size: 0.83rem; margin-bottom: 1rem;
+}
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// Rosa de los vientos (control Leaflet)
+::ng-deep .rosa-vientos {
+    width: 82px;
+    height: 82px;
+    background: rgba(10,18,40,0.82);
+    border: 1px solid rgba(74,158,255,0.25);
+    border-radius: 50%;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    svg { width: 100%; height: 100%; }
+}
+
+// Tooltip de número de punto en el mapa
+::ng-deep .marker-label {
+    background: #0d1e3d !important;
+    border: 1px solid rgba(74,158,255,0.4) !important;
+    color: #4a9eff !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    padding: 1px 4px !important;
+    box-shadow: none !important;
+    &::before { display: none !important; }
+}

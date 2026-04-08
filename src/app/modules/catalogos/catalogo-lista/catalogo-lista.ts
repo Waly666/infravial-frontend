@@ -59,6 +59,10 @@ export class CatalogoListaComponent implements OnInit {
 
     imagenFile: File | null = null;
 
+    // Paginación cards
+    cardPage     = 1;
+    cardPageSize = 48;
+
     constructor(
         private catalogoService: CatalogoService,
         private api:             ApiService,
@@ -92,7 +96,17 @@ export class CatalogoListaComponent implements OnInit {
     seleccionarCatalogo(id: string) {
         this.catalogoActivo = id;
         this.busqueda       = '';
+        this.cardPage       = 1;
         this.cargarCatalogo();
+    }
+
+    get datosFiltradosPaginados(): any[] {
+        const start = (this.cardPage - 1) * this.cardPageSize;
+        return this.datosFiltrados.slice(start, start + this.cardPageSize);
+    }
+
+    get cardTotalPages(): number {
+        return Math.ceil(this.datosFiltrados.length / this.cardPageSize) || 1;
     }
 
     get datosFiltrados() {
@@ -142,6 +156,15 @@ export class CatalogoListaComponent implements OnInit {
         this.imagenFile = event.target.files[0] || null;
     }
 
+    onImgError(event: Event) {
+        (event.target as HTMLImageElement).style.display = 'none';
+        const wrap = (event.target as HTMLElement).closest('.cat-card-img-wrap');
+        if (wrap) {
+            const ph = wrap.querySelector('.cat-card-no-img') as HTMLElement;
+            if (ph) ph.style.display = 'flex';
+        }
+    }
+
     guardarNuevo() {
         if (this.catalogoInfo?.tieneImagen && this.imagenFile) {
             const formData = new FormData();
@@ -167,7 +190,7 @@ export class CatalogoListaComponent implements OnInit {
             if (k !== '_id' && k !== '__v') formData.append(k, this.itemEdit[k]);
         });
         formData.append('imagen', this.imagenFile);
-        this.api.uploadFile<any>(`/catalogos/${this.catalogoActivo}/${this.itemEdit._id}`, formData).subscribe({
+        this.api.uploadFilePut<any>(`/catalogos/${this.catalogoActivo}/${this.itemEdit._id}`, formData).subscribe({
             next: () => { this.editando = false; this.cargarCatalogo(); },
             error: (err) => alert(err.error?.message || 'Error al actualizar')
         });
@@ -256,6 +279,32 @@ export class CatalogoListaComponent implements OnInit {
         this.busquedaDivipolCat = item.munNombre ? `${item.munNombre} - ${item.deptoNombre}` : '';
         this.mostrarDivipolCat  = false;
         this.editando           = true;
+    }
+
+    get cardGridCols(): string {
+        const minW = this.catalogoActivo === 'sen-vert' ? '320px' : '200px';
+        return `repeat(auto-fill, minmax(min(100%, ${minW}), 1fr))`;
+    }
+
+    get imgWrapHeight(): number {
+        return this.catalogoActivo === 'esquema-perfil' ? 120 : 180;
+    }
+
+    get cardMinHeight(): string {
+        const cortos = ['demarcaciones', 'ubic-sen-hor', 'esquema-perfil'];
+        return cortos.includes(this.catalogoActivo) ? '302px' : '480px';
+    }
+
+    /** Campos a mostrar en la card (solo los más relevantes) */
+    getCamposCard(item: any): { k: string; v: any }[] {
+        const mapa: Record<string, string[]> = {
+            'sen-vert':       ['codSenVert', 'descSenVert', 'clasificacion', 'funcion', 'color', 'forma', 'descripcion'],
+            'esquema-perfil': ['codEsquema', 'calzada'],
+            'ubic-sen-hor':   ['ubicacion'],
+            'demarcaciones':  ['codDem', 'claseDem']
+        };
+        const campos = mapa[this.catalogoActivo] ?? this.getKeys(item).slice(0, 3);
+        return campos.map(k => ({ k, v: item[k] ?? '—' }));
     }
 
     getLabelCampo(campo: string): string {

@@ -37,32 +37,8 @@
         <img *ngFor="let f of eje.fotos" [src]="apiUrl + f" class="foto-mini" (click)="$event.stopPropagation()">
     </div>
 
-    <!-- Selector de sección (solo nivel detallado) -->
-    <div class="seccion-toggle" *ngIf="esNivelDetallado">
-        <button class="seccion-card" [class.active]="seccion === 'basico'" (click)="cambiarSeccion('basico')">
-            <div class="seccion-card-icon seccion-icon-bas">
-                <span class="material-symbols-outlined">list_alt</span>
-            </div>
-            <div class="seccion-card-body">
-                <strong>Nivel Básico</strong>
-                <small>8 capas generales</small>
-            </div>
-            <span class="seccion-card-pill">8</span>
-        </button>
-        <button class="seccion-card seccion-card-det" [class.active]="seccion === 'mc'" (click)="cambiarSeccion('mc')">
-            <div class="seccion-card-icon seccion-icon-det">
-                <span class="material-symbols-outlined">fact_check</span>
-            </div>
-            <div class="seccion-card-body">
-                <strong>Nivel Detallado</strong>
-                <small>17 capas SINC</small>
-            </div>
-            <span class="seccion-card-pill">17</span>
-        </button>
-    </div>
-
     <!-- Chips de tabs — cuadrícula con icono de color por capa -->
-    <div class="tab-chips" [class.tab-chips-det]="seccion === 'mc'">
+    <div class="tab-chips" [class.tab-chips-det]="esNivelDetallado">
         <button
             *ngFor="let tab of tabs"
             class="tab-chip"
@@ -3098,6 +3074,37 @@
                             </span>
                         </span>
                     </div>
+                </div>
+            </section>
+
+            <!-- Nivel de especificidad detallado + tabla de capas -->
+            <section class="ayuda-section ayuda-nivel-det-section" *ngIf="h.nivelEspecificidadDetallado || h.capasDetallado?.length">
+                <h4 class="ayuda-section-title"><span class="material-symbols-outlined">fact_check</span> Nivel de especificidad detallado</h4>
+                <p class="ayuda-definicion ayuda-nivel-det-text" *ngIf="h.nivelEspecificidadDetallado">{{ h.nivelEspecificidadDetallado }}</p>
+                <div class="capas-tabla-wrap" *ngIf="h.capasDetallado?.length">
+                    <table class="capas-tabla">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>CAPA</th>
+                                <th>NOMBRE DE LA CAPA</th>
+                                <th>GEOMETRÍA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let cap of h.capasDetallado">
+                                <td class="td-no">{{ cap.no }}</td>
+                                <td class="td-capa">{{ cap.capa }}</td>
+                                <td class="td-nombre">{{ cap.nombre }}</td>
+                                <td class="td-geo">
+                                    <span class="geo-badge" [class.geo-punto]="cap.geometria === 'Punto'" [class.geo-linea]="cap.geometria === 'Polilínea'">
+                                        <span class="material-symbols-outlined">{{ cap.geometria === 'Punto' ? 'location_on' : 'timeline' }}</span>
+                                        {{ cap.geometria }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 

@@ -229,9 +229,34 @@
                 <h4><span class="material-symbols-outlined">info</span> Definición</h4>
                 <p class="ayuda-definicion">{{ ayuda.definicion }}</p>
             </section>
-            <section class="ayuda-section ayuda-nivel-det-section" *ngIf="ayuda.nivelEspecificidadDetallado">
+            <section class="ayuda-section ayuda-nivel-det-section" *ngIf="ayuda.nivelEspecificidadDetallado || ayuda.capasDetallado">
                 <h4><span class="material-symbols-outlined">fact_check</span> Nivel de especificidad detallado</h4>
-                <p class="ayuda-definicion ayuda-nivel-det-text">{{ ayuda.nivelEspecificidadDetallado }}</p>
+                <p class="ayuda-definicion ayuda-nivel-det-text" *ngIf="ayuda.nivelEspecificidadDetallado">{{ ayuda.nivelEspecificidadDetallado }}</p>
+                <div class="capas-tabla-wrap" *ngIf="ayuda.capasDetallado?.length">
+                    <table class="capas-tabla">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>CAPA</th>
+                                <th>NOMBRE DE LA CAPA</th>
+                                <th>GEOMETRÍA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let c of ayuda.capasDetallado">
+                                <td class="td-no">{{ c.no }}</td>
+                                <td class="td-capa">{{ c.capa }}</td>
+                                <td class="td-nombre">{{ c.nombre }}</td>
+                                <td class="td-geo">
+                                    <span class="geo-badge" [class.geo-punto]="c.geometria === 'Punto'" [class.geo-linea]="c.geometria === 'Polilínea'">
+                                        <span class="material-symbols-outlined">{{ c.geometria === 'Punto' ? 'location_on' : 'timeline' }}</span>
+                                        {{ c.geometria }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
             <section class="ayuda-section ayuda-geo-section">
                 <h4><span class="material-symbols-outlined">location_on</span> Geometría</h4>

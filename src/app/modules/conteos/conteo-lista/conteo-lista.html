@@ -1,0 +1,226 @@
+<div class="page-container">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <ng-container *ngIf="modoGlobal">Todos los Conteos</ng-container>
+                <ng-container *ngIf="!modoGlobal">Conteos — {{ nomEstacion }}</ng-container>
+            </h1>
+            <p class="page-sub">
+                <ng-container *ngIf="modoGlobal">Registros de aforo vehicular de todas las estaciones</ng-container>
+                <ng-container *ngIf="!modoGlobal">Registros de aforo — {{ nomEstacion }}</ng-container>
+            </p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-secondary" (click)="router.navigate(['/conteos/estaciones'])">
+                <span class="material-symbols-outlined">location_on</span> Estaciones
+            </button>
+            <button class="btn-secondary" (click)="router.navigate(['/conteos/proyectos'])" *ngIf="isSupervisor()">
+                <span class="material-symbols-outlined">work</span> Proyectos
+            </button>
+            <button class="btn-primary" (click)="abrirCrear()" *ngIf="isSupervisor()">
+                <span class="material-symbols-outlined">add</span> Nuevo Conteo
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-bar">
+        <div class="filtro-group">
+            <span class="material-symbols-outlined filtro-icon">search</span>
+            <input type="text" class="filtro-input" [(ngModel)]="busqueda" placeholder="Buscar...">
+        </div>
+        <div class="filtro-sep"></div>
+        <div class="filtro-group filtro-group--sm">
+            <span class="material-symbols-outlined filtro-icon">filter_list</span>
+            <select class="filtro-select" [(ngModel)]="filtroEstado">
+                <option value="">Todos los estados</option>
+                <option value="EN PROCESO">En proceso</option>
+                <option value="COMPLETADO">Completado</option>
+            </select>
+        </div>
+        <div class="filtro-count">
+            {{ filtrados.length }} conteo{{ filtrados.length !== 1 ? 's' : '' }}
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <span class="material-symbols-outlined spin">progress_activity</span>
+        <p>Cargando conteos…</p>
+    </div>
+
+    <!-- Lista -->
+    <div class="conteos-list" *ngIf="!loading">
+
+        <div class="conteo-card" *ngFor="let c of filtrados">
+            <div class="conteo-card-main">
+
+                <!-- Fecha grande -->
+                <div class="conteo-fecha-col">
+                    <div class="conteo-fecha-dia">{{ c.fecha | date:'dd' }}</div>
+                    <div class="conteo-fecha-mes">{{ c.fecha | date:'MMM yyyy' }}</div>
+                </div>
+
+                <!-- Datos -->
+                <div class="conteo-datos">
+                    <!-- Estación (solo en modo global) -->
+                    <div class="conteo-estacion" *ngIf="modoGlobal && c.idEstacion">
+                        <span class="material-symbols-outlined">location_on</span>
+                        <button class="link-btn" (click)="irEstacion(c)">
+                            {{ c.idEstacion?.nomenclatura }}
+                        </button>
+                    </div>
+                    <!-- Proyecto -->
+                    <div class="conteo-proyecto" *ngIf="c.idProyecto">
+                        <span class="material-symbols-outlined">work</span>
+                        {{ c.idProyecto?.descripcion }}
+                    </div>
+                    <!-- Horario y clima -->
+                    <div class="conteo-meta-row">
+                        <span class="conteo-meta">
+                            <span class="material-symbols-outlined">schedule</span>
+                            {{ c.horaIni | date:'HH:mm' }} – {{ c.horaFin | date:'HH:mm' }}
+                        </span>
+                        <span class="conteo-meta">
+                            <span class="material-symbols-outlined">cloud</span>
+                            {{ c.condClim }}
+                        </span>
+                    </div>
+                    <!-- Observaciones -->
+                    <div class="conteo-obs" *ngIf="c.observaciones">{{ c.observaciones }}</div>
+                </div>
+
+                <!-- Estado -->
+                <div class="conteo-estado-col">
+                    <span class="estado-badge" [ngClass]="estadoBadge(c.estado)">{{ c.estado }}</span>
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="conteo-card-actions">
+                <button class="btn-accion panel" (click)="irPanel(c)" title="Panel tiempo real">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Panel</span>
+                </button>
+                <button class="btn-accion sesion" (click)="irSesion(c)" title="Ir a conteo"
+                    *ngIf="c.estado === 'EN PROCESO'">
+                    <span class="material-symbols-outlined">play_arrow</span>
+                    <span>Contar</span>
+                </button>
+                <button class="btn-accion edit" (click)="abrirEditar(c)" title="Editar" *ngIf="isSupervisor()">
+                    <span class="material-symbols-outlined">edit</span>
+                    <span>Editar</span>
+                </button>
+                <button class="btn-accion del" (click)="eliminar(c)" title="Eliminar" *ngIf="isSupervisor()">
+                    <span class="material-symbols-outlined">delete</span>
+                    <span>Eliminar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Empty -->
+        <div class="empty-state" *ngIf="filtrados.length === 0">
+            <span class="material-symbols-outlined">bar_chart</span>
+            <p *ngIf="modoGlobal">No hay conteos registrados</p>
+            <p *ngIf="!modoGlobal">No hay conteos para esta estación</p>
+            <button class="btn-primary" (click)="abrirCrear()" *ngIf="isSupervisor()">
+                + Nuevo Conteo
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- ═══════════════ MODAL ═══════════════ -->
+<div class="modal-overlay" *ngIf="modal" (click)="modal=false">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>{{ modoEdicion ? 'Editar' : 'Nuevo' }} Conteo</h3>
+            <button class="modal-close" (click)="modal=false">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="error-banner" *ngIf="errorModal">{{ errorModal }}</div>
+            <div class="form-grid">
+
+                <!-- Selector de estación solo en modo global -->
+                <div class="form-field required" *ngIf="modoGlobal && !modoEdicion">
+                    <label>Estación de conteo</label>
+                    <select [(ngModel)]="form.idEstacion">
+                        <option value="">— Seleccionar estación —</option>
+                        <option *ngFor="let e of estaciones" [value]="e._id">
+                            {{ e.nomenclatura }}
+                            <ng-container *ngIf="e.municipio"> — {{ e.municipio }}</ng-container>
+                        </option>
+                    </select>
+                </div>
+                <!-- Estación fija (desde lista de estación) -->
+                <div class="form-field" *ngIf="!modoGlobal && !modoEdicion">
+                    <label>Estación</label>
+                    <input type="text" [value]="nomEstacion" readonly>
+                </div>
+
+                <div class="form-field required">
+                    <label>Fecha</label>
+                    <input type="date" [(ngModel)]="form.fecha">
+                </div>
+                <div class="form-row">
+                    <div class="form-field required">
+                        <label>Hora Inicio</label>
+                        <input type="time" [(ngModel)]="form.horaIni">
+                    </div>
+                    <div class="form-field required">
+                        <label>Hora Fin</label>
+                        <input type="time" [(ngModel)]="form.horaFin">
+                    </div>
+                </div>
+                <div class="form-field required">
+                    <label>Condición Climática</label>
+                    <select [(ngModel)]="form.condClim">
+                        <option value="">— Seleccionar —</option>
+                        <option *ngFor="let opt of condClimOpts" [value]="opt">{{ opt }}</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Proyecto</label>
+                    <select [(ngModel)]="form.idProyecto">
+                        <option value="">— Sin proyecto —</option>
+                        <option *ngFor="let p of proyectos" [value]="p._id">
+                            {{ p.descripcion }}{{ p.activo ? ' ★' : '' }}
+                        </option>
+                    </select>
+                    <span class="field-hint" *ngIf="proyectoActivo">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Activo: {{ proyectoActivo.descripcion }}
+                    </span>
+                    <span class="field-hint warn" *ngIf="!proyectoActivo">
+                        <span class="material-symbols-outlined">warning</span>
+                        Sin proyecto activo
+                    </span>
+                </div>
+                <div class="form-field">
+                    <label>Observaciones</label>
+                    <input type="text" [(ngModel)]="form.observaciones" placeholder="Observaciones generales">
+                </div>
+                <div class="form-field" *ngIf="modoEdicion">
+                    <label>Estado</label>
+                    <select [(ngModel)]="form.estado">
+                        <option value="EN PROCESO">EN PROCESO</option>
+                        <option value="COMPLETADO">COMPLETADO</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="modal=false">Cancelar</button>
+            <button class="btn-primary" (click)="guardar()" [disabled]="guardando">
+                <span class="material-symbols-outlined spin" *ngIf="guardando">progress_activity</span>
+                {{ guardando ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>

@@ -13,7 +13,7 @@
 
     <div class="catalogo-layout">
 
-        <!-- Panel izquierdo: lista de catálogos -->
+        <!-- Panel izquierdo -->
         <div class="catalogo-nav">
             <div class="nav-title">CATÁLOGOS</div>
             <div
@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <!-- Panel derecho: datos -->
+        <!-- Panel derecho -->
         <div class="catalogo-content">
 
             <div class="content-header">
@@ -44,43 +44,83 @@
                 <div class="spinner"></div>
             </div>
 
-            <!-- Tabla -->
-            <div class="table-wrapper" *ngIf="!loading">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th *ngIf="catalogoInfo?.tieneImagen">Imagen</th>
-                            <th *ngFor="let k of getKeys(datosFiltrados[0] || {})">{{ getLabelCampo(k) }}</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let item of datosFiltrados">
-                            <td *ngIf="catalogoInfo?.tieneImagen">
+            <ng-container *ngIf="!loading">
+
+                <!-- VISTA CARDS — catálogos con imagen -->
+                <div class="cat-cards-grid" [style.grid-template-columns]="cardGridCols" *ngIf="catalogoInfo?.tieneImagen">
+                    <div class="cat-card" [style.min-height]="cardMinHeight" *ngFor="let item of datosFiltradosPaginados">
+                        <!-- Imagen arriba -->
+                        <div class="cat-card-thumb">
                             <img
-                                    *ngIf="getImagenUrl(item)"
-                                    [src]="getImagenUrl(item)"
-                                    [class]="catalogoActivo === 'esquema-perfil' ? 'thumb-esquema' : 'thumb'"
-                                    [alt]="item.codEsquema"
-                                >
-                                <span *ngIf="!getImagenUrl(item)" class="no-img">Sin imagen</span>
-                            </td>
-                            <td *ngFor="let k of getKeys(item)">
-                                <span class="cell-value">{{ item[k] }}</span>
-                            </td>
-                            <td>
-                                <div class="actions-cell">
-                                    <button class="btn-edit-sm" (click)="editar(item)">✏️</button>
-                                    <button class="btn-danger-sm" (click)="eliminar(item._id)">🗑️</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr *ngIf="datosFiltrados.length === 0">
-                            <td [attr.colspan]="10" class="empty-state">No hay registros</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                                class="cat-card-img"
+                                [src]="getImagenUrl(item)"
+                                [alt]="item.codSenVert || item.codEsquema || item.ubicacion || item.codDem || ''"
+                                *ngIf="getImagenUrl(item)"
+                                (error)="onImgError($event)"
+                            >
+                            <div class="cat-card-no-img" *ngIf="!getImagenUrl(item)">
+                                <span class="material-symbols-outlined">hide_image</span>
+                            </div>
+                        </div>
+                        <!-- Campos abajo -->
+                        <div class="cat-card-body">
+                            <div class="cat-card-fields">
+                                <span class="cat-card-field" *ngFor="let f of getCamposCard(item)">
+                                    <span class="cat-field-label">{{ getLabelCampo(f.k) }}</span>
+                                    <span class="cat-field-val" [class.cat-field-val--desc]="f.k === 'descripcion'">{{ f.v }}</span>
+                                </span>
+                            </div>
+                            <div class="cat-card-actions">
+                                <button class="btn-icon" (click)="editar(item)" title="Editar">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </button>
+                                <button class="btn-icon btn-icon-danger" (click)="eliminar(item._id)" title="Eliminar">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cat-cards-empty" *ngIf="datosFiltrados.length === 0">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                        <p>No hay registros</p>
+                    </div>
+                </div>
+                <!-- Paginación cards -->
+                <div class="cat-cards-pag" *ngIf="catalogoInfo?.tieneImagen && cardTotalPages > 1">
+                    <button class="btn-pag-card" (click)="cardPage = cardPage - 1" [disabled]="cardPage === 1">‹</button>
+                    <span class="pag-card-info">{{ cardPage }} / {{ cardTotalPages }} &nbsp;·&nbsp; {{ datosFiltrados.length }} registros</span>
+                    <button class="btn-pag-card" (click)="cardPage = cardPage + 1" [disabled]="cardPage >= cardTotalPages">›</button>
+                </div>
+
+                <!-- VISTA TABLA — catálogos sin imagen -->
+                <div class="table-wrapper" *ngIf="!catalogoInfo?.tieneImagen">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th *ngFor="let k of getKeys(datosFiltrados[0] || {})">{{ getLabelCampo(k) }}</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of datosFiltrados">
+                                <td *ngFor="let k of getKeys(item)">
+                                    <span class="cell-value">{{ item[k] }}</span>
+                                </td>
+                                <td>
+                                    <div class="actions-cell">
+                                        <button class="btn-edit-sm" (click)="editar(item)">✏️</button>
+                                        <button class="btn-danger-sm" (click)="eliminar(item._id)">🗑️</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr *ngIf="datosFiltrados.length === 0">
+                                <td [attr.colspan]="10" class="empty-state">No hay registros</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </ng-container>
         </div>
     </div>
 
@@ -92,85 +132,45 @@
                 <button class="modal-close" (click)="cerrarModal()">✕</button>
             </div>
             <div class="modal-body">
-                <!-- Búsqueda DIVIPOL para ZATs, Comunas y Barrios -->
                 <div *ngIf="usaDivipol">
                     <div class="form-group" style="position:relative">
                         <label>Buscar Municipio</label>
-                        <input
-                            type="text"
-                            [(ngModel)]="busquedaDivipolCat"
-                            (input)="buscarDivipolCat()"
-                            placeholder="Buscar municipio..."
-                            class="form-input"
-                        >
+                        <input type="text" [(ngModel)]="busquedaDivipolCat" (input)="buscarDivipolCat()" placeholder="Buscar municipio..." class="form-input">
                         <span *ngIf="buscandoCat">⏳</span>
                         <div class="divipol-results" *ngIf="mostrarDivipolCat && resultadosDivipolCat.length">
-                            <div
-                                class="divipol-item"
-                                *ngFor="let item of resultadosDivipolCat"
-                                (click)="seleccionarDivipolCat(item, nuevoItem)">
-                                <strong>{{ item.divipolMunicipio }}</strong>
-                                <span>{{ item.divipolDepto }} — {{ item.divipolMunCod }}</span>
+                            <div class="divipol-item" *ngFor="let d of resultadosDivipolCat" (click)="seleccionarDivipolCat(d, nuevoItem)">
+                                <strong>{{ d.divipolMunicipio }}</strong>
+                                <span>{{ d.divipolDepto }} — {{ d.divipolMunCod }}</span>
                             </div>
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Municipio</label>
-                            <input type="text" [(ngModel)]="nuevoItem.munNombre" class="form-input" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Cód. Municipio</label>
-                            <input type="text" [(ngModel)]="nuevoItem.munDivipol" class="form-input" readonly>
-                        </div>
+                        <div class="form-group"><label>Municipio</label><input type="text" [(ngModel)]="nuevoItem.munNombre" class="form-input" readonly></div>
+                        <div class="form-group"><label>Cód. Municipio</label><input type="text" [(ngModel)]="nuevoItem.munDivipol" class="form-input" readonly></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Departamento</label>
-                            <input type="text" [(ngModel)]="nuevoItem.deptoNombre" class="form-input" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Cód. Departamento</label>
-                            <input type="text" [(ngModel)]="nuevoItem.deptoDivipol" class="form-input" readonly>
-                        </div>
+                        <div class="form-group"><label>Departamento</label><input type="text" [(ngModel)]="nuevoItem.deptoNombre" class="form-input" readonly></div>
+                        <div class="form-group"><label>Cód. Departamento</label><input type="text" [(ngModel)]="nuevoItem.deptoDivipol" class="form-input" readonly></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group" *ngIf="catalogoActivo === 'zats'">
-                            <label>Número ZAT</label>
-                            <input type="number" [(ngModel)]="nuevoItem.zatNumero" class="form-input">
-                        </div>
-                        <div class="form-group" *ngIf="catalogoActivo === 'zats'">
-                            <label>Letra ZAT</label>
-                            <input type="text" [(ngModel)]="nuevoItem.zatLetra" class="form-input">
-                        </div>
-                        <div class="form-group" *ngIf="catalogoActivo === 'comunas'">
-                            <label>Número Comuna</label>
-                            <input type="number" [(ngModel)]="nuevoItem.comunaNumero" class="form-input">
-                        </div>
-                        <div class="form-group" *ngIf="catalogoActivo === 'comunas'">
-                            <label>Letra Comuna</label>
-                            <input type="text" [(ngModel)]="nuevoItem.comunaLetra" class="form-input">
-                        </div>
-                        <div class="form-group" *ngIf="catalogoActivo === 'barrios'">
-                            <label>Nombre Barrio</label>
-                            <input type="text" [(ngModel)]="itemEdit.nombre" class="form-input">
-                        </div>
-                        
+                        <div class="form-group" *ngIf="catalogoActivo === 'zats'"><label>Número ZAT</label><input type="number" [(ngModel)]="nuevoItem.zatNumero" class="form-input"></div>
+                        <div class="form-group" *ngIf="catalogoActivo === 'zats'"><label>Letra ZAT</label><input type="text" [(ngModel)]="nuevoItem.zatLetra" class="form-input"></div>
+                        <div class="form-group" *ngIf="catalogoActivo === 'comunas'"><label>Número Comuna</label><input type="number" [(ngModel)]="nuevoItem.comunaNumero" class="form-input"></div>
+                        <div class="form-group" *ngIf="catalogoActivo === 'comunas'"><label>Letra Comuna</label><input type="text" [(ngModel)]="nuevoItem.comunaLetra" class="form-input"></div>
+                        <div class="form-group" *ngIf="catalogoActivo === 'barrios'"><label>Nombre Barrio</label><input type="text" [(ngModel)]="nuevoItem.nombre" class="form-input"></div>
                     </div>
                 </div>
-
-                <!-- Campos genéricos para otros catálogos -->
-                                <div *ngIf="!usaDivipol">
-                                    <div class="form-group" *ngFor="let k of getKeys(datosFiltrados[0] || {})">
-                                        <label>{{ getLabelCampo(k) }}</label>
-                                        <input type="text" [(ngModel)]="nuevoItem[k]" class="form-input" [placeholder]="k">
-                                    </div>
-                                    <div class="form-group" *ngIf="catalogoInfo?.tieneImagen">
-                                        <label>Imagen</label>
-                                        <input type="file" (change)="onImagenSeleccionada($event)" accept="image/*" class="form-input">
-                                    </div>
-                                </div>
+                <div *ngIf="!usaDivipol">
+                    <div class="form-group" *ngFor="let k of getKeys(datosFiltrados[0] || {})">
+                        <label>{{ getLabelCampo(k) }}</label>
+                        <input type="text" [(ngModel)]="nuevoItem[k]" class="form-input" [placeholder]="k">
+                    </div>
+                    <div class="form-group" *ngIf="catalogoInfo?.tieneImagen">
+                        <label>Imagen</label>
+                        <input type="file" (change)="onImagenSeleccionada($event)" accept="image/*" class="form-input">
+                    </div>
                 </div>
+            </div>
             <div class="modal-footer">
                 <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
                 <button class="btn-primary" (click)="guardarNuevo()">💾 Guardar</button>

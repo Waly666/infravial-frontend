@@ -38,6 +38,10 @@ export class ApiService {
         return this.http.post<T>(`${this.apiUrl}${endpoint}`, formData);
     }
 
+    uploadFilePut<T>(endpoint: string, formData: FormData): Observable<T> {
+        return this.http.put<T>(`${this.apiUrl}${endpoint}`, formData);
+    }
+
     getBlob(endpoint: string): Observable<Blob> {
         return this.http.get(`${this.apiUrl}${endpoint}`, { responseType: 'blob' });
     }

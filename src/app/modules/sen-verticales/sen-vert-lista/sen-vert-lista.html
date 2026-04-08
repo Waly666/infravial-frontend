@@ -139,7 +139,7 @@
     </div>
 
     <div class="tramos-grid" *ngIf="!loading && registrosFiltrados.length > 0">
-        <article class="tramo-card" *ngFor="let r of registrosPaginados" (click)="verReporte(r._id)">
+        <article class="tramo-card" *ngFor="let r of registrosPaginados" (click)="editar(r._id)">
             <div class="card-head">
                 <div class="card-badges">
                     <span class="badge-codigo">{{ r.codSe || '—' }}</span>
@@ -156,7 +156,7 @@
                     <button type="button" class="btn-icon" *ngIf="tieneStreetView(r)" (click)="abrirStreetView(r)" title="Street View">
                         <span class="material-symbols-outlined">streetview</span>
                     </button>
-                    <button type="button" class="btn-icon" (click)="verReporte(r._id)" title="Ver reporte">
+                    <button type="button" class="btn-icon" (click)="editar(r._id)" title="Ver reporte">
                         <span class="material-symbols-outlined">visibility</span>
                     </button>
                     <button type="button" class="btn-icon" (click)="editar(r._id)" title="Editar">

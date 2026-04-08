@@ -1034,4 +1034,178 @@ body.light-mode .vt-inv-empty {
     border-color: rgba(37,99,235,0.18) !important;
 }
 body.light-mode .vt-inv-loading { color: rgba(26,37,64,0.45) !important; }
+
+/* ══════════════════════════════════════════════════════════════════
+   MODO CLARO — MÓDULO CONTEOS VEHICULARES
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Compartidos: headers, filtros, cards base ── */
+body.light-mode .filtros-bar {
+    background: #ffffff !important;
+    border-color: rgba(37,99,235,0.14) !important;
+}
+body.light-mode .filtro-input,
+body.light-mode .filtro-select {
+    color: #1a2540 !important;
+}
+body.light-mode .filtro-input::placeholder { color: #8090b0 !important; }
+body.light-mode .filtro-icon  { color: #8090b0 !important; }
+body.light-mode .filtro-count { color: #5a6b8c !important; }
+body.light-mode .filtro-sep   { background: rgba(37,99,235,0.15) !important; }
+body.light-mode .filtro-select option { background: #ffffff !important; color: #1a2540 !important; }
+
+/* ── Proyectos ── */
+body.light-mode .proyecto-card {
+    background: #ffffff !important;
+    border-color: rgba(37,99,235,0.2) !important;
+    &:hover { border-color: rgba(37,99,235,0.4) !important; box-shadow: 0 4px 18px rgba(37,99,235,0.1) !important; }
+    &.activo { border-left-color: #16a34a !important; box-shadow: 0 0 0 1px rgba(22,163,74,0.2), 0 4px 16px rgba(22,163,74,0.1) !important; }
+}
+body.light-mode .proyecto-nombre { color: #1a2540 !important; }
+body.light-mode .proyecto-meta   { color: #4a5a80 !important; }
+body.light-mode .proyecto-notas  { color: #6a7a98 !important; }
+body.light-mode .proyecto-card-footer { border-top-color: rgba(37,99,235,0.1) !important; }
+body.light-mode .proyecto-icon .material-symbols-outlined { color: rgba(37,99,235,0.3) !important; }
+body.light-mode .estado-badge.inactivo-badge { background: rgba(37,99,235,0.06) !important; border-color: rgba(37,99,235,0.18) !important; color: #6a7a98 !important; }
+
+/* ── Estaciones ── */
+body.light-mode .estacion-card {
+    background: #ffffff !important;
+    border-color: rgba(37,99,235,0.18) !important;
+    &:hover { border-color: rgba(37,99,235,0.4) !important; box-shadow: 0 4px 20px rgba(37,99,235,0.12) !important; }
+}
+body.light-mode .estacion-nombre { color: #1a2540 !important; }
+body.light-mode .estacion-loc,
+body.light-mode .estacion-sup,
+body.light-mode .estacion-poli   { color: #4a5a80 !important; }
+body.light-mode .estacion-card-icon .material-symbols-outlined { color: rgba(37,99,235,0.3) !important; }
+
+/* ── Conteos lista ── */
+body.light-mode .conteo-card {
+    background: #ffffff !important;
+    border-color: rgba(37,99,235,0.18) !important;
+    &:hover { border-color: rgba(37,99,235,0.35) !important; box-shadow: 0 4px 18px rgba(37,99,235,0.08) !important; }
+}
+body.light-mode .conteo-card-actions { background: rgba(37,99,235,0.03) !important; border-top-color: rgba(37,99,235,0.08) !important; }
+body.light-mode .conteo-fecha-col  { background: rgba(37,99,235,0.07) !important; border-color: rgba(37,99,235,0.18) !important; }
+body.light-mode .conteo-fecha-mes  { color: #5a6b8c !important; }
+body.light-mode .conteo-estacion   { color: #1a2540 !important; }
+body.light-mode .conteo-proyecto   { color: #4a5a80 !important; }
+body.light-mode .conteo-meta       { color: #5a6b8c !important; }
+body.light-mode .conteo-obs        { color: #7a8aaa !important; }
+body.light-mode .btn-accion.edit   { background: rgba(37,99,235,0.06) !important; border-color: rgba(37,99,235,0.18) !important; color: #3a5a9a !important; }
+
+/* ── Modal conteos (proyecto-lista y conteo-lista) ── */
+body.light-mode .modal {
+    background: #ffffff !important;
+    border-color: rgba(37,99,235,0.2) !important;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.18) !important;
+}
+body.light-mode .modal-header {
+    background: #ffffff !important;
+    border-bottom-color: rgba(37,99,235,0.12) !important;
+    h3 { color: #1a2540 !important; }
+}
+body.light-mode .modal-footer {
+    background: #ffffff !important;
+    border-top-color: rgba(37,99,235,0.1) !important;
+}
+body.light-mode .modal-close { color: #6a7a98 !important; &:hover { color: #1a2540 !important; } }
+body.light-mode .form-field label { color: #5a6b8c !important; }
+body.light-mode .form-field input,
+body.light-mode .form-field select {
+    background: #f5f7ff !important;
+    border-color: rgba(37,99,235,0.2) !important;
+    color: #1a2540 !important;
+    &:focus { border-color: rgba(37,99,235,0.5) !important; }
+}
+body.light-mode .form-field select option { background: #ffffff !important; color: #1a2540 !important; }
+body.light-mode .field-hint         { color: #16a34a !important; }
+body.light-mode .field-hint.warn    { color: #b45309 !important; }
+
+/* ── Sesión de conteo (pantalla encuestador) ── */
+body.light-mode .sesion-header {
+    background: #ffffff !important;
+    border-color: rgba(37,99,235,0.14) !important;
+}
+body.light-mode .sesion-titulo     { color: #1a2540 !important; }
+body.light-mode .sesion-sub        { color: #5a6b8c !important; }
+body.light-mode .sentido-card {
+    background: #ffffff !important;
+    border-color: rgba(37,99,235,0.18) !important;
+    &.libre:hover { border-color: rgba(37,99,235,0.45) !important; box-shadow: 0 4px 20px rgba(37,99,235,0.12) !important; }
+    &.ocupado { border-color: rgba(200,50,50,0.2) !important; }
+}
+body.light-mode .sentido-nombre    { color: #1a2540 !important; }
+body.light-mode .sentido-cod       { color: #6a7a98 !important; }
+body.light-mode .sentido-libre-label { color: #2563eb !important; }
+body.light-mode .sentido-ocupante  { color: #dc2626 !important; }
+body.light-mode .mi-sentido-bar {
+    background: rgba(37,99,235,0.06) !important;
+    border-color: rgba(37,99,235,0.2) !important;
+}
+body.light-mode .mi-sentido-info   { color: #2a3a60 !important; strong { color: #1a2540 !important; } }
+body.light-mode .cat-btn {
+    background: #e8eeff !important;
+    border-color: rgba(37,99,235,0.3) !important;
+    &:hover:not(:disabled) { background: #d6e4ff !important; border-color: rgba(37,99,235,0.55) !important; }
+    &:active:not(:disabled) { background: #c5d8ff !important; }
+}
+body.light-mode .cat-nombre        { color: #1a2540 !important; }
+body.light-mode .cat-count         { background: rgba(37,99,235,0.15) !important; color: #1a3580 !important; }
+body.light-mode .mi-total          { background: rgba(37,99,235,0.08) !important; border-color: rgba(37,99,235,0.22) !important; }
+body.light-mode .mi-total-num      { color: #1d4ed8 !important; }
+body.light-mode .mi-total-label    { color: #5a6b8c !important; }
+
+/* ── Panel tiempo real ── */
+body.light-mode .panel-header {
+    background: #ffffff !important;
+    border-color: rgba(37,99,235,0.14) !important;
+}
+body.light-mode .panel-titulo      { color: #1a2540 !important; }
+body.light-mode .panel-sub         { color: #5a6b8c !important; }
+body.light-mode .total-global      { background: rgba(37,99,235,0.08) !important; border-color: rgba(37,99,235,0.22) !important; }
+body.light-mode .total-num         { color: #1d4ed8 !important; }
+body.light-mode .total-label       { color: #5a6b8c !important; }
+body.light-mode .sentido-bloque {
+    background: #ffffff !important;
+    border-color: rgba(37,99,235,0.18) !important;
+    border-left-color: rgba(37,99,235,0.5) !important;
+    &.sentido-activo {
+        background: #eef4ff !important;
+        border-color: rgba(37,99,235,0.35) !important;
+        border-left-color: #2563eb !important;
+    }
+    &.sentido-inactivo { background: #f8faff !important; }
+}
+body.light-mode .sentido-bloque-header { border-bottom-color: rgba(37,99,235,0.1) !important; }
+body.light-mode .sentido-bloque-cod    { color: #3a4a70 !important; }
+body.light-mode .sentido-bloque-nombre { color: #1a2540 !important; }
+body.light-mode .sentido-bloque-usuario { color: #1d4ed8 !important; }
+body.light-mode .sentido-libre-chip    { color: #8090b0 !important; }
+body.light-mode .sentido-total-num     { color: #1d4ed8 !important; }
+body.light-mode .sentido-total-label   { color: #6a7a98 !important; }
+body.light-mode .cat-barra-label       { color: #4a5a80 !important; }
+body.light-mode .cat-barra-track       { background: rgba(37,99,235,0.1) !important; }
+body.light-mode .cat-barra-fill        { background: linear-gradient(90deg,#1d4ed8,#3b82f6) !important; }
+body.light-mode .cat-barra-num         { color: #1d4ed8 !important; }
+body.light-mode .cats-vacio            { color: #8090b0 !important; }
+body.light-mode .encuestador-chip      { background: rgba(37,99,235,0.07) !important; border-color: rgba(37,99,235,0.2) !important; color: #2a3a60 !important; }
+body.light-mode .sentido-estado-badge.badge-activo { background: rgba(22,163,74,0.12) !important; border-color: rgba(22,163,74,0.3) !important; color: #16a34a !important; }
+body.light-mode .sentido-estado-badge.badge-libre  { background: rgba(37,99,235,0.05) !important; border-color: rgba(37,99,235,0.12) !important; color: #8090b0 !important; }
+body.light-mode .estado-dot            { background: #2563eb !important; }
+body.light-mode .btn-reset-sesiones    { background: rgba(180,100,0,0.07) !important; border-color: rgba(180,100,0,0.22) !important; color: #9a5c00 !important; }
+
+/* ── Info / error banners (compartido conteos) ── */
+body.light-mode .info-banner {
+    background: rgba(37,99,235,0.06) !important;
+    border-color: rgba(37,99,235,0.2) !important;
+    color: #2a3a60 !important;
+}
+body.light-mode .total-chip--vehiculos { background: rgba(37,99,235,0.1) !important; border-color: rgba(37,99,235,0.25) !important; color: #1d4ed8 !important; }
+body.light-mode .total-chip--personas  { background: rgba(109,40,217,0.1) !important; border-color: rgba(109,40,217,0.25) !important; color: #6d28d9 !important; }
+body.light-mode .cats-barras-titulo    { color: rgba(37,99,235,0.7) !important; }
+body.light-mode .cats-barras-titulo--personas { color: rgba(109,40,217,0.7) !important; }
+body.light-mode .cat-barra-fill--personas { background: linear-gradient(90deg,#5b21b6,#7c3aed) !important; }
+body.light-mode .cat-barra-num--personas  { color: #6d28d9 !important; }
 body.light-mode .vt-inv-error p { color: #b91c1c !important; }

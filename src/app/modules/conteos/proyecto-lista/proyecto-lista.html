@@ -1,0 +1,138 @@
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span class="material-symbols-outlined">work</span>
+                Proyectos de Conteo
+            </h1>
+            <p class="page-sub">Gestión de proyectos de aforo vehicular</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-secondary" (click)="router.navigate(['/dashboard'])">
+                <span class="material-symbols-outlined">arrow_back</span> Dashboard
+            </button>
+            <button class="btn-primary" (click)="abrirCrear()" *ngIf="isSupervisor()">
+                <span class="material-symbols-outlined">add</span> Nuevo Proyecto
+            </button>
+        </div>
+    </div>
+
+    <!-- Búsqueda -->
+    <div class="filtros-bar">
+        <div class="filtro-group">
+            <span class="material-symbols-outlined filtro-icon">search</span>
+            <input type="text" class="filtro-input" [(ngModel)]="busqueda" placeholder="Buscar proyecto...">
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <span class="material-symbols-outlined spin">progress_activity</span>
+        <p>Cargando proyectos…</p>
+    </div>
+
+    <!-- Lista -->
+    <div class="proyectos-grid" *ngIf="!loading">
+
+        <div class="proyecto-card" *ngFor="let p of filtrados" [class.activo]="p.activo">
+            <div class="proyecto-card-top">
+                <div class="proyecto-icon">
+                    <span class="material-symbols-outlined">work</span>
+                </div>
+                <div class="proyecto-estado-wrap">
+                    <span class="estado-badge activo-badge" *ngIf="p.activo">
+                        <span class="live-dot"></span> ACTIVO
+                    </span>
+                    <span class="estado-badge inactivo-badge" *ngIf="!p.activo">
+                        INACTIVO
+                    </span>
+                </div>
+            </div>
+
+            <div class="proyecto-card-body">
+                <h3 class="proyecto-nombre">{{ p.descripcion }}</h3>
+                <p class="proyecto-meta" *ngIf="p.responsable">
+                    <span class="material-symbols-outlined">person</span>
+                    {{ p.responsable }}
+                </p>
+                <p class="proyecto-meta" *ngIf="p.fechaInicio || p.fechaFin">
+                    <span class="material-symbols-outlined">date_range</span>
+                    {{ formatFecha(p.fechaInicio) }}
+                    <ng-container *ngIf="p.fechaFin"> — {{ formatFecha(p.fechaFin) }}</ng-container>
+                </p>
+                <p class="proyecto-notas" *ngIf="p.notas">{{ p.notas }}</p>
+            </div>
+
+            <div class="proyecto-card-footer">
+                <button class="btn-activar" (click)="activar(p)" *ngIf="!p.activo && isSupervisor()" title="Activar proyecto">
+                    <span class="material-symbols-outlined">play_circle</span> Activar
+                </button>
+                <button class="btn-activar desactivar" (click)="desactivar(p)" *ngIf="p.activo && isSupervisor()" title="Desactivar proyecto">
+                    <span class="material-symbols-outlined">pause_circle</span> Desactivar
+                </button>
+                <div class="footer-actions">
+                    <button class="btn-icon" (click)="abrirEditar(p)" title="Editar" *ngIf="isSupervisor()">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button class="btn-icon danger" (click)="eliminar(p)" title="Eliminar" *ngIf="isSupervisor()">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state" *ngIf="filtrados.length === 0">
+            <span class="material-symbols-outlined">work_off</span>
+            <p>No hay proyectos registrados</p>
+            <button class="btn-primary" (click)="abrirCrear()" *ngIf="isSupervisor()">+ Nuevo Proyecto</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" *ngIf="modal" (click)="modal=false">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>{{ modoEdicion ? 'Editar' : 'Nuevo' }} Proyecto</h3>
+            <button class="modal-close" (click)="modal=false">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="error-banner" *ngIf="errorModal">{{ errorModal }}</div>
+            <div class="form-grid">
+                <div class="form-field required">
+                    <label>Descripción / Nombre del proyecto</label>
+                    <input type="text" [(ngModel)]="form.descripcion" placeholder="Ej: Conteo vehicular Calle 5 con Carrera 8">
+                </div>
+                <div class="form-field">
+                    <label>Responsable</label>
+                    <input type="text" [(ngModel)]="form.responsable" placeholder="Nombre del responsable">
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Fecha Inicio</label>
+                        <input type="date" [(ngModel)]="form.fechaInicio">
+                    </div>
+                    <div class="form-field">
+                        <label>Fecha Fin</label>
+                        <input type="date" [(ngModel)]="form.fechaFin">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Notas</label>
+                    <input type="text" [(ngModel)]="form.notas" placeholder="Observaciones generales del proyecto">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="modal=false">Cancelar</button>
+            <button class="btn-primary" (click)="guardar()" [disabled]="guardando">
+                <span class="material-symbols-outlined spin" *ngIf="guardando">progress_activity</span>
+                {{ guardando ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>

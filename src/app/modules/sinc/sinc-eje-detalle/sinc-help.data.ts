@@ -11,6 +11,13 @@ export interface HelpCampo {
     dominio?: string;
 }
 
+export interface CapaDetallado {
+    no: number;
+    capa: string;
+    nombre: string;
+    geometria: string;
+}
+
 export interface HelpEntry {
     titulo: string;
     emoji: string;
@@ -21,8 +28,10 @@ export interface HelpEntry {
     campos: HelpCampo[];
     tips: string[];
     refManual: string;
-    /** Texto adicional (p. ej. alcance del nivel detallado según manual). Solo EJE u otras entradas que lo requieran. */
+    /** Texto introductorio del nivel detallado */
     nivelEspecificidadDetallado?: string;
+    /** Tabla de capas del nivel detallado (Metodología SINC v5) */
+    capasDetallado?: CapaDetallado[];
 }
 
 export const SINC_HELP: Record<string, HelpEntry> = {
@@ -61,6 +70,22 @@ export const SINC_HELP: Record<string, HelpEntry> = {
         ],
         nivelEspecificidadDetallado:
             'Las capas geográficas para reportar en este nivel aplican para la red vial primaria concesionada y no concesionada, y para la red vial secundaria y terciaria que esté concesionada. A continuación, el manual relaciona los elementos a reportar con los respectivos nombres de los archivos asociados a las capas geográficas y el tipo de geometría (Metodología SINC v5, pág. 24 y siguientes). En InfraVial, use el eje con «Nivel Detallado» y la sección Mc del inventario para diligenciar esas capas.',
+        capasDetallado: [
+            { no: 1,  capa: 'EJES',           nombre: 'Eje de las vías',                    geometria: 'Polilínea' },
+            { no: 2,  capa: 'FOTOEJE',         nombre: 'Foto de la vía',                     geometria: 'Punto'     },
+            { no: 3,  capa: 'PRS',             nombre: 'Puntos de referencia lineal',         geometria: 'Punto'     },
+            { no: 4,  capa: 'PROPIEDADES',     nombre: 'Propiedades de las vías',             geometria: 'Polilínea' },
+            { no: 5,  capa: 'PUENTES',         nombre: 'Puentes y pontones',                  geometria: 'Punto'     },
+            { no: 6,  capa: 'TUNELES',         nombre: 'Túneles',                             geometria: 'Polilínea' },
+            { no: 7,  capa: 'VARIANTES',       nombre: 'Variantes y pasos alternativos',      geometria: 'Polilínea' },
+            { no: 8,  capa: 'SITIOSCRITICOS',  nombre: 'Sitios Críticos de inestabilidad',    geometria: 'Punto'     },
+            { no: 9,  capa: 'OBRASDRENAJE',    nombre: 'Obras de drenaje',                    geometria: 'Punto'     },
+            { no: 10, capa: 'INTERSECCIONES',  nombre: 'Intersecciones viales',               geometria: 'Punto'     },
+            { no: 11, capa: 'SENALESVERT',     nombre: 'Señales verticales',                  geometria: 'Punto'     },
+            { no: 12, capa: 'DEMARCACIONES',   nombre: 'Demarcaciones horizontales',          geometria: 'Polilínea' },
+            { no: 13, capa: 'SEMAFOROS',       nombre: 'Semáforos',                           geometria: 'Punto'     },
+            { no: 14, capa: 'LUMINARIA',       nombre: 'Luminarias',                          geometria: 'Punto'     },
+        ],
         refManual: 'Sección 3 – Estructura del SINC · Tabla 1 – Capa EJE',
     },
 

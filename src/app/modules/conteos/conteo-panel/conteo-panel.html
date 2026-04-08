@@ -1,0 +1,140 @@
+<div class="panel-container">
+
+    <div class="loading-state" *ngIf="loading">
+        <span class="material-symbols-outlined spin">progress_activity</span>
+        <p>Cargando panel…</p>
+    </div>
+
+    <ng-container *ngIf="!loading && conteo">
+
+        <!-- Header -->
+        <div class="panel-header">
+            <div class="panel-header-left">
+                <button class="btn-back" (click)="volverLista()">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <div>
+                    <div class="panel-titulo">
+                        <span class="material-symbols-outlined">dashboard</span>
+                        Panel en Tiempo Real
+                    </div>
+                    <div class="panel-sub">
+                        {{ conteo.idEstacion?.nomenclatura }} &bull;
+                        {{ conteo.fecha | date:'dd/MM/yyyy' }} &bull;
+                        {{ formatHora(conteo.horaIni) }} – {{ formatHora(conteo.horaFin) }}
+                    </div>
+                </div>
+            </div>
+            <div class="panel-header-right">
+                <div class="live-badge">
+                    <span class="live-dot"></span> LIVE
+                </div>
+                <button class="btn-reset-sesiones" *ngIf="isSupervisor()"
+                    (click)="liberarTodasSesiones()" [disabled]="liberandoSesiones"
+                    title="Liberar todas las sesiones activas">
+                    <span class="material-symbols-outlined" [class.spin]="liberandoSesiones">
+                        {{ liberandoSesiones ? 'progress_activity' : 'group_remove' }}
+                    </span>
+                    Resetear sesiones
+                </button>
+                <div class="total-global">
+                    <span class="total-num">{{ total }}</span>
+                    <span class="total-label">vehículos totales</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sin sentidos aún -->
+        <div class="empty-state" *ngIf="todosSentidos.length === 0 && !loading">
+            <span class="material-symbols-outlined">bar_chart</span>
+            <p>No hay sentidos configurados en el catálogo.</p>
+        </div>
+
+        <!-- Bloques por sentido (todos) -->
+        <div class="sentidos-panel">
+            <div class="sentido-bloque"
+                *ngFor="let sv of sentidosVista"
+                [class.sentido-activo]="sv.activo"
+                [class.sentido-inactivo]="!sv.activo">
+
+                <div class="sentido-bloque-header">
+                    <div class="sentido-bloque-info">
+                        <div class="sentido-img-mini" *ngIf="sv.urlSentImg">
+                            <img [src]="imgUrl(sv.urlSentImg)" [alt]="sv.sentido"
+                                 (error)="sv._imgErr=true"
+                                 [style.display]="sv._imgErr ? 'none' : 'block'">
+                        </div>
+                        <div class="sentido-bloque-texto">
+                            <div class="sentido-bloque-cod">{{ sv.codSentido }}</div>
+                            <div class="sentido-bloque-nombre">{{ sv.sentido }}</div>
+                            <div class="sentido-bloque-usuario" *ngIf="sv.activo">
+                                <span class="material-symbols-outlined">person</span> {{ sv.usuario }}
+                            </div>
+                            <div class="sentido-libre-chip" *ngIf="!sv.activo">
+                                <span class="material-symbols-outlined">radio_button_unchecked</span> Libre
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sentido-bloque-right">
+                        <div class="sentido-estado-badge" [class.badge-activo]="sv.activo" [class.badge-libre]="!sv.activo">
+                            <span class="estado-dot" *ngIf="sv.activo"></span>
+                            {{ sv.activo ? 'EN CONTEO' : 'LIBRE' }}
+                        </div>
+                        <div class="totales-split" *ngIf="sv.total > 0">
+                            <div class="total-chip total-chip--vehiculos">
+                                <span class="material-symbols-outlined">directions_car</span>
+                                <span class="total-chip-num">{{ totalVehiculos(sv) }}</span>
+                                <span class="total-chip-lbl">vehículos</span>
+                            </div>
+                            <div class="total-chip total-chip--personas" *ngIf="personas(sv) > 0">
+                                <span class="material-symbols-outlined">group</span>
+                                <span class="total-chip-num">{{ personas(sv) }}</span>
+                                <span class="total-chip-lbl">personas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barras vehículos -->
+                <div class="cats-barras" *ngIf="totalVehiculos(sv) > 0">
+                    <div class="cats-barras-titulo">
+                        <span class="material-symbols-outlined">directions_car</span> Vehículos
+                    </div>
+                    <div class="cat-barra" *ngFor="let item of vehiculos(sv)">
+                        <div class="cat-barra-label">{{ item.cat }}</div>
+                        <div class="cat-barra-track">
+                            <div class="cat-barra-fill"
+                                [style.width.%]="totalVehiculos(sv) > 0 ? (item.n / totalVehiculos(sv) * 100) : 0">
+                            </div>
+                        </div>
+                        <div class="cat-barra-num">{{ item.n }}</div>
+                    </div>
+                </div>
+
+                <!-- Barra personas -->
+                <div class="cats-barras cats-barras--personas" *ngIf="personas(sv) > 0">
+                    <div class="cats-barras-titulo cats-barras-titulo--personas">
+                        <span class="material-symbols-outlined">group</span> Personas
+                    </div>
+                    <div class="cat-barra">
+                        <div class="cat-barra-label">Personas</div>
+                        <div class="cat-barra-track">
+                            <div class="cat-barra-fill cat-barra-fill--personas"
+                                [style.width.%]="100">
+                            </div>
+                        </div>
+                        <div class="cat-barra-num cat-barra-num--personas">{{ personas(sv) }}</div>
+                    </div>
+                </div>
+
+                <!-- Sin datos aún -->
+                <div class="cats-vacio" *ngIf="sv.total === 0">
+                    <span class="material-symbols-outlined">hourglass_empty</span>
+                    Sin registros aún
+                </div>
+            </div>
+        </div>
+
+    </ng-container>
+
+</div>

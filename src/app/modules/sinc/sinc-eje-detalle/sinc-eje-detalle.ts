@@ -105,20 +105,27 @@ export class SincEjeDetalleComponent implements OnInit {
         { id: 'mcCuneta',      label: 'Cuneta',         icon: 'water',                 color: '#80deea' },
         { id: 'mcDefensaVial', label: 'Defensa Vial',   icon: 'safety_divider',        color: '#ef5350' },
         { id: 'mcIts',         label: 'Disp. ITS',      icon: 'settings_remote',       color: '#26c6da' },
-        { id: 'mcDrenaje',     label: 'Drenaje Mc',     icon: 'water_drop',            color: '#66bb6a' },
+        { id: 'mcDrenaje',     label: 'Drenaje',        icon: 'water_drop',            color: '#66bb6a' },
         { id: 'mcPeaje',       label: 'Est. Peaje',     icon: 'toll',                  color: '#ba68c8' },
         { id: 'mcPesaje',      label: 'Est. Pesaje',    icon: 'scale',                 color: '#9575cd' },
         { id: 'mcLuminaria',   label: 'Luminaria',      icon: 'lightbulb',             color: '#fff176' },
-        { id: 'mcMuro',        label: 'Muro Mc',        icon: 'bento',                 color: '#7986cb' },
-        { id: 'mcPuente',      label: 'Puente Mc',      icon: 'fort',                  color: '#42a5f5' },
+        { id: 'mcMuro',        label: 'Muro',           icon: 'bento',                 color: '#7986cb' },
+        { id: 'mcPuente',      label: 'Puente',         icon: 'fort',                  color: '#42a5f5' },
         { id: 'mcSenalV',      label: 'Señal Vertical', icon: 'signpost',              color: '#a5d6a7' },
         { id: 'mcSeparador',   label: 'Separador',      icon: 'vertical_align_center', color: '#f48fb1' },
-        { id: 'mcTunel',       label: 'Túnel Mc',       icon: 'ev_shadow',             color: '#b0bec5' },
+        { id: 'mcTunel',       label: 'Túnel',          icon: 'ev_shadow',             color: '#b0bec5' },
         { id: 'mcZona',        label: 'Zona Servicio',  icon: 'local_gas_station',     color: '#ffcc80' }
     ];
 
     get tabs() {
-        return this.seccion === 'mc' ? this.tabsDetallado : this.tabsBasico;
+        if (this.eje?.nivelInventario === 'detallado') {
+            // puentes/muros/tuneles del básico son la misma capa que mcPuente/mcMuro/mcTunel
+            const basicoSinDuplicados = this.tabsBasico.filter(
+                t => t.id !== 'puentes' && t.id !== 'muros' && t.id !== 'tuneles'
+            );
+            return [...basicoSinDuplicados, ...this.tabsDetallado];
+        }
+        return this.tabsBasico;
     }
 
     get esNivelDetallado(): boolean {
@@ -273,16 +280,11 @@ export class SincEjeDetalleComponent implements OnInit {
         };
     }
 
-    /** Alinea sección (Básico / Mc) y la primera tab con el nivel guardado al crear el eje. */
+    /** Alinea la primera tab con el nivel guardado al crear el eje. */
     private aplicarSeccionInicialDesdeEje(): void {
         if (!this.eje) return;
-        if (this.eje.nivelInventario === 'detallado') {
-            this.seccion = 'mc';
-            this.tabActiva = this.tabsDetallado[0].id;
-        } else {
-            this.seccion = 'basico';
-            this.tabActiva = this.tabsBasico[0].id;
-        }
+        this.seccion = 'basico';
+        this.tabActiva = this.tabsBasico[0].id;
     }
 
     cargarResumen() {
