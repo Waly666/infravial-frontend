@@ -65,7 +65,7 @@ export class ConteoListaComponent implements OnInit {
         this.svc.getProyectos().subscribe({ next: (r) => this.proyectos = r.datos, error: () => {} });
         this.svc.getProyectoActivo().subscribe({ next: (r) => this.proyectoActivo = r.dato, error: () => {} });
         this.svc.getEstaciones().subscribe({ next: (r) => this.estaciones = r.datos, error: () => {} });
-        this.svc.getJornadasEnProceso().subscribe({ next: (r) => this.jornadas = r.datos, error: () => {} });
+        this.svc.getJornadasEnProceso().subscribe({ next: (r) => this.jornadas = r.datos || [], error: () => { this.jornadas = []; } });
         this.cargar();
     }
 

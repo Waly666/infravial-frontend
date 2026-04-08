@@ -203,8 +203,8 @@
                     </span>
                 </div>
                 <!-- Jornada EN PROCESO -->
-                <div class="form-field">
-                    <label>Jornada (EN PROCESO)</label>
+                <div class="form-field" *ngIf="!modoEdicion && jornadas?.length">
+                    <label>Tomar datos de jornada (EN PROCESO)</label>
                     <select [(ngModel)]="form._idJornadaSel" (ngModelChange)="onJornadaChange()">
                         <option value="">— Seleccionar jornada —</option>
                         <option *ngFor="let j of jornadas" [value]="j._id">
@@ -212,9 +212,7 @@
                         </option>
                     </select>
                 </div>
-
-                <!-- Campos copiados de la jornada (editables) -->
-                <div class="form-row">
+                <div class="form-row" *ngIf="!modoEdicion">
                     <div class="form-field">
                         <label>Departamento</label>
                         <input type="text" [(ngModel)]="form.dpto" placeholder="Auto desde jornada">
@@ -224,7 +222,7 @@
                         <input type="text" [(ngModel)]="form.municipio" placeholder="Auto desde jornada">
                     </div>
                 </div>
-                <div class="form-row">
+                <div class="form-row" *ngIf="!modoEdicion">
                     <div class="form-field">
                         <label>Localidad</label>
                         <input type="text" [(ngModel)]="form.localidad" placeholder="Auto desde jornada">

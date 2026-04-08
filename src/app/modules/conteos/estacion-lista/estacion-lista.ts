@@ -68,7 +68,7 @@ export class EstacionListaComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.cargar();
-        this.svc.getJornadasEnProceso().subscribe({ next: (r) => this.jornadas = r.datos, error: () => {} });
+        this.svc.getJornadasEnProceso().subscribe({ next: (r) => this.jornadas = r.datos || [], error: () => { this.jornadas = []; } });
     }
 
     ngOnDestroy() {
