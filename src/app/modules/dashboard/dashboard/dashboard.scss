@@ -226,6 +226,12 @@
 // Subitems de Inventario Carreteras — cada uno único
 .nav-item[data-nav='categorizacion-vial'] .nav-icon-wrap { background: linear-gradient(145deg, #fda4af 0%, #be123c 100%); } // rosa
 .nav-item[data-nav='sinc']                .nav-icon-wrap { background: linear-gradient(145deg, #93c5fd 0%, #1d4ed8 100%); } // azul rey
+// Conteos Vehiculares — azul claro
+.nav-item[data-nav='conteos']             .nav-icon-wrap { background: linear-gradient(145deg, #7dd3fc 0%, #0284c7 100%); }
+// Subitems de Conteos — cada uno único
+.nav-item[data-nav='conteos-proyectos']   .nav-icon-wrap { background: linear-gradient(145deg, #bae6fd 0%, #0369a1 100%); }
+.nav-item[data-nav='conteos-estaciones']  .nav-icon-wrap { background: linear-gradient(145deg, #38bdf8 0%, #0e7490 100%); }
+.nav-item[data-nav='conteos-conteos']     .nav-icon-wrap { background: linear-gradient(145deg, #60a5fa 0%, #1d4ed8 100%); }
 // Utils — rojo
 .nav-item[data-nav='utils']               .nav-icon-wrap { background: linear-gradient(145deg, #fca5a5 0%, #b91c1c 100%); }
 // Subitems de Utils — cada uno único
@@ -271,6 +277,24 @@
 }
 .nav-group:has([data-nav='carreteras']) .nav-group-children {
     border-left-color: rgba(134,239,172,0.3);
+}
+
+// ── GRUPO CONTEOS VEHICULARES — azul claro ───────────────────────────────────
+.nav-item[data-nav='conteos'] {
+    background: linear-gradient(90deg, rgba(125,211,252,0.12) 0%, rgba(2,132,199,0.06) 100%);
+    border: 1px solid rgba(125,211,252,0.22);
+    border-radius: 9px;
+    margin-bottom: 0.1rem;
+
+    .nav-label { color: #7dd3fc; font-weight: 700; letter-spacing: 0.02em; }
+
+    &.active, &:hover {
+        background: linear-gradient(90deg, rgba(125,211,252,0.22) 0%, rgba(2,132,199,0.12) 100%);
+        border-color: rgba(125,211,252,0.5);
+    }
+}
+.nav-group:has([data-nav='conteos']) .nav-group-children {
+    border-left-color: rgba(125,211,252,0.3);
 }
 
 // ── GRUPO UTILS — rojo ────────────────────────────────────────────────────────
