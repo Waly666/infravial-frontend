@@ -20,9 +20,11 @@ const CONECTORES = ['con', 'entre'];
 export class EstacionListaComponent implements OnInit, OnDestroy {
 
     estaciones: any[] = [];
+    jornadas:   any[] = [];
     loading    = true;
     error      = '';
     busqueda   = '';
+    idJornadaSel = '';
 
     // Modal
     modal       = false;
@@ -66,6 +68,7 @@ export class EstacionListaComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.cargar();
+        this.svc.getJornadasEnProceso().subscribe({ next: (r) => this.jornadas = r.datos, error: () => {} });
     }
 
     ngOnDestroy() {
@@ -214,6 +217,7 @@ export class EstacionListaComponent implements OnInit, OnDestroy {
         this.modoEdicion = false;
         this.idEdicion   = null;
         this.errorModal  = '';
+        this.idJornadaSel = '';
         this.nom = { tipoVia1: '', numero1: '', conector: '', tipoVia2: '', numero2: '', conector2: '', tipoVia3: '', numero3: '', completa: '' };
         this.poligonoCoords = [];
         this.destroyMap();
@@ -229,6 +233,26 @@ export class EstacionListaComponent implements OnInit, OnDestroy {
         };
         this.modal = true;
         this.initMap();
+    }
+
+    onJornadaChange() {
+        const j = this.jornadas.find(j => j._id === this.idJornadaSel);
+        if (j) {
+            this.form.departamento = j.dpto       || '';
+            this.form.municipio    = j.municipio  || '';
+            this.form.localidad    = j.localidad  || '';
+            this.form.supervisor   = j.supervisor || '';
+            // re-centrar mapa si ya está abierto
+            if (this.mapa && j.municipio) {
+                const q = encodeURIComponent(`${j.municipio}, ${j.dpto || ''}, Colombia`);
+                fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`)
+                    .then(r => r.json()).then(data => {
+                        if (data?.[0]) this.mapa!.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 14);
+                    }).catch(() => {});
+            }
+        } else {
+            this.form.departamento = this.form.municipio = this.form.localidad = this.form.supervisor = '';
+        }
     }
 
     abrirEditar(e: any) {

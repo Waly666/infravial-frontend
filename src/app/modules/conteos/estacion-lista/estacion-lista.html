@@ -139,6 +139,17 @@
             </div>
 
             <div class="form-grid">
+                <!-- Selector de jornada EN PROCESO -->
+                <div class="form-field" *ngIf="!modoEdicion">
+                    <label>Tomar datos de jornada (EN PROCESO)</label>
+                    <select [(ngModel)]="idJornadaSel" (ngModelChange)="onJornadaChange()">
+                        <option value="">— Seleccionar jornada —</option>
+                        <option *ngFor="let j of jornadas" [value]="j._id">
+                            {{ j.municipio }}{{ j.localidad ? ' / ' + j.localidad : '' }} — {{ j.dpto }}
+                        </option>
+                    </select>
+                </div>
+
                 <div class="form-row">
                     <div class="form-field">
                         <label>Departamento</label>

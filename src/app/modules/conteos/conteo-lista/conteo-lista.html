@@ -202,6 +202,39 @@
                         Sin proyecto activo
                     </span>
                 </div>
+                <!-- Jornada EN PROCESO -->
+                <div class="form-field">
+                    <label>Jornada (EN PROCESO)</label>
+                    <select [(ngModel)]="form._idJornadaSel" (ngModelChange)="onJornadaChange()">
+                        <option value="">— Seleccionar jornada —</option>
+                        <option *ngFor="let j of jornadas" [value]="j._id">
+                            {{ j.municipio }}{{ j.localidad ? ' / ' + j.localidad : '' }} — {{ j.dpto }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Campos copiados de la jornada (editables) -->
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Departamento</label>
+                        <input type="text" [(ngModel)]="form.dpto" placeholder="Auto desde jornada">
+                    </div>
+                    <div class="form-field">
+                        <label>Municipio</label>
+                        <input type="text" [(ngModel)]="form.municipio" placeholder="Auto desde jornada">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Localidad</label>
+                        <input type="text" [(ngModel)]="form.localidad" placeholder="Auto desde jornada">
+                    </div>
+                    <div class="form-field">
+                        <label>Supervisor</label>
+                        <input type="text" [(ngModel)]="form.supervisor" placeholder="Auto desde jornada">
+                    </div>
+                </div>
+
                 <div class="form-field">
                     <label>Observaciones</label>
                     <input type="text" [(ngModel)]="form.observaciones" placeholder="Observaciones generales">

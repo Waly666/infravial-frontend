@@ -11,8 +11,9 @@ export class ConteoService {
     constructor(private api: ApiService) {}
 
     // ── Catálogos ─────────────────────────────────────────────────────────────
-    getCats()     { return this.api.get<any>('/conteos/catalogos/cats'); }
-    getSentidos() { return this.api.get<any>('/conteos/catalogos/sentidos'); }
+    getCats()              { return this.api.get<any>('/conteos/catalogos/cats'); }
+    getSentidos()          { return this.api.get<any>('/conteos/catalogos/sentidos'); }
+    getJornadasEnProceso() { return this.api.get<any>('/conteos/catalogos/jornadas'); }
 
     // ── Proyectos ─────────────────────────────────────────────────────────────
     getProyectos()           { return this.api.get<any>('/conteos/proyectos'); }

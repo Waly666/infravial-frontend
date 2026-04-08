@@ -25,6 +25,7 @@ export class ConteoListaComponent implements OnInit {
     conteos:        any[] = [];
     estaciones:     any[] = [];
     proyectos:      any[] = [];
+    jornadas:       any[] = [];
     proyectoActivo: any   = null;
     loading = true;
 
@@ -43,7 +44,9 @@ export class ConteoListaComponent implements OnInit {
 
     form: any = {
         fecha: '', horaIni: '', horaFin: '', condClim: '',
-        idProyecto: '', observaciones: '', estado: 'EN PROCESO'
+        idProyecto: '', observaciones: '', estado: 'EN PROCESO',
+        dpto: '', municipio: '', localidad: '', supervisor: '',
+        _idJornadaSel: ''
     };
 
     constructor(
@@ -62,6 +65,7 @@ export class ConteoListaComponent implements OnInit {
         this.svc.getProyectos().subscribe({ next: (r) => this.proyectos = r.datos, error: () => {} });
         this.svc.getProyectoActivo().subscribe({ next: (r) => this.proyectoActivo = r.dato, error: () => {} });
         this.svc.getEstaciones().subscribe({ next: (r) => this.estaciones = r.datos, error: () => {} });
+        this.svc.getJornadasEnProceso().subscribe({ next: (r) => this.jornadas = r.datos, error: () => {} });
         this.cargar();
     }
 
@@ -95,9 +99,23 @@ export class ConteoListaComponent implements OnInit {
             condClim: 'DESPEJADO',
             idProyecto: this.proyectoActivo?._id || '',
             observaciones: '', estado: 'EN PROCESO',
-            idEstacion: this.idEstacion   // vacío en modo global → usuario elige
+            idEstacion: this.idEstacion,
+            dpto: '', municipio: '', localidad: '', supervisor: '',
+            _idJornadaSel: ''
         };
         this.modal = true;
+    }
+
+    onJornadaChange() {
+        const j = this.jornadas.find(j => j._id === this.form._idJornadaSel);
+        if (j) {
+            this.form.dpto       = j.dpto       || '';
+            this.form.municipio  = j.municipio  || '';
+            this.form.localidad  = j.localidad  || '';
+            this.form.supervisor = j.supervisor || '';
+        } else {
+            this.form.dpto = this.form.municipio = this.form.localidad = this.form.supervisor = '';
+        }
     }
 
     abrirEditar(c: any) {
@@ -111,7 +129,12 @@ export class ConteoListaComponent implements OnInit {
             condClim:      c.condClim || '',
             idProyecto:    c.idProyecto?._id || c.idProyecto || '',
             observaciones: c.observaciones || '',
-            estado:        c.estado || 'EN PROCESO'
+            estado:        c.estado || 'EN PROCESO',
+            dpto:          c.dpto       || '',
+            municipio:     c.municipio  || '',
+            localidad:     c.localidad  || '',
+            supervisor:    c.supervisor || '',
+            _idJornadaSel: ''
         };
         this.modal = true;
     }
@@ -124,8 +147,9 @@ export class ConteoListaComponent implements OnInit {
         if (!this.form.condClim) { this.errorModal = 'La condición climática es requerida'; return; }
 
         this.guardando = true;
+        const { _idJornadaSel, ...rest } = this.form;
         const payload = {
-            ...this.form,
+            ...rest,
             idEstacion: this.idEstacion || this.form.idEstacion,
             horaIni: this.buildDatetime(this.form.fecha, this.form.horaIni),
             horaFin: this.buildDatetime(this.form.fecha, this.form.horaFin)
